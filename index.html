@@ -186,7 +186,7 @@
     <!-- ABA 1: RESUMO GLOBAL (DASHBOARD)           -->
     <!-- ========================================== -->
     <section id="view-resumo" class="view-section space-y-6">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="card-kpi bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Fornecedores Cadastrados</p>
           <p id="kpi-fornecedores" class="text-2xl font-bold text-slate-100 mt-1">0</p>
@@ -196,8 +196,14 @@
           <p id="kpi-itens" class="text-2xl font-bold text-slate-100 mt-1">0</p>
         </div>
         <div class="card-kpi bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Linhas de Empenho</p>
-          <p id="kpi-empenhos-qtd" class="text-2xl font-bold text-slate-100 mt-1">0</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Itens Empenhados (Qtd.)</p>
+          <p id="kpi-itens-empenhados-qtd" class="text-2xl font-bold text-indigo-300 mt-1">0</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Soma considerando todos os empenhos</p>
+        </div>
+        <div class="card-kpi bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Empenhos (Nº Únicos)</p>
+          <p id="kpi-empenhos-qtd" class="text-2xl font-bold text-blue-300 mt-1">0</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Total de notas de empenho distintas</p>
         </div>
       </div>
 
@@ -572,7 +578,6 @@
             </div>
           </div>
 
-          <!-- Lista dinâmica de itens da NF -->
           <div id="nf-itens-container" class="space-y-3"></div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -586,13 +591,33 @@
         </form>
       </div>
 
-      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center">
-          <span class="text-xs font-bold uppercase text-slate-400">Notas Fiscais Lançadas</span>
-          <button type="button" onclick="exportNotasCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
-            📥 Exportar Notas Fiscais
-          </button>
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden space-y-4 p-4 sm:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <span class="text-sm font-bold uppercase text-slate-100">Consulta e Notas Fiscais Lançadas</span>
+            <p class="text-xs text-slate-400">Busque pelo número da NF para verificar rapidamente se foi paga ou qual a situação atual.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
+            <input type="text" id="filtroNfNumero" onkeyup="renderNotas()" placeholder="Filtrar por Nº da NF..." class="px-3 py-2 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-48 focus:ring-2 focus:ring-blue-600 outline-none" />
+            <select id="filtroNfSituacao" onchange="renderNotas()" class="px-3 py-2 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 focus:ring-2 focus:ring-blue-600 outline-none">
+              <option value="">Todas as Situações</option>
+              <option value="Paga">Paga</option>
+              <option value="Liquidada">Liquidada</option>
+              <option value="Atestada">Atestada</option>
+              <option value="Pendente de ateste">Pendente de ateste</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+            <button type="button" onclick="clearNfFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
+              Limpar
+            </button>
+            <button type="button" onclick="exportNotasCSV()" class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-700 text-white text-xs font-semibold rounded-lg transition">
+              📥 Exportar Notas Fiscais
+            </button>
+          </div>
         </div>
+
+        <div id="nf-consulta-card" class="hidden p-4 rounded-xl bg-slate-950/80 border border-slate-800"></div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left">
             <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
@@ -861,6 +886,40 @@
       }).sort((a, b) => b.vlrEmp - a.vlrEmp);
     }
 
+    function getFilteredNotasRows() {
+      const numFiltro = (document.getElementById('filtroNfNumero')?.value || '').trim().toLowerCase();
+      const sitFiltro = document.getElementById('filtroNfSituacao')?.value || '';
+
+      return state.notas.map(n => {
+        const emp = state.empenhos.find(x => x.id === n.empenho_id);
+        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
+
+        return {
+          ...n,
+          empresaSigla: empresa ? empresa.id_resumido : '-',
+          empresaFantasia: empresa ? empresa.nome_fantasia : '-',
+          numeroEmpenho: emp ? emp.numero_empenho : '-',
+          pregao: p ? p.numero_pregao : '-',
+          itemLabel: p ? `Item ${p.numero_item} - ${p.descricao_item}` : '-',
+          numeroItem: p ? p.numero_item : '-',
+          descricaoItem: p ? p.descricao_item : '-',
+          total
+        };
+      }).filter(r => {
+        if (numFiltro && !String(r.numero_nf).toLowerCase().includes(numFiltro)) return false;
+        if (sitFiltro && r.situacao !== sitFiltro) return false;
+        return true;
+      });
+    }
+
+    function clearNfFilters() {
+      document.getElementById('filtroNfNumero').value = '';
+      document.getElementById('filtroNfSituacao').value = '';
+      renderNotas();
+    }
+
     // =========================================================================
     // EXPORTAÇÃO CSV E MODO APRESENTAÇÃO
     // =========================================================================
@@ -966,30 +1025,25 @@
     }
 
     function exportNotasCSV() {
+      const rows = getFilteredNotasRows();
       const headers = [
         'Nº NF', 'Data NF', 'ID Empresa', 'Empresa', 'Nº Empenho', 'Pregão',
         'Item', 'Descrição', 'Qtd. NF', 'Vlr. Unitário', 'Vlr. Total', 'Situação'
       ];
-      const csvRows = state.notas.map(n => {
-        const emp = state.empenhos.find(x => x.id === n.empenho_id);
-        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
-        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
-        return [
-          n.numero_nf,
-          n.data_nf,
-          empresa ? empresa.id_resumido : '-',
-          empresa ? empresa.nome_fantasia : '-',
-          emp ? emp.numero_empenho : '-',
-          p ? p.numero_pregao : '-',
-          p ? p.numero_item : '-',
-          p ? p.descricao_item : '-',
-          fmtNum(n.quantidade_nf),
-          fmtBRL(n.valor_unitario_nf),
-          fmtBRL(total),
-          n.situacao
-        ];
-      });
+      const csvRows = rows.map(n => [
+        n.numero_nf,
+        n.data_nf,
+        n.empresaSigla,
+        n.empresaFantasia,
+        n.numeroEmpenho,
+        n.pregao,
+        n.numeroItem,
+        n.descricaoItem,
+        fmtNum(n.quantidade_nf),
+        fmtBRL(n.valor_unitario_nf),
+        fmtBRL(n.total),
+        n.situacao
+      ]);
       downloadCSV('relatorio_notas_fiscais.csv', headers, csvRows);
     }
 
@@ -1749,37 +1803,95 @@
       }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhum empenho registrado.</td></tr>';
     }
 
+    function getStatusBadgeClass(situacao) {
+      if (situacao === 'Paga') return 'bg-emerald-950/90 text-emerald-300 border-emerald-700/70';
+      if (situacao === 'Liquidada') return 'bg-blue-950/90 text-blue-300 border-blue-700/70';
+      if (situacao === 'Atestada') return 'bg-indigo-950/90 text-indigo-300 border-indigo-700/70';
+      if (situacao === 'Cancelada') return 'bg-red-950/90 text-red-300 border-red-800/70';
+      return 'bg-amber-950/90 text-amber-300 border-amber-700/70';
+    }
+
     function renderNotas() {
+      const numFiltro = (document.getElementById('filtroNfNumero')?.value || '').trim();
+      const consultaCard = document.getElementById('nf-consulta-card');
       const tbody = document.getElementById('tbl-notas');
       const statusOptions = ['Pendente de ateste', 'Atestada', 'Liquidada', 'Paga', 'Cancelada'];
+      const rows = getFilteredNotasRows();
 
-      tbody.innerHTML = state.notas.map(n => {
-        const emp = state.empenhos.find(x => x.id === n.empenho_id);
-        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
-        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
+      if (numFiltro) {
+        consultaCard.classList.remove('hidden');
+        if (rows.length === 0) {
+          consultaCard.innerHTML = `
+            <p class="text-xs text-amber-300 font-medium">Nenhuma Nota Fiscal encontrada com o número "<strong>${numFiltro}</strong>".</p>
+          `;
+        } else {
+          const gruposMap = new Map();
+          rows.forEach(r => {
+            const key = `${r.numero_nf}__${r.empresaFantasia}__${r.numeroEmpenho}`;
+            if (!gruposMap.has(key)) {
+              gruposMap.set(key, {
+                numero_nf: r.numero_nf,
+                empresa: `${r.empresaSigla} - ${r.empresaFantasia}`,
+                empenho: r.numeroEmpenho,
+                situacoes: new Set(),
+                valorTotal: 0,
+                itensCount: 0
+              });
+            }
+            const g = gruposMap.get(key);
+            g.situacoes.add(r.situacao);
+            g.valorTotal += r.total;
+            g.itensCount += 1;
+          });
 
-        return `
-          <tr class="hover:bg-slate-800/50 ${n.situacao === 'Cancelada' ? 'opacity-50' : ''}">
-            <td class="px-3 py-3 font-semibold text-slate-100">${n.numero_nf}</td>
-            <td class="px-3 py-3 text-slate-300">${n.data_nf}</td>
-            <td class="px-3 py-3 text-slate-300">${empresa ? empresa.id_resumido : '-'}</td>
-            <td class="px-3 py-3 text-blue-300">${emp ? emp.numero_empenho : '-'}</td>
-            <td class="px-3 py-3 text-slate-200">${p ? `Item ${p.numero_item} - ${p.descricao_item}` : '-'}</td>
-            <td class="px-3 py-3 text-right text-slate-200">${fmtNum(n.quantidade_nf)}</td>
-            <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(n.valor_unitario_nf)}</td>
-            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(total)}</td>
-            <td class="px-3 py-3 text-center">
-              <select onchange="updateNfSituacao('${n.id}', this.value)" class="px-2 py-1 text-xs rounded border border-slate-700 bg-slate-950 text-slate-100">
-                ${statusOptions.map(st => `<option value="${st}" ${n.situacao === st ? 'selected' : ''}>${st}</option>`).join('')}
-              </select>
-            </td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('notas_fiscais', '${n.id}')" class="text-red-400 hover:underline">Excluir</button>
-            </td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhuma Nota Fiscal lançada.</td></tr>';
+          consultaCard.innerHTML = [...gruposMap.values()].map(g => {
+            const sitTexto = [...g.situacoes].join(' / ');
+            const isPaga = g.situacoes.size === 1 && g.situacoes.has('Paga');
+            const badgeCls = isPaga
+              ? 'bg-emerald-950/90 text-emerald-300 border-emerald-700/70'
+              : 'bg-amber-950/90 text-amber-300 border-amber-700/70';
+
+            return `
+              <div class="flex flex-wrap items-center justify-between gap-3 py-1">
+                <div>
+                  <span class="text-xs font-bold text-slate-100">NF ${g.numero_nf}</span>
+                  <span class="text-xs text-slate-400"> • ${g.empresa} • Empenho ${g.empenho} (${g.itensCount} item(ns))</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-bold text-slate-100">${fmtBRL(g.valorTotal)}</span>
+                  <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeCls}">
+                    ${isPaga ? '✓ PAGA' : sitTexto.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            `;
+          }).join('<hr class="border-slate-800 my-2" />');
+        }
+      } else {
+        consultaCard.classList.add('hidden');
+        consultaCard.innerHTML = '';
+      }
+
+      tbody.innerHTML = rows.map(n => `
+        <tr class="hover:bg-slate-800/50 ${n.situacao === 'Cancelada' ? 'opacity-50' : ''}">
+          <td class="px-3 py-3 font-semibold text-slate-100">${n.numero_nf}</td>
+          <td class="px-3 py-3 text-slate-300">${n.data_nf}</td>
+          <td class="px-3 py-3 text-slate-300">${n.empresaSigla}</td>
+          <td class="px-3 py-3 text-blue-300">${n.numeroEmpenho}</td>
+          <td class="px-3 py-3 text-slate-200">${n.itemLabel}</td>
+          <td class="px-3 py-3 text-right text-slate-200">${fmtNum(n.quantidade_nf)}</td>
+          <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(n.valor_unitario_nf)}</td>
+          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(n.total)}</td>
+          <td class="px-3 py-3 text-center">
+            <select onchange="updateNfSituacao('${n.id}', this.value)" class="px-2 py-1 text-xs font-semibold rounded border ${getStatusBadgeClass(n.situacao)} bg-slate-950">
+              ${statusOptions.map(st => `<option value="${st}" ${n.situacao === st ? 'selected' : ''}>${st}</option>`).join('')}
+            </select>
+          </td>
+          <td class="px-3 py-3 text-right">
+            <button onclick="deleteRecord('notas_fiscais', '${n.id}')" class="text-red-400 hover:underline">Excluir</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhuma Nota Fiscal encontrada.</td></tr>';
     }
 
     function renderAcompanhamento() {
@@ -1816,9 +1928,19 @@
     }
 
     function renderDashboard() {
+      const empenhosUnicosCount = new Set(
+        state.empenhos.map(e => String(e.numero_empenho || '').trim()).filter(Boolean)
+      ).size;
+
+      const totalItensEmpenhadosQtd = state.empenhos.reduce(
+        (acc, emp) => acc + Number(emp.quantidade_empenhada || 0),
+        0
+      );
+
       document.getElementById('kpi-fornecedores').textContent = state.empresas.length;
       document.getElementById('kpi-itens').textContent = state.processos.length;
-      document.getElementById('kpi-empenhos-qtd').textContent = state.empenhos.length;
+      document.getElementById('kpi-itens-empenhados-qtd').textContent = fmtNum(totalItensEmpenhadosQtd);
+      document.getElementById('kpi-empenhos-qtd').textContent = empenhosUnicosCount;
 
       let totalAutorizado = 0;
       let totalEmpenhado = 0;
