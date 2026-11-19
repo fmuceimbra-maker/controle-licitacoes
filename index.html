@@ -282,7 +282,6 @@
             <p class="text-xs text-slate-400">Selecione uma empresa ou empenho para ver os saldos físicos e financeiros detalhados por item.</p>
           </div>
 
-          <!-- BARRA DE FILTROS + EXPORTAÇÃO -->
           <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
             <select id="filtroAcompEmpresa" onchange="onFiltroAcompEmpresaChange()" class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600">
               <option value="">Todas as Empresas</option>
@@ -297,7 +296,6 @@
           </div>
         </div>
 
-        <!-- RESUMO DINÂMICO DO FILTRO SELECIONADO -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-950/70 rounded-xl border border-slate-800">
           <div>
             <span class="text-[11px] font-semibold uppercase text-slate-400">Empenhado (Filtro)</span>
@@ -530,55 +528,59 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- ABA 6: CONTROLE DE NOTAS FISCAIS           -->
+    <!-- ABA 6: CONTROLE DE NOTAS FISCAIS (MÚLTIPLOS) -->
     <!-- ========================================== -->
     <section id="view-notas" class="view-section hidden space-y-6">
       <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
-        <h2 class="text-base font-bold text-slate-100 mb-1">Lançar Nota Fiscal</h2>
-        <p class="text-xs text-slate-400 mb-4">1º Escolha a Empresa; 2º Escolha o Empenho; 3º Escolha o Item. O sistema valida preço unitário e saldo disponível do empenho.</p>
-        <form onsubmit="addNotaFiscal(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Número da NF *</label>
-            <input type="text" id="nf-num" required placeholder="Ex: 000.145" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+            <h2 class="text-base font-bold text-slate-100">Lançar Nota Fiscal (1 ou Mais Itens)</h2>
+            <p class="text-xs text-slate-400">1º Escolha a Empresa; 2º Escolha o Empenho; 3º Adicione um ou mais itens do empenho na mesma NF.</p>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Data da NF *</label>
-            <input type="date" id="nf-data" required class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+          <button type="button" onclick="addNfItemRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition self-start sm:self-auto">
+            + Adicionar outro item nesta NF
+          </button>
+        </div>
+
+        <form onsubmit="saveMultiNotaFiscal(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Número da NF *</label>
+              <input type="text" id="nf-num" required placeholder="Ex: 000.145" class="w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Data da NF *</label>
+              <input type="date" id="nf-data" required class="w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">1º Empresa *</label>
+              <select id="nf-empresa-sel" required onchange="onNfEmpresaChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">2º Empenho *</label>
+              <select id="nf-empenho-sel" required onchange="onNfEmpenhoChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Situação da NF *</label>
+              <select id="nf-situacao" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100">
+                <option value="Pendente de ateste">Pendente de ateste</option>
+                <option value="Atestada">Atestada</option>
+                <option value="Liquidada">Liquidada</option>
+                <option value="Paga">Paga</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">1º Empresa *</label>
-            <select id="nf-empresa-sel" required onchange="onNfEmpresaChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">2º Empenho *</label>
-            <select id="nf-empenho-sel" required onchange="onNfEmpenhoChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-slate-300 mb-1">3º Item do Empenho *</label>
-            <select id="nf-item-sel" required onchange="onNfItemChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
-            <p id="nf-saldo-hint" class="text-[11px] text-blue-300 mt-1 font-medium">Selecione o item para consultar o saldo reservado.</p>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade na NF *</label>
-            <input type="number" id="nf-qtd" required step="0.001" min="0.001" placeholder="0" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Valor Unitário da NF (R$) *</label>
-            <input type="number" id="nf-valor" required step="0.01" min="0.01" placeholder="0.00" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Situação da NF *</label>
-            <select id="nf-situacao" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100">
-              <option value="Pendente de ateste">Pendente de ateste</option>
-              <option value="Atestada">Atestada</option>
-              <option value="Liquidada">Liquidada</option>
-              <option value="Paga">Paga</option>
-              <option value="Cancelada">Cancelada</option>
-            </select>
-          </div>
-          <div class="sm:col-span-2 lg:col-span-3 flex items-end justify-end">
-            <button type="submit" class="py-2 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition">
-              + Lançar Nota Fiscal
+
+          <!-- Lista dinâmica de itens da NF -->
+          <div id="nf-itens-container" class="space-y-3"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button type="button" onclick="addNfItemRow()" class="py-2 px-4 border border-slate-700 bg-slate-800/70 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-lg transition">
+              + Mais uma linha de item na NF
+            </button>
+            <button type="submit" class="py-2.5 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition shadow-sm">
+              Lançar Itens da Nota Fiscal
             </button>
           </div>
         </form>
@@ -1214,6 +1216,108 @@
     }
 
     // =========================================================================
+    // LINHAS DINÂMICAS DO CADASTRO DE NOTAS FISCAIS (MÚLTIPLOS ITENS POR NF)
+    // =========================================================================
+    function getAvailableEmpenhoLines() {
+      const empId = document.getElementById('nf-empresa-sel').value;
+      const numEmpenho = document.getElementById('nf-empenho-sel').value;
+      if (!empId || !numEmpenho) return [];
+      return state.empenhos.filter(emp => {
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+        return proc && proc.empresa_id === empId && emp.numero_empenho === numEmpenho;
+      });
+    }
+
+    function buildNfItemOptionsHtml(selectedId = '') {
+      const linhas = getAvailableEmpenhoLines();
+      if (linhas.length === 0) {
+        return '<option value="">Selecione empresa e empenho...</option>';
+      }
+      return '<option value="">Selecione o item do empenho...</option>' + linhas.map(l => {
+        const proc = state.processos.find(p => p.id === l.processo_item_id);
+        return `<option value="${l.id}" ${l.id === selectedId ? 'selected' : ''}>Item ${proc.numero_item} - ${proc.descricao_item} | ${proc.unidade_fornecimento} | ${fmtBRL(proc.valor_unitario)}</option>`;
+      }).join('');
+    }
+
+    function addNfItemRow(selectedId = '') {
+      const container = document.getElementById('nf-itens-container');
+      const row = document.createElement('div');
+      row.className = 'nf-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-start';
+      row.innerHTML = `
+        <div class="sm:col-span-6">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Item do Empenho *</label>
+          <select required onchange="updateNfRowItem(this)" class="nf-row-item w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100">
+            ${buildNfItemOptionsHtml(selectedId)}
+          </select>
+          <p class="nf-row-hint text-[11px] text-blue-300 mt-1 font-medium">Selecione o item para consultar o saldo reservado.</p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Quantidade na NF *</label>
+          <input type="number" required step="0.001" min="0.001" placeholder="0" class="nf-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+        </div>
+        <div class="sm:col-span-4 flex gap-2 items-start">
+          <div class="flex-1">
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Valor Unitário da NF (R$) *</label>
+            <input type="number" required step="0.01" min="0.01" placeholder="0.00" class="nf-row-valor w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <button type="button" onclick="removeNfItemRow(this)" title="Remover linha" class="mt-5 px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">
+            ✕
+          </button>
+        </div>
+      `;
+      container.appendChild(row);
+      if (selectedId) {
+        updateNfRowItem(row.querySelector('.nf-row-item'));
+      }
+    }
+
+    function removeNfItemRow(btn) {
+      const container = document.getElementById('nf-itens-container');
+      if (container.querySelectorAll('.nf-item-row').length <= 1) {
+        showToast('É necessário manter pelo menos 1 item na Nota Fiscal.', true);
+        return;
+      }
+      btn.closest('.nf-item-row').remove();
+    }
+
+    function resetNfItemRows() {
+      const container = document.getElementById('nf-itens-container');
+      container.innerHTML = '';
+      addNfItemRow();
+    }
+
+    function refreshAllNfItemRows() {
+      document.querySelectorAll('.nf-item-row').forEach(row => {
+        const sel = row.querySelector('.nf-row-item');
+        const prevVal = sel.value;
+        sel.innerHTML = buildNfItemOptionsHtml(prevVal);
+        updateNfRowItem(sel);
+      });
+    }
+
+    function updateNfRowItem(selectEl) {
+      const row = selectEl.closest('.nf-item-row');
+      const hint = row.querySelector('.nf-row-hint');
+      const valInput = row.querySelector('.nf-row-valor');
+      const empenhoId = selectEl.value;
+
+      if (!empenhoId) {
+        hint.textContent = 'Selecione o item para consultar o saldo reservado.';
+        return;
+      }
+
+      const emp = state.empenhos.find(e => e.id === empenhoId);
+      const proc = state.processos.find(p => p.id === emp.processo_item_id);
+      const usado = state.notas
+        .filter(n => n.empenho_id === empenhoId && n.situacao !== 'Cancelada')
+        .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+      const saldo = Number(emp.quantidade_empenhada) - usado;
+
+      valInput.value = Number(proc.valor_unitario).toFixed(2);
+      hint.textContent = `Saldo a faturar neste empenho: ${fmtNum(saldo)} ${proc.unidade_fornecimento} | Vlr. Empenhado: ${fmtBRL(proc.valor_unitario)}`;
+    }
+
+    // =========================================================================
     // DROPDOWNS DEPENDENTES E FILTROS
     // =========================================================================
     function populateDropdowns() {
@@ -1301,12 +1405,13 @@
     function onNfEmpresaChange() {
       const empId = document.getElementById('nf-empresa-sel').value;
       const empNumSel = document.getElementById('nf-empenho-sel');
-      const itemSel = document.getElementById('nf-item-sel');
+      const prevNum = empNumSel.value;
       empNumSel.innerHTML = '<option value="">Selecione o empenho...</option>';
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
 
-      if (!empId) return;
+      if (!empId) {
+        refreshAllNfItemRows();
+        return;
+      }
       const empenhosDaEmpresa = state.empenhos.filter(emp => {
         const proc = state.processos.find(p => p.id === emp.processo_item_id);
         return proc && proc.empresa_id === empId;
@@ -1315,40 +1420,12 @@
       numsUnicos.forEach(num => {
         empNumSel.innerHTML += `<option value="${num}">${num}</option>`;
       });
+      if (numsUnicos.includes(prevNum)) empNumSel.value = prevNum;
+      refreshAllNfItemRows();
     }
 
     function onNfEmpenhoChange() {
-      const empId = document.getElementById('nf-empresa-sel').value;
-      const numEmpenho = document.getElementById('nf-empenho-sel').value;
-      const itemSel = document.getElementById('nf-item-sel');
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
-
-      if (!empId || !numEmpenho) return;
-      const linhas = state.empenhos.filter(emp => {
-        const proc = state.processos.find(p => p.id === emp.processo_item_id);
-        return proc && proc.empresa_id === empId && emp.numero_empenho === numEmpenho;
-      });
-      linhas.forEach(l => {
-        const proc = state.processos.find(p => p.id === l.processo_item_id);
-        itemSel.innerHTML += `<option value="${l.id}">Item ${proc.numero_item} - ${proc.descricao_item} | ${proc.unidade_fornecimento} | ${fmtBRL(proc.valor_unitario)}</option>`;
-      });
-    }
-
-    function onNfItemChange() {
-      const empenhoId = document.getElementById('nf-item-sel').value;
-      const hint = document.getElementById('nf-saldo-hint');
-      if (!empenhoId) return;
-
-      const emp = state.empenhos.find(e => e.id === empenhoId);
-      const proc = state.processos.find(p => p.id === emp.processo_item_id);
-      const usado = state.notas
-        .filter(n => n.empenho_id === empenhoId && n.situacao !== 'Cancelada')
-        .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
-      const saldo = Number(emp.quantidade_empenhada) - usado;
-
-      document.getElementById('nf-valor').value = Number(proc.valor_unitario).toFixed(2);
-      hint.textContent = `Saldo a faturar neste empenho: ${fmtNum(saldo)} ${proc.unidade_fornecimento} | Vlr. Empenhado: ${fmtBRL(proc.valor_unitario)}`;
+      refreshAllNfItemRows();
     }
 
     // =========================================================================
@@ -1486,43 +1563,81 @@
       await loadAllData();
     }
 
-    async function addNotaFiscal(e) {
+    async function saveMultiNotaFiscal(e) {
       e.preventDefault();
       const numero_nf = document.getElementById('nf-num').value.trim();
       const data_nf = document.getElementById('nf-data').value;
-      const empenho_id = document.getElementById('nf-item-sel').value;
-      const quantidade_nf = parseFloat(document.getElementById('nf-qtd').value);
-      const valor_unitario_nf = parseFloat(document.getElementById('nf-valor').value);
       const situacao = document.getElementById('nf-situacao').value;
+      const rowElements = document.querySelectorAll('.nf-item-row');
 
-      const emp = state.empenhos.find(x => x.id === empenho_id);
-      const proc = state.processos.find(p => p.id === emp.processo_item_id);
+      const vistosNoForm = new Set();
+      const somaQtdPorEmpenho = {};
+      const records = [];
 
-      if (situacao !== 'Cancelada') {
-        if (Math.abs(valor_unitario_nf - Number(proc.valor_unitario)) >= 0.005) {
-          showToast(`BLOQUEADO: Preço divergente do empenho (${fmtBRL(proc.valor_unitario)}).`, true);
+      for (const row of rowElements) {
+        const empenho_id = row.querySelector('.nf-row-item').value;
+        const quantidade_nf = parseFloat(row.querySelector('.nf-row-qtd').value);
+        const valor_unitario_nf = parseFloat(row.querySelector('.nf-row-valor').value);
+
+        if (!empenho_id || isNaN(quantidade_nf) || quantidade_nf <= 0 || isNaN(valor_unitario_nf) || valor_unitario_nf <= 0) {
+          showToast('Preencha item, quantidade e valor unitário válidos em todas as linhas.', true);
           return;
         }
-        const usado = state.notas
-          .filter(n => n.empenho_id === empenho_id && n.situacao !== 'Cancelada')
-          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
 
-        if (usado + quantidade_nf > Number(emp.quantidade_empenhada) + 0.0001) {
-          showToast(`BLOQUEADO: Quantidade excede o saldo do empenho (${fmtNum(emp.quantidade_empenhada - usado)}).`, true);
+        if (vistosNoForm.has(empenho_id)) {
+          showToast('BLOQUEADO: O mesmo item do empenho foi repetido mais de uma vez nesta NF.', true);
           return;
+        }
+        vistosNoForm.add(empenho_id);
+
+        const emp = state.empenhos.find(x => x.id === empenho_id);
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+
+        if (situacao !== 'Cancelada') {
+          if (Math.abs(valor_unitario_nf - Number(proc.valor_unitario)) >= 0.005) {
+            showToast(`BLOQUEADO no Item ${proc.numero_item}: Preço divergente do empenho (${fmtBRL(proc.valor_unitario)}).`, true);
+            return;
+          }
+          somaQtdPorEmpenho[empenho_id] = (somaQtdPorEmpenho[empenho_id] || 0) + quantidade_nf;
+        }
+
+        records.push({
+          numero_nf,
+          data_nf,
+          empenho_id,
+          quantidade_nf,
+          valor_unitario_nf,
+          situacao
+        });
+      }
+
+      if (situacao !== 'Cancelada') {
+        for (const [empenho_id, qtdSolicitada] of Object.entries(somaQtdPorEmpenho)) {
+          const emp = state.empenhos.find(x => x.id === empenho_id);
+          const proc = state.processos.find(p => p.id === emp.processo_item_id);
+          const usado = state.notas
+            .filter(n => n.empenho_id === empenho_id && n.situacao !== 'Cancelada')
+            .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+
+          if (usado + qtdSolicitada > Number(emp.quantidade_empenhada) + 0.0001) {
+            showToast(
+              `BLOQUEADO no Item ${proc.numero_item}: Quantidade excede o saldo do empenho (${fmtNum(emp.quantidade_empenhada - usado)}).`,
+              true
+            );
+            return;
+          }
         }
       }
 
-      const { error } = await sb.from('notas_fiscais').insert([{
-        numero_nf, data_nf, empenho_id, quantidade_nf, valor_unitario_nf, situacao
-      }]);
+      const { error } = await sb.from('notas_fiscais').insert(records);
       if (error) {
         showToast('Erro ao lançar NF: ' + error.message, true);
         return;
       }
+
       document.getElementById('nf-num').value = '';
-      document.getElementById('nf-qtd').value = '';
-      showToast('Nota Fiscal lançada!');
+      resetNfItemRows();
+      showToast(`${records.length} item(ns) lançado(s) na NF ${numero_nf}!`);
       await loadAllData();
     }
 
@@ -1759,6 +1874,7 @@
     // Inicializar
     resetProcessoItemRows();
     resetEmpenhoItemRows();
+    resetNfItemRows();
     initConfigUI();
   </script>
 </body>
