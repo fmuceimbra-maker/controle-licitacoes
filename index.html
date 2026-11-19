@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <!-- NAVEGAÇÃO POR ABAS (IGUAL À PLANILHA) -->
+    <!-- NAVEGAÇÃO POR ABAS -->
     <nav class="bg-white text-slate-600 border-b border-slate-200 overflow-x-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 min-w-max">
         <button onclick="switchTab('resumo')" id="tab-resumo" class="tab-btn tab-active px-4 py-3 text-sm transition">
@@ -135,7 +135,6 @@
     <!-- ABA 1: RESUMO GLOBAL (DASHBOARD)           -->
     <!-- ========================================== -->
     <section id="view-resumo" class="view-section space-y-6">
-      <!-- KPIs Linha 1: Contadores -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="card-kpi bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Fornecedores Cadastrados</p>
@@ -151,7 +150,6 @@
         </div>
       </div>
 
-      <!-- KPIs Linha 2: Financeiro -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="card-kpi bg-white p-5 rounded-xl shadow-sm border-l-4 border-l-blue-800 border border-slate-200">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Valor Total Autorizado</p>
@@ -171,7 +169,6 @@
         </div>
       </div>
 
-      <!-- KPIs Linha 3: Execução Física -->
       <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-wrap justify-between items-center gap-4 mb-3">
           <div>
@@ -187,7 +184,6 @@
         </div>
       </div>
 
-      <!-- Tabela Consolidada por Fornecedor -->
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
           <div>
@@ -213,17 +209,44 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- ABA 2: EMPENHOS POR EMPRESA                -->
+    <!-- ABA 2: EMPENHOS POR EMPRESA (COM FILTROS)  -->
     <!-- ========================================== -->
     <section id="view-acompanhamento" class="view-section hidden space-y-4">
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h2 class="text-base font-bold text-slate-800">Acompanhamento Físico e Financeiro por Item</h2>
-            <p class="text-xs text-slate-500">Qtd. atestada considera NFs Atestadas, Liquidadas ou Pagas. Valor liquidado considera Liquidadas ou Pagas.</p>
+            <h2 class="text-base font-bold text-slate-800">Saldos de Empenhos por Empresa e Item</h2>
+            <p class="text-xs text-slate-500">Selecione uma empresa ou empenho para ver os saldos físicos e financeiros detalhados por item.</p>
           </div>
-          <input type="text" id="filtroAcomp" onkeyup="renderAcompanhamento()" placeholder="Filtrar por empresa, empenho ou item..." class="px-3 py-2 text-sm border border-slate-300 rounded-lg w-full sm:w-72 outline-none focus:ring-2 focus:ring-blue-800" />
+
+          <!-- BARRA DE FILTROS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto">
+            <select id="filtroAcompEmpresa" onchange="onFiltroAcompEmpresaChange()" class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-800">
+              <option value="">Todas as Empresas</option>
+            </select>
+            <select id="filtroAcompEmpenho" onchange="renderAcompanhamento()" class="px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-800">
+              <option value="">Todos os Empenhos</option>
+            </select>
+            <input type="text" id="filtroAcompTexto" onkeyup="renderAcompanhamento()" placeholder="Buscar item ou pregão..." class="px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-800" />
+          </div>
         </div>
+
+        <!-- RESUMO DINÂMICO DO FILTRO SELECIONADO -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div>
+            <span class="text-[11px] font-semibold uppercase text-slate-500">Empenhado (Filtro)</span>
+            <p id="acomp-total-emp" class="text-base font-bold text-slate-900">R$ 0,00</p>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold uppercase text-slate-500">Liquidado / Pago (Filtro)</span>
+            <p id="acomp-total-liq" class="text-base font-bold text-emerald-700">R$ 0,00</p>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold uppercase text-slate-500">Saldo Financeiro a Liquidar</span>
+            <p id="acomp-total-saldo" class="text-base font-bold text-blue-900">R$ 0,00</p>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left">
             <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200">
@@ -297,50 +320,52 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- ABA 4: PROCESSO LICITATÓRIO                -->
+    <!-- ABA 4: PROCESSO LICITATÓRIO (MÚLTIPLOS)    -->
     <!-- ========================================== -->
     <section id="view-processos" class="view-section hidden space-y-6">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-base font-bold text-slate-800 mb-1">Cadastrar Item Licitatório / Ata</h2>
-        <p class="text-xs text-slate-500 mb-4">Não repita a mesma combinação de Pregão + Empresa + Nº do Item.</p>
-        <form onsubmit="addProcessoItem(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Nº do Pregão / Processo *</label>
-            <input type="text" id="proc-numero" required placeholder="Ex: PE 90001/26" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
+            <h2 class="text-base font-bold text-slate-800">Cadastrar Itens do Pregão / Ata</h2>
+            <p class="text-xs text-slate-500">Informe o Pregão e a Empresa e adicione um ou vários itens de uma vez.</p>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Empresa Fornecedora *</label>
-            <select id="proc-empresa" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white"></select>
+          <button type="button" onclick="addProcessoItemRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg transition self-start sm:self-auto">
+            + Adicionar outro item neste pregão
+          </button>
+        </div>
+
+        <form onsubmit="saveMultiProcessoItens(event)" class="space-y-4">
+          <!-- Cabeçalho do Pregão + Empresa -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Nº do Pregão / Processo *</label>
+              <input type="text" id="proc-numero" required placeholder="Ex: PE 90001/26" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Empresa Fornecedora *</label>
+              <select id="proc-empresa" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white"></select>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Nº do Item *</label>
-            <input type="number" id="proc-item" required min="1" placeholder="1" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Unidade de Fornecimento *</label>
-            <input type="text" id="proc-unidade" required placeholder="KG, CX, UN, L..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-slate-700 mb-1">Descrição do Item *</label>
-            <input type="text" id="proc-desc" required placeholder="Ex: FEIJÃO CARIOCA TIPO 1" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Valor Unitário (R$) *</label>
-            <input type="number" id="proc-valor" required step="0.01" min="0.01" placeholder="5.98" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-700 mb-1">Quantidade Autorizada *</label>
-            <input type="number" id="proc-qtd" required step="0.001" min="0.001" placeholder="1000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
-          </div>
-          <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
-            <button type="submit" class="py-2 px-6 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition">
-              + Adicionar Item ao Processo
+
+          <!-- Lista dinâmica de linhas de itens -->
+          <div id="proc-itens-container" class="space-y-3"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button type="button" onclick="addProcessoItemRow()" class="py-2 px-4 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg transition">
+              + Mais uma linha de item
+            </button>
+            <button type="submit" class="py-2.5 px-6 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition shadow-sm">
+              Salvar Itens no Pregão
             </button>
           </div>
         </form>
       </div>
 
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase text-slate-600">Itens Cadastrados nos Pregões</span>
+          <input type="text" id="filtroProc" onkeyup="renderProcessos()" placeholder="Filtrar por pregão, empresa ou item..." class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg w-full sm:w-64" />
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left">
             <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200">
@@ -509,668 +534,4 @@
   </main>
 
   <script>
-    // =========================================================================
-    // ESTADO GLOBAL E CONEXÃO SUPABASE
-    // =========================================================================
-    let sb = null;
-    let state = {
-      empresas: [],
-      processos: [],
-      empenhos: [],
-      notas: []
-    };
-
-    const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const fmtNum = (v) => Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
-
-    function showToast(msg, isError = false) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.className = `fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all ${isError ? 'bg-red-700' : 'bg-emerald-700'}`;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 4200);
-    }
-
-    function initConfigUI() {
-      const savedUrl = localStorage.getItem('sb_url') || '';
-      const savedKey = localStorage.getItem('sb_key') || '';
-      document.getElementById('cfgUrl').value = savedUrl;
-      document.getElementById('cfgKey').value = savedKey;
-
-      if (savedUrl && savedKey) {
-        sb = window.supabase.createClient(savedUrl, savedKey);
-        document.getElementById('configInputs').classList.add('hidden');
-        document.getElementById('configSavedBadge').classList.remove('hidden');
-        document.getElementById('btnEditConfig').classList.remove('hidden');
-        checkSession();
-      }
-    }
-
-    function toggleConfigEdit() {
-      document.getElementById('configInputs').classList.toggle('hidden');
-    }
-
-    function saveSupabaseConfig() {
-      const url = document.getElementById('cfgUrl').value.trim();
-      const key = document.getElementById('cfgKey').value.trim();
-      if (!url || !key) {
-        showToast('Preencha a Project URL e a Anon Key.', true);
-        return;
-      }
-      localStorage.setItem('sb_url', url);
-      localStorage.setItem('sb_key', key);
-      sb = window.supabase.createClient(url, key);
-      document.getElementById('configInputs').classList.add('hidden');
-      document.getElementById('configSavedBadge').classList.remove('hidden');
-      document.getElementById('btnEditConfig').classList.remove('hidden');
-      showToast('Conexão salva! Agora faça login.');
-    }
-
-    async function checkSession() {
-      if (!sb) return;
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        document.getElementById('authScreen').classList.add('hidden');
-        document.getElementById('userEmailDisplay').textContent = session.user.email;
-        await loadAllData();
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      if (!sb) {
-        showToast('Salve primeiro a URL e a Key do Supabase.', true);
-        return;
-      }
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPass').value;
-      const errBox = document.getElementById('authError');
-      errBox.classList.add('hidden');
-
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) {
-        errBox.textContent = 'Erro ao entrar: ' + error.message;
-        errBox.classList.remove('hidden');
-        return;
-      }
-      document.getElementById('authScreen').classList.add('hidden');
-      document.getElementById('userEmailDisplay').textContent = data.user.email;
-      await loadAllData();
-    }
-
-    async function handleLogout() {
-      if (sb) await sb.auth.signOut();
-      location.reload();
-    }
-
-    // =========================================================================
-    // NAVEGAÇÃO ENTRE ABAS
-    // =========================================================================
-    function switchTab(tabId) {
-      document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-      document.getElementById('view-' + tabId).classList.remove('hidden');
-      document.getElementById('tab-' + tabId).classList.add('tab-active');
-    }
-
-    // =========================================================================
-    // CARREGAMENTO DE DADOS DO BANCO
-    // =========================================================================
-    async function loadAllData() {
-      if (!sb) return;
-      const [resEmp, resProc, resEmpenhos, resNotas] = await Promise.all([
-        sb.from('empresas').select('*').order('nome_fantasia'),
-        sb.from('processos_itens').select('*').order('numero_pregao').order('numero_item'),
-        sb.from('empenhos').select('*').order('data_empenho', { ascending: false }),
-        sb.from('notas_fiscais').select('*').order('data_nf', { ascending: false })
-      ]);
-
-      if (resEmp.error || resProc.error || resEmpenhos.error || resNotas.error) {
-        showToast('Erro ao carregar dados. Verifique as tabelas no Supabase.', true);
-        return;
-      }
-
-      state.empresas = resEmp.data || [];
-      state.processos = resProc.data || [];
-      state.empenhos = resEmpenhos.data || [];
-      state.notas = resNotas.data || [];
-
-      renderAll();
-    }
-
-    function renderAll() {
-      populateDropdowns();
-      renderEmpresas();
-      renderProcessos();
-      renderEmpenhos();
-      renderNotas();
-      renderAcompanhamento();
-      renderDashboard();
-    }
-
-    // =========================================================================
-    // DROPDOWNS DEPENDENTES (IGUAL À LÓGICA DA PLANILHA)
-    // =========================================================================
-    function populateDropdowns() {
-      // Aba Processo Licitatório -> Empresas
-      const procEmpSel = document.getElementById('proc-empresa');
-      procEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
-        state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
-
-      // Aba Empenhos -> Pregões Únicos
-      const pregoesUnicos = [...new Set(state.processos.map(p => p.numero_pregao))].sort();
-      const empPregaoSel = document.getElementById('emp-pregao');
-      const prevPregao = empPregaoSel.value;
-      empPregaoSel.innerHTML = '<option value="">Selecione o pregão...</option>' +
-        pregoesUnicos.map(pr => `<option value="${pr}">${pr}</option>`).join('');
-      if (pregoesUnicos.includes(prevPregao)) empPregaoSel.value = prevPregao;
-      onEmpPregaoChange();
-
-      // Aba Notas Fiscais -> Empresas com Empenho
-      const empIdsComEmpenho = new Set(
-        state.empenhos.map(emp => {
-          const proc = state.processos.find(p => p.id === emp.processo_item_id);
-          return proc ? proc.empresa_id : null;
-        }).filter(Boolean)
-      );
-      const nfEmpSel = document.getElementById('nf-empresa-sel');
-      const prevNfEmp = nfEmpSel.value;
-      nfEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
-        state.empresas.filter(e => empIdsComEmpenho.has(e.id))
-          .map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
-      if ([...empIdsComEmpenho].includes(prevNfEmp)) nfEmpSel.value = prevNfEmp;
-      onNfEmpresaChange();
-    }
-
-    function onEmpPregaoChange() {
-      const pregao = document.getElementById('emp-pregao').value;
-      const empSel = document.getElementById('emp-empresa-sel');
-      const itemSel = document.getElementById('emp-item-sel');
-      empSel.innerHTML = '<option value="">Selecione a empresa...</option>';
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('emp-saldo-hint').textContent = 'Selecione um item para ver o saldo disponível.';
-
-      if (!pregao) return;
-      const empIds = [...new Set(state.processos.filter(p => p.numero_pregao === pregao).map(p => p.empresa_id))];
-      empIds.forEach(id => {
-        const e = state.empresas.find(x => x.id === id);
-        if (e) empSel.innerHTML += `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`;
-      });
-    }
-
-    function onEmpEmpresaChange() {
-      const pregao = document.getElementById('emp-pregao').value;
-      const empresaId = document.getElementById('emp-empresa-sel').value;
-      const itemSel = document.getElementById('emp-item-sel');
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('emp-saldo-hint').textContent = 'Selecione um item para ver o saldo disponível.';
-
-      if (!pregao || !empresaId) return;
-      const itens = state.processos.filter(p => p.numero_pregao === pregao && p.empresa_id === empresaId);
-      itens.forEach(it => {
-        itemSel.innerHTML += `<option value="${it.id}">Item ${it.numero_item} - ${it.descricao_item} (${it.unidade_fornecimento} | ${fmtBRL(it.valor_unitario)})</option>`;
-      });
-    }
-
-    function onEmpItemChange() {
-      const procId = document.getElementById('emp-item-sel').value;
-      const hint = document.getElementById('emp-saldo-hint');
-      if (!procId) {
-        hint.textContent = 'Selecione um item para ver o saldo disponível.';
-        return;
-      }
-      const proc = state.processos.find(p => p.id === procId);
-      const jaEmpenhado = state.empenhos
-        .filter(e => e.processo_item_id === procId)
-        .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
-      const saldo = Number(proc.quantidade_autorizada) - jaEmpenhado;
-      hint.textContent = `Saldo disponível no pregão: ${fmtNum(saldo)} ${proc.unidade_fornecimento} (Unitário: ${fmtBRL(proc.valor_unitario)})`;
-    }
-
-    // Dependentes Notas Fiscais
-    function onNfEmpresaChange() {
-      const empId = document.getElementById('nf-empresa-sel').value;
-      const empNumSel = document.getElementById('nf-empenho-sel');
-      const itemSel = document.getElementById('nf-item-sel');
-      empNumSel.innerHTML = '<option value="">Selecione o empenho...</option>';
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
-
-      if (!empId) return;
-      const empenhosDaEmpresa = state.empenhos.filter(emp => {
-        const proc = state.processos.find(p => p.id === emp.processo_item_id);
-        return proc && proc.empresa_id === empId;
-      });
-      const numsUnicos = [...new Set(empenhosDaEmpresa.map(e => e.numero_empenho))].sort();
-      numsUnicos.forEach(num => {
-        empNumSel.innerHTML += `<option value="${num}">${num}</option>`;
-      });
-    }
-
-    function onNfEmpenhoChange() {
-      const empId = document.getElementById('nf-empresa-sel').value;
-      const numEmpenho = document.getElementById('nf-empenho-sel').value;
-      const itemSel = document.getElementById('nf-item-sel');
-      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
-      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
-
-      if (!empId || !numEmpenho) return;
-      const linhas = state.empenhos.filter(emp => {
-        const proc = state.processos.find(p => p.id === emp.processo_item_id);
-        return proc && proc.empresa_id === empId && emp.numero_empenho === numEmpenho;
-      });
-      linhas.forEach(l => {
-        const proc = state.processos.find(p => p.id === l.processo_item_id);
-        itemSel.innerHTML += `<option value="${l.id}">Item ${proc.numero_item} - ${proc.descricao_item} | ${proc.unidade_fornecimento} | ${fmtBRL(proc.valor_unitario)}</option>`;
-      });
-    }
-
-    function onNfItemChange() {
-      const empenhoId = document.getElementById('nf-item-sel').value;
-      const hint = document.getElementById('nf-saldo-hint');
-      if (!empenhoId) return;
-
-      const emp = state.empenhos.find(e => e.id === empenhoId);
-      const proc = state.processos.find(p => p.id === emp.processo_item_id);
-      const usado = state.notas
-        .filter(n => n.empenho_id === empenhoId && n.situacao !== 'Cancelada')
-        .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
-      const saldo = Number(emp.quantidade_empenhada) - usado;
-
-      document.getElementById('nf-valor').value = Number(proc.valor_unitario).toFixed(2);
-      hint.textContent = `Saldo a faturar neste empenho: ${fmtNum(saldo)} ${proc.unidade_fornecimento} | Vlr. Empenhado: ${fmtBRL(proc.valor_unitario)}`;
-    }
-
-    // =========================================================================
-    // OPERAÇÕES DE CADASTRO (CRUD) COM VALIDAÇÕES DA PLANILHA
-    // =========================================================================
-    async function addEmpresa(e) {
-      e.preventDefault();
-      const nome_fantasia = document.getElementById('emp-nome').value.trim();
-      const id_resumido = document.getElementById('emp-id').value.trim();
-      const cnpj = document.getElementById('emp-cnpj').value.trim();
-      const email = document.getElementById('emp-contato').value.trim();
-
-      const { error } = await sb.from('empresas').insert([{ nome_fantasia, id_resumido, cnpj, email }]);
-      if (error) {
-        showToast('Erro ao cadastrar empresa (verifique se o ID Resumido já existe): ' + error.message, true);
-        return;
-      }
-      e.target.reset();
-      showToast('Empresa cadastrada com sucesso!');
-      await loadAllData();
-    }
-
-    async function addProcessoItem(e) {
-      e.preventDefault();
-      const numero_pregao = document.getElementById('proc-numero').value.trim();
-      const empresa_id = document.getElementById('proc-empresa').value;
-      const numero_item = parseInt(document.getElementById('proc-item').value, 10);
-      const unidade_fornecimento = document.getElementById('proc-unidade').value.trim().toUpperCase();
-      const descricao_item = document.getElementById('proc-desc').value.trim();
-      const valor_unitario = parseFloat(document.getElementById('proc-valor').value);
-      const quantidade_autorizada = parseFloat(document.getElementById('proc-qtd').value);
-
-      const { error } = await sb.from('processos_itens').insert([{
-        numero_pregao, empresa_id, numero_item, descricao_item, unidade_fornecimento, valor_unitario, quantidade_autorizada
-      }]);
-      if (error) {
-        showToast('Erro ao cadastrar item (verifique duplicidade de Pregão/Empresa/Item): ' + error.message, true);
-        return;
-      }
-      e.target.reset();
-      showToast('Item licitatório adicionado!');
-      await loadAllData();
-    }
-
-    async function addEmpenho(e) {
-      e.preventDefault();
-      const numero_empenho = document.getElementById('emp-num').value.trim();
-      const data_empenho = document.getElementById('emp-data').value;
-      const empresaId = document.getElementById('emp-empresa-sel').value;
-      const processo_item_id = document.getElementById('emp-item-sel').value;
-      const quantidade_empenhada = parseFloat(document.getElementById('emp-qtd-input').value);
-
-      // Validação 1: Mesmo número de empenho não pode pertencer a outra empresa
-      const empenhoOutraEmpresa = state.empenhos.find(emp => {
-        if (emp.numero_empenho !== numero_empenho) return false;
-        const p = state.processos.find(x => x.id === emp.processo_item_id);
-        return p && p.empresa_id !== empresaId;
-      });
-      if (empenhoOutraEmpresa) {
-        showToast('BLOQUEADO: Este número de empenho já está vinculado a outra empresa.', true);
-        return;
-      }
-
-      // Validação 2: Saldo do processo não pode ser excedido
-      const proc = state.processos.find(p => p.id === processo_item_id);
-      const jaEmpenhado = state.empenhos
-        .filter(emp => emp.processo_item_id === processo_item_id)
-        .reduce((acc, emp) => acc + Number(emp.quantidade_empenhada), 0);
-
-      if (jaEmpenhado + quantidade_empenhada > Number(proc.quantidade_autorizada) + 0.0001) {
-        showToast(`BLOQUEADO: Saldo do processo excedido! Disponível: ${fmtNum(proc.quantidade_autorizada - jaEmpenhado)}`, true);
-        return;
-      }
-
-      const { error } = await sb.from('empenhos').insert([{
-        numero_empenho, data_empenho, processo_item_id, quantidade_empenhada
-      }]);
-      if (error) {
-        showToast('Erro ao registrar empenho: ' + error.message, true);
-        return;
-      }
-      document.getElementById('emp-qtd-input').value = '';
-      showToast('Empenho registrado com sucesso!');
-      await loadAllData();
-    }
-
-    async function addNotaFiscal(e) {
-      e.preventDefault();
-      const numero_nf = document.getElementById('nf-num').value.trim();
-      const data_nf = document.getElementById('nf-data').value;
-      const empenho_id = document.getElementById('nf-item-sel').value;
-      const quantidade_nf = parseFloat(document.getElementById('nf-qtd').value);
-      const valor_unitario_nf = parseFloat(document.getElementById('nf-valor').value);
-      const situacao = document.getElementById('nf-situacao').value;
-
-      const emp = state.empenhos.find(x => x.id === empenho_id);
-      const proc = state.processos.find(p => p.id === emp.processo_item_id);
-
-      if (situacao !== 'Cancelada') {
-        // Regra da planilha: ABS(K6 - J6) >= 0.005 -> PREÇO DIVERGENTE
-        if (Math.abs(valor_unitario_nf - Number(proc.valor_unitario)) >= 0.005) {
-          showToast(`BLOQUEADO: Preço divergente do empenho (${fmtBRL(proc.valor_unitario)}).`, true);
-          return;
-        }
-        // Regra da planilha: Soma das NFs não canceladas <= Quantidade Empenhada
-        const usado = state.notas
-          .filter(n => n.empenho_id === empenho_id && n.situacao !== 'Cancelada')
-          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
-
-        if (usado + quantidade_nf > Number(emp.quantidade_empenhada) + 0.0001) {
-          showToast(`BLOQUEADO: Quantidade excede o saldo do empenho (${fmtNum(emp.quantidade_empenhada - usado)}).`, true);
-          return;
-        }
-      }
-
-      const { error } = await sb.from('notas_fiscais').insert([{
-        numero_nf, data_nf, empenho_id, quantidade_nf, valor_unitario_nf, situacao
-      }]);
-      if (error) {
-        showToast('Erro ao lançar NF: ' + error.message, true);
-        return;
-      }
-      document.getElementById('nf-num').value = '';
-      document.getElementById('nf-qtd').value = '';
-      showToast('Nota Fiscal lançada!');
-      await loadAllData();
-    }
-
-    async function updateNfSituacao(id, novaSituacao) {
-      const { error } = await sb.from('notas_fiscais').update({ situacao: novaSituacao }).eq('id', id);
-      if (error) {
-        showToast('Erro ao atualizar status: ' + error.message, true);
-        return;
-      }
-      showToast('Situação da NF atualizada!');
-      await loadAllData();
-    }
-
-    async function deleteRecord(table, id) {
-      if (!confirm('Confirma a exclusão deste registro?')) return;
-      const { error } = await sb.from(table).delete().eq('id', id);
-      if (error) {
-        showToast('Não é possível excluir: existem registros vinculados a este item.', true);
-        return;
-      }
-      showToast('Registro excluído.');
-      await loadAllData();
-    }
-
-    // =========================================================================
-    // RENDERIZAÇÃO DAS TABELAS E DASHBOARD
-    // =========================================================================
-    function renderEmpresas() {
-      const tbody = document.getElementById('tbl-empresas');
-      tbody.innerHTML = state.empresas.map(e => `
-        <tr class="hover:bg-slate-50">
-          <td class="px-4 py-3 font-semibold text-blue-900">${e.id_resumido}</td>
-          <td class="px-4 py-3">${e.nome_fantasia}</td>
-          <td class="px-4 py-3 text-slate-500">${e.cnpj || '-'}</td>
-          <td class="px-4 py-3 text-slate-500">${e.email || '-'}</td>
-          <td class="px-4 py-3 text-right">
-            <button onclick="deleteRecord('empresas', '${e.id}')" class="text-red-600 hover:underline text-xs">Excluir</button>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">Nenhuma empresa cadastrada.</td></tr>';
-    }
-
-    function renderProcessos() {
-      const tbody = document.getElementById('tbl-processos');
-      tbody.innerHTML = state.processos.map(p => {
-        const emp = state.empresas.find(e => e.id === p.empresa_id);
-        const qtdEmp = state.empenhos
-          .filter(e => e.processo_item_id === p.id)
-          .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
-        const saldoQtd = Number(p.quantidade_autorizada) - qtdEmp;
-        const saldoFin = saldoQtd * Number(p.valor_unitario);
-
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="px-3 py-3 font-semibold text-slate-800">${p.numero_pregao}</td>
-            <td class="px-3 py-3">${emp ? emp.id_resumido : '-'}</td>
-            <td class="px-3 py-3">${p.numero_item}</td>
-            <td class="px-3 py-3">${p.descricao_item}</td>
-            <td class="px-3 py-3">${p.unidade_fornecimento}</td>
-            <td class="px-3 py-3 text-right">${fmtBRL(p.valor_unitario)}</td>
-            <td class="px-3 py-3 text-right">${fmtNum(p.quantidade_autorizada)}</td>
-            <td class="px-3 py-3 text-right font-medium text-indigo-700">${fmtNum(qtdEmp)}</td>
-            <td class="px-3 py-3 text-right font-semibold ${saldoQtd <= 0 ? 'text-red-600' : 'text-emerald-700'}">${fmtNum(saldoQtd)}</td>
-            <td class="px-3 py-3 text-right font-medium">${fmtBRL(saldoFin)}</td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('processos_itens', '${p.id}')" class="text-red-600 hover:underline">Excluir</button>
-            </td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="11" class="px-4 py-6 text-center text-slate-400">Nenhum processo cadastrado.</td></tr>';
-    }
-
-    function renderEmpenhos() {
-      const tbody = document.getElementById('tbl-empenhos');
-      tbody.innerHTML = state.empenhos.map(e => {
-        const p = state.processos.find(x => x.id === e.processo_item_id);
-        const emp = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        const vlrTotal = Number(e.quantidade_empenhada) * vlrUnit;
-
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="px-3 py-3 font-semibold text-blue-900">${e.numero_empenho}</td>
-            <td class="px-3 py-3">${e.data_empenho}</td>
-            <td class="px-3 py-3">${p ? p.numero_pregao : '-'}</td>
-            <td class="px-3 py-3">${emp ? emp.id_resumido : '-'}</td>
-            <td class="px-3 py-3">${p ? p.numero_item : '-'}</td>
-            <td class="px-3 py-3">${p ? p.descricao_item : '-'}</td>
-            <td class="px-3 py-3 text-right">${fmtNum(e.quantidade_empenhada)}</td>
-            <td class="px-3 py-3 text-right">${fmtBRL(vlrUnit)}</td>
-            <td class="px-3 py-3 text-right font-semibold">${fmtBRL(vlrTotal)}</td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('empenhos', '${e.id}')" class="text-red-600 hover:underline">Excluir</button>
-            </td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-400">Nenhum empenho registrado.</td></tr>';
-    }
-
-    function renderNotas() {
-      const tbody = document.getElementById('tbl-notas');
-      const statusOptions = ['Pendente de ateste', 'Atestada', 'Liquidada', 'Paga', 'Cancelada'];
-
-      tbody.innerHTML = state.notas.map(n => {
-        const emp = state.empenhos.find(x => x.id === n.empenho_id);
-        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
-        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
-
-        return `
-          <tr class="hover:bg-slate-50 ${n.situacao === 'Cancelada' ? 'opacity-50' : ''}">
-            <td class="px-3 py-3 font-semibold">${n.numero_nf}</td>
-            <td class="px-3 py-3">${n.data_nf}</td>
-            <td class="px-3 py-3">${empresa ? empresa.id_resumido : '-'}</td>
-            <td class="px-3 py-3">${emp ? emp.numero_empenho : '-'}</td>
-            <td class="px-3 py-3">${p ? `Item ${p.numero_item} - ${p.descricao_item}` : '-'}</td>
-            <td class="px-3 py-3 text-right">${fmtNum(n.quantidade_nf)}</td>
-            <td class="px-3 py-3 text-right">${fmtBRL(n.valor_unitario_nf)}</td>
-            <td class="px-3 py-3 text-right font-semibold">${fmtBRL(total)}</td>
-            <td class="px-3 py-3 text-center">
-              <select onchange="updateNfSituacao('${n.id}', this.value)" class="px-2 py-1 text-xs rounded border border-slate-300 bg-white">
-                ${statusOptions.map(st => `<option value="${st}" ${n.situacao === st ? 'selected' : ''}>${st}</option>`).join('')}
-              </select>
-            </td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('notas_fiscais', '${n.id}')" class="text-red-600 hover:underline">Excluir</button>
-            </td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-400">Nenhuma Nota Fiscal lançada.</td></tr>';
-    }
-
-    function renderAcompanhamento() {
-      const filtro = (document.getElementById('filtroAcomp').value || '').toLowerCase();
-      const tbody = document.getElementById('tbl-acompanhamento');
-
-      const rows = state.empenhos.map(emp => {
-        const p = state.processos.find(x => x.id === emp.processo_item_id);
-        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const nfsDoItem = state.notas.filter(n => n.empenho_id === emp.id);
-
-        // Regra da planilha: Qtd. atestada considera Atestada, Liquidada ou Paga
-        const qtdAtestada = nfsDoItem
-          .filter(n => ['Atestada', 'Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
-
-        // Regra da planilha: Valor liquidado/pago considera Liquidada ou Paga
-        const vlrLiquidado = nfsDoItem
-          .filter(n => ['Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + (Number(n.quantidade_nf) * Number(n.valor_unitario_nf)), 0);
-
-        const qtdEmp = Number(emp.quantidade_empenhada);
-        const saldoQtd = qtdEmp - qtdAtestada;
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        const vlrEmp = qtdEmp * vlrUnit;
-        const saldoFin = vlrEmp - vlrLiquidado;
-
-        return {
-          empresaNome: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-',
-          numero_empenho: emp.numero_empenho,
-          pregao: p ? p.numero_pregao : '-',
-          item: p ? p.numero_item : '-',
-          desc: p ? p.descricao_item : '-',
-          qtdEmp, qtdAtestada, saldoQtd, vlrEmp, vlrLiquidado, saldoFin
-        };
-      }).filter(r =>
-        r.empresaNome.toLowerCase().includes(filtro) ||
-        r.numero_empenho.toLowerCase().includes(filtro) ||
-        r.desc.toLowerCase().includes(filtro)
-      );
-
-      tbody.innerHTML = rows.map(r => `
-        <tr class="hover:bg-slate-50">
-          <td class="px-3 py-3 font-medium">${r.empresaNome}</td>
-          <td class="px-3 py-3 font-semibold text-blue-900">${r.numero_empenho}</td>
-          <td class="px-3 py-3">${r.pregao}</td>
-          <td class="px-3 py-3">${r.item}</td>
-          <td class="px-3 py-3">${r.desc}</td>
-          <td class="px-3 py-3 text-right">${fmtNum(r.qtdEmp)}</td>
-          <td class="px-3 py-3 text-right text-blue-800 font-medium">${fmtNum(r.qtdAtestada)}</td>
-          <td class="px-3 py-3 text-right font-semibold">${fmtNum(r.saldoQtd)}</td>
-          <td class="px-3 py-3 text-right">${fmtBRL(r.vlrEmp)}</td>
-          <td class="px-3 py-3 text-right text-emerald-700 font-medium">${fmtBRL(r.vlrLiquidado)}</td>
-          <td class="px-3 py-3 text-right font-semibold">${fmtBRL(r.saldoFin)}</td>
-          <td class="px-3 py-3 text-center">
-            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${r.saldoFin <= 0.01 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-              ${r.saldoFin <= 0.01 ? 'Concluído' : 'Em execução'}
-            </span>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="12" class="px-4 py-6 text-center text-slate-400">Nenhum dado para exibir.</td></tr>';
-    }
-
-    function renderDashboard() {
-      document.getElementById('kpi-fornecedores').textContent = state.empresas.length;
-      document.getElementById('kpi-itens').textContent = state.processos.length;
-      document.getElementById('kpi-empenhos-qtd').textContent = state.empenhos.length;
-
-      let totalAutorizado = 0;
-      let totalEmpenhado = 0;
-      let totalLiquidado = 0;
-      let qtdAutorizada = 0;
-      let qtdEmpenhada = 0;
-
-      state.processos.forEach(p => {
-        totalAutorizado += Number(p.valor_unitario) * Number(p.quantidade_autorizada);
-        qtdAutorizada += Number(p.quantidade_autorizada);
-      });
-
-      state.empenhos.forEach(emp => {
-        const p = state.processos.find(x => x.id === emp.processo_item_id);
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        totalEmpenhado += Number(emp.quantidade_empenhada) * vlrUnit;
-        qtdEmpenhada += Number(emp.quantidade_empenhada);
-      });
-
-      state.notas.forEach(n => {
-        if (['Liquidada', 'Paga'].includes(n.situacao)) {
-          totalLiquidado += Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
-        }
-      });
-
-      const saldoDisponivel = totalAutorizado - totalEmpenhado;
-      const pctExec = qtdAutorizada > 0 ? (qtdEmpenhada / qtdAutorizada) * 100 : 0;
-
-      document.getElementById('kpi-val-autorizado').textContent = fmtBRL(totalAutorizado);
-      document.getElementById('kpi-val-empenhado').textContent = fmtBRL(totalEmpenhado);
-      document.getElementById('kpi-val-liquidado').textContent = fmtBRL(totalLiquidado);
-      document.getElementById('kpi-val-saldo').textContent = fmtBRL(saldoDisponivel);
-
-      document.getElementById('kpi-qtd-auth').textContent = fmtNum(qtdAutorizada);
-      document.getElementById('kpi-qtd-emp').textContent = fmtNum(qtdEmpenhada);
-      document.getElementById('kpi-exec-pct').textContent = pctExec.toFixed(1).replace('.', ',') + '%';
-      document.getElementById('kpi-exec-bar').style.width = Math.min(100, pctExec) + '%';
-
-      // Resumo Global por Empresa
-      const tbody = document.getElementById('tbl-resumo-empresas');
-      tbody.innerHTML = state.empresas.map(empresa => {
-        const empenhosEmp = state.empenhos.filter(e => {
-          const p = state.processos.find(x => x.id === e.processo_item_id);
-          return p && p.empresa_id === empresa.id;
-        });
-
-        const vlrEmp = empenhosEmp.reduce((acc, e) => {
-          const p = state.processos.find(x => x.id === e.processo_item_id);
-          return acc + Number(e.quantidade_empenhada) * (p ? Number(p.valor_unitario) : 0);
-        }, 0);
-
-        const empenhoIds = new Set(empenhosEmp.map(e => e.id));
-        const vlrLiq = state.notas
-          .filter(n => empenhoIds.has(n.empenho_id) && ['Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + Number(n.quantidade_nf) * Number(n.valor_unitario_nf), 0);
-
-        return `
-          <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 font-semibold text-blue-900">${empresa.id_resumido}</td>
-            <td class="px-4 py-3">${empresa.nome_fantasia}</td>
-            <td class="px-4 py-3 text-right font-medium">${fmtBRL(vlrEmp)}</td>
-            <td class="px-4 py-3 text-right text-emerald-700 font-medium">${fmtBRL(vlrLiq)}</td>
-            <td class="px-4 py-3 text-right font-bold text-slate-800">${fmtBRL(vlrEmp - vlrLiq)}</td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">Cadastre uma empresa para visualizar o resumo.</td></tr>';
-    }
-
-    // Inicializar
-    initConfigUI();
-  </script>
-</body>
-</html>
+    // =
