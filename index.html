@@ -311,3 +311,1136 @@
                 <th class="px-4 py-3">Nome Fantasia</th>
                 <th class="px-4 py-3">CNPJ</th>
                 <th class="px-4 py-3">Contato</th>
+                <th class="px-4 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-empresas" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 4: PROCESSO LICITATÓRIO (MÚLTIPLOS)    -->
+    <!-- ========================================== -->
+    <section id="view-processos" class="view-section hidden space-y-6">
+      <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Cadastrar Itens do Pregão / Ata</h2>
+            <p class="text-xs text-slate-400">Informe o Pregão e a Empresa e adicione um ou vários itens de uma vez.</p>
+          </div>
+          <button type="button" onclick="addProcessoItemRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition self-start sm:self-auto">
+            + Adicionar outro item neste pregão
+          </button>
+        </div>
+
+        <form onsubmit="saveMultiProcessoItens(event)" class="space-y-4">
+          <!-- Cabeçalho do Pregão + Empresa -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Nº do Pregão / Processo *</label>
+              <input type="text" id="proc-numero" required placeholder="Ex: PE 90001/26" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Empresa Fornecedora *</label>
+              <select id="proc-empresa" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+          </div>
+
+          <!-- Lista dinâmica de linhas de itens -->
+          <div id="proc-itens-container" class="space-y-3"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button type="button" onclick="addProcessoItemRow()" class="py-2 px-4 border border-slate-700 bg-slate-800/70 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-lg transition">
+              + Mais uma linha de item
+            </button>
+            <button type="submit" class="py-2.5 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition shadow-sm">
+              Salvar Itens no Pregão
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase text-slate-400">Itens Cadastrados nos Pregões</span>
+          <input type="text" id="filtroProc" onkeyup="renderProcessos()" placeholder="Filtrar por pregão, empresa ou item..." class="px-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-64" />
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-3">Pregão</th>
+                <th class="px-3 py-3">Empresa</th>
+                <th class="px-3 py-3">Item</th>
+                <th class="px-3 py-3">Descrição</th>
+                <th class="px-3 py-3">Unid.</th>
+                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
+                <th class="px-3 py-3 text-right">Qtd. Auth.</th>
+                <th class="px-3 py-3 text-right">Qtd. Emp.</th>
+                <th class="px-3 py-3 text-right">Saldo Qtd.</th>
+                <th class="px-3 py-3 text-right">Saldo Fin.</th>
+                <th class="px-3 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-processos" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 5: CONTROLE DE EMPENHOS (MÚLTIPLOS)    -->
+    <!-- ========================================== -->
+    <section id="view-empenhos" class="view-section hidden space-y-6">
+      <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Lançar Nota de Empenho (1 ou Mais Itens)</h2>
+            <p class="text-xs text-slate-400">Selecione o Pregão e a Empresa e adicione quantos itens quiser neste mesmo empenho.</p>
+          </div>
+          <button type="button" onclick="addEmpenhoItemRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition self-start sm:self-auto">
+            + Adicionar outro item neste empenho
+          </button>
+        </div>
+
+        <form onsubmit="saveMultiEmpenho(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Número do Empenho *</label>
+              <input type="text" id="emp-num" required placeholder="Ex: 2026NE000123" class="w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Data do Empenho *</label>
+              <input type="date" id="emp-data" required class="w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">1º Processo / Pregão *</label>
+              <select id="emp-pregao" required onchange="onEmpPregaoChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">2º Empresa (filtrada pelo pregão) *</label>
+              <select id="emp-empresa-sel" required onchange="onEmpEmpresaChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+          </div>
+
+          <!-- Lista dinâmica de itens do empenho -->
+          <div id="emp-itens-container" class="space-y-3"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button type="button" onclick="addEmpenhoItemRow()" class="py-2 px-4 border border-slate-700 bg-slate-800/70 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-lg transition">
+              + Mais uma linha de item
+            </button>
+            <button type="submit" class="py-2.5 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition shadow-sm">
+              Registrar Itens do Empenho
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-3">Nº Empenho</th>
+                <th class="px-3 py-3">Data</th>
+                <th class="px-3 py-3">Pregão</th>
+                <th class="px-3 py-3">Empresa</th>
+                <th class="px-3 py-3">Item</th>
+                <th class="px-3 py-3">Descrição</th>
+                <th class="px-3 py-3 text-right">Qtd. Emp.</th>
+                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
+                <th class="px-3 py-3 text-right">Vlr. Total</th>
+                <th class="px-3 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-empenhos" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 6: CONTROLE DE NOTAS FISCAIS           -->
+    <!-- ========================================== -->
+    <section id="view-notas" class="view-section hidden space-y-6">
+      <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+        <h2 class="text-base font-bold text-slate-100 mb-1">Lançar Nota Fiscal</h2>
+        <p class="text-xs text-slate-400 mb-4">1º Escolha a Empresa; 2º Escolha o Empenho; 3º Escolha o Item. O sistema valida preço unitário e saldo disponível do empenho.</p>
+        <form onsubmit="addNotaFiscal(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Número da NF *</label>
+            <input type="text" id="nf-num" required placeholder="Ex: 000.145" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Data da NF *</label>
+            <input type="date" id="nf-data" required class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">1º Empresa *</label>
+            <select id="nf-empresa-sel" required onchange="onNfEmpresaChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">2º Empenho *</label>
+            <select id="nf-empenho-sel" required onchange="onNfEmpenhoChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-medium text-slate-300 mb-1">3º Item do Empenho *</label>
+            <select id="nf-item-sel" required onchange="onNfItemChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100"></select>
+            <p id="nf-saldo-hint" class="text-[11px] text-blue-300 mt-1 font-medium">Selecione o item para consultar o saldo reservado.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Quantidade na NF *</label>
+            <input type="number" id="nf-qtd" required step="0.001" min="0.001" placeholder="0" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Valor Unitário da NF (R$) *</label>
+            <input type="number" id="nf-valor" required step="0.01" min="0.01" placeholder="0.00" class="w-full px-3 py-2 text-sm bg-slate-950 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Situação da NF *</label>
+            <select id="nf-situacao" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100">
+              <option value="Pendente de ateste">Pendente de ateste</option>
+              <option value="Atestada">Atestada</option>
+              <option value="Liquidada">Liquidada</option>
+              <option value="Paga">Paga</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 lg:col-span-3 flex items-end justify-end">
+            <button type="submit" class="py-2 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition">
+              + Lançar Nota Fiscal
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-3">Nº NF</th>
+                <th class="px-3 py-3">Data</th>
+                <th class="px-3 py-3">Empresa</th>
+                <th class="px-3 py-3">Empenho</th>
+                <th class="px-3 py-3">Item</th>
+                <th class="px-3 py-3 text-right">Qtd. NF</th>
+                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
+                <th class="px-3 py-3 text-right">Vlr. Total</th>
+                <th class="px-3 py-3 text-center">Situação (Alterar)</th>
+                <th class="px-3 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-notas" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // ESTADO GLOBAL E CONEXÃO SUPABASE
+    // =========================================================================
+    let sb = null;
+    let state = {
+      empresas: [],
+      processos: [],
+      empenhos: [],
+      notas: []
+    };
+
+    const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fmtNum = (v) => Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = `fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all ${isError ? 'bg-red-800 border border-red-700' : 'bg-emerald-800 border border-emerald-700'}`;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 4200);
+    }
+
+    function initConfigUI() {
+      const savedUrl = localStorage.getItem('sb_url') || '';
+      const savedKey = localStorage.getItem('sb_key') || '';
+      document.getElementById('cfgUrl').value = savedUrl;
+      document.getElementById('cfgKey').value = savedKey;
+
+      if (savedUrl && savedKey) {
+        sb = window.supabase.createClient(savedUrl, savedKey);
+        document.getElementById('configInputs').classList.add('hidden');
+        document.getElementById('configSavedBadge').classList.remove('hidden');
+        document.getElementById('btnEditConfig').classList.remove('hidden');
+        checkSession();
+      }
+    }
+
+    function toggleConfigEdit() {
+      document.getElementById('configInputs').classList.toggle('hidden');
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('cfgUrl').value.trim().replace(/\/+$/, '');
+      const key = document.getElementById('cfgKey').value.trim();
+      if (!url || !key) {
+        showToast('Preencha a Project URL e a Anon Key.', true);
+        return;
+      }
+      localStorage.setItem('sb_url', url);
+      localStorage.setItem('sb_key', key);
+      sb = window.supabase.createClient(url, key);
+      document.getElementById('configInputs').classList.add('hidden');
+      document.getElementById('configSavedBadge').classList.remove('hidden');
+      document.getElementById('btnEditConfig').classList.remove('hidden');
+      showToast('Conexão salva! Agora faça login.');
+    }
+
+    async function checkSession() {
+      if (!sb) return;
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('userEmailDisplay').textContent = session.user.email;
+        await loadAllData();
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      if (!sb) {
+        showToast('Salve primeiro a URL e a Key do Supabase.', true);
+        return;
+      }
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPass').value;
+      const errBox = document.getElementById('authError');
+      errBox.classList.add('hidden');
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        errBox.textContent = 'Erro ao entrar: ' + error.message;
+        errBox.classList.remove('hidden');
+        return;
+      }
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('userEmailDisplay').textContent = data.user.email;
+      await loadAllData();
+    }
+
+    async function handleLogout() {
+      if (sb) await sb.auth.signOut();
+      location.reload();
+    }
+
+    // =========================================================================
+    // NAVEGAÇÃO ENTRE ABAS
+    // =========================================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+      document.getElementById('view-' + tabId).classList.remove('hidden');
+      document.getElementById('tab-' + tabId).classList.add('tab-active');
+    }
+
+    // =========================================================================
+    // CARREGAMENTO DE DADOS DO BANCO
+    // =========================================================================
+    async function loadAllData() {
+      if (!sb) return;
+      const [resEmp, resProc, resEmpenhos, resNotas] = await Promise.all([
+        sb.from('empresas').select('*').order('nome_fantasia'),
+        sb.from('processos_itens').select('*').order('numero_pregao').order('numero_item'),
+        sb.from('empenhos').select('*').order('data_empenho', { ascending: false }),
+        sb.from('notas_fiscais').select('*').order('data_nf', { ascending: false })
+      ]);
+
+      if (resEmp.error || resProc.error || resEmpenhos.error || resNotas.error) {
+        showToast('Erro ao carregar dados. Verifique as tabelas no Supabase.', true);
+        return;
+      }
+
+      state.empresas = resEmp.data || [];
+      state.processos = resProc.data || [];
+      state.empenhos = resEmpenhos.data || [];
+      state.notas = resNotas.data || [];
+
+      renderAll();
+    }
+
+    function renderAll() {
+      populateDropdowns();
+      renderEmpresas();
+      renderProcessos();
+      renderEmpenhos();
+      renderNotas();
+      renderAcompanhamento();
+      renderDashboard();
+    }
+
+    // =========================================================================
+    // LINHAS DINÂMICAS DO CADASTRO DE ITENS DO PREGÃO (MÚLTIPLOS ITENS)
+    // =========================================================================
+    function addProcessoItemRow(itemNumSuggestion = '') {
+      const container = document.getElementById('proc-itens-container');
+      const currentRows = container.querySelectorAll('.proc-item-row');
+      let nextNum = itemNumSuggestion;
+
+      if (!nextNum && currentRows.length > 0) {
+        const lastVal = parseInt(currentRows[currentRows.length - 1].querySelector('.row-item-num').value, 10);
+        if (!isNaN(lastVal)) nextNum = lastVal + 1;
+      }
+
+      const row = document.createElement('div');
+      row.className = 'proc-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-end';
+      row.innerHTML = `
+        <div class="sm:col-span-1">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Nº Item *</label>
+          <input type="number" required min="1" value="${nextNum}" placeholder="1" class="row-item-num w-full px-2.5 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+        </div>
+        <div class="sm:col-span-5">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Descrição do Item *</label>
+          <input type="text" required placeholder="Ex: FEIJÃO CARIOCA TIPO 1" class="row-item-desc w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Unidade *</label>
+          <input type="text" required placeholder="KG, CX, UN" class="row-item-unid w-full px-2.5 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg uppercase" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Vlr. Unit. (R$) *</label>
+          <input type="number" required step="0.01" min="0.01" placeholder="5.98" class="row-item-val w-full px-2.5 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+        </div>
+        <div class="sm:col-span-2 flex gap-2 items-end">
+          <div class="flex-1">
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Qtd. Auth. *</label>
+            <input type="number" required step="0.001" min="0.001" placeholder="1000" class="row-item-qtd w-full px-2.5 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <button type="button" onclick="removeProcessoItemRow(this)" title="Remover linha" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">
+            ✕
+          </button>
+        </div>
+      `;
+      container.appendChild(row);
+    }
+
+    function removeProcessoItemRow(btn) {
+      const container = document.getElementById('proc-itens-container');
+      if (container.querySelectorAll('.proc-item-row').length <= 1) {
+        showToast('É necessário manter pelo menos 1 linha de item.', true);
+        return;
+      }
+      btn.closest('.proc-item-row').remove();
+    }
+
+    function resetProcessoItemRows() {
+      const container = document.getElementById('proc-itens-container');
+      container.innerHTML = '';
+      addProcessoItemRow(1);
+    }
+
+    // =========================================================================
+    // LINHAS DINÂMICAS DO CADASTRO DE EMPENHOS (MÚLTIPLOS ITENS POR EMPENHO)
+    // =========================================================================
+    function getAvailableProcessoItens() {
+      const pregao = document.getElementById('emp-pregao').value;
+      const empresaId = document.getElementById('emp-empresa-sel').value;
+      if (!pregao || !empresaId) return [];
+      return state.processos.filter(p => p.numero_pregao === pregao && p.empresa_id === empresaId);
+    }
+
+    function buildEmpItemOptionsHtml(selectedId = '') {
+      const itens = getAvailableProcessoItens();
+      if (itens.length === 0) {
+        return '<option value="">Selecione pregão e empresa...</option>';
+      }
+      return '<option value="">Selecione o item...</option>' + itens.map(it =>
+        `<option value="${it.id}" ${it.id === selectedId ? 'selected' : ''}>Item ${it.numero_item} - ${it.descricao_item} (${it.unidade_fornecimento} | ${fmtBRL(it.valor_unitario)})</option>`
+      ).join('');
+    }
+
+    function addEmpenhoItemRow(selectedId = '') {
+      const container = document.getElementById('emp-itens-container');
+      const row = document.createElement('div');
+      row.className = 'emp-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-start';
+      row.innerHTML = `
+        <div class="sm:col-span-8">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Item da Licitação *</label>
+          <select required onchange="updateEmpRowHint(this)" class="emp-row-item w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100">
+            ${buildEmpItemOptionsHtml(selectedId)}
+          </select>
+          <p class="emp-row-hint text-[11px] text-blue-300 mt-1 font-medium">Selecione um item para ver o saldo disponível.</p>
+        </div>
+        <div class="sm:col-span-4 flex gap-2 items-start">
+          <div class="flex-1">
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Quantidade a Empenhar *</label>
+            <input type="number" required step="0.001" min="0.001" placeholder="0" class="emp-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+          </div>
+          <button type="button" onclick="removeEmpenhoItemRow(this)" title="Remover linha" class="mt-5 px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">
+            ✕
+          </button>
+        </div>
+      `;
+      container.appendChild(row);
+      if (selectedId) {
+        updateEmpRowHint(row.querySelector('.emp-row-item'));
+      }
+    }
+
+    function removeEmpenhoItemRow(btn) {
+      const container = document.getElementById('emp-itens-container');
+      if (container.querySelectorAll('.emp-item-row').length <= 1) {
+        showToast('É necessário manter pelo menos 1 item no empenho.', true);
+        return;
+      }
+      btn.closest('.emp-item-row').remove();
+    }
+
+    function resetEmpenhoItemRows() {
+      const container = document.getElementById('emp-itens-container');
+      container.innerHTML = '';
+      addEmpenhoItemRow();
+    }
+
+    function refreshAllEmpItemRows() {
+      document.querySelectorAll('.emp-item-row').forEach(row => {
+        const sel = row.querySelector('.emp-row-item');
+        const prevVal = sel.value;
+        sel.innerHTML = buildEmpItemOptionsHtml(prevVal);
+        updateEmpRowHint(sel);
+      });
+    }
+
+    function updateEmpRowHint(selectEl) {
+      const row = selectEl.closest('.emp-item-row');
+      const hint = row.querySelector('.emp-row-hint');
+      const procId = selectEl.value;
+      if (!procId) {
+        hint.textContent = 'Selecione um item para ver o saldo disponível.';
+        return;
+      }
+      const proc = state.processos.find(p => p.id === procId);
+      const jaEmpenhado = state.empenhos
+        .filter(e => e.processo_item_id === procId)
+        .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
+      const saldo = Number(proc.quantidade_autorizada) - jaEmpenhado;
+      hint.textContent = `Saldo disponível no pregão: ${fmtNum(saldo)} ${proc.unidade_fornecimento} (Unitário: ${fmtBRL(proc.valor_unitario)})`;
+    }
+
+    // =========================================================================
+    // DROPDOWNS DEPENDENTES E FILTROS
+    // =========================================================================
+    function populateDropdowns() {
+      // Aba Processo Licitatório -> Empresas
+      const procEmpSel = document.getElementById('proc-empresa');
+      const prevProcEmp = procEmpSel.value;
+      procEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
+        state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
+      if (state.empresas.some(e => e.id === prevProcEmp)) procEmpSel.value = prevProcEmp;
+
+      // Aba Empenhos por Empresa -> Filtro de Empresas
+      const acompEmpSel = document.getElementById('filtroAcompEmpresa');
+      const prevAcompEmp = acompEmpSel.value;
+      acompEmpSel.innerHTML = '<option value="">Todas as Empresas</option>' +
+        state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
+      if (state.empresas.some(e => e.id === prevAcompEmp)) acompEmpSel.value = prevAcompEmp;
+      updateFiltroAcompEmpenhos();
+
+      // Aba Empenhos -> Pregões Únicos
+      const pregoesUnicos = [...new Set(state.processos.map(p => p.numero_pregao))].sort();
+      const empPregaoSel = document.getElementById('emp-pregao');
+      const prevPregao = empPregaoSel.value;
+      empPregaoSel.innerHTML = '<option value="">Selecione o pregão...</option>' +
+        pregoesUnicos.map(pr => `<option value="${pr}">${pr}</option>`).join('');
+      if (pregoesUnicos.includes(prevPregao)) empPregaoSel.value = prevPregao;
+      onEmpPregaoChange();
+
+      // Aba Notas Fiscais -> Empresas com Empenho
+      const empIdsComEmpenho = new Set(
+        state.empenhos.map(emp => {
+          const proc = state.processos.find(p => p.id === emp.processo_item_id);
+          return proc ? proc.empresa_id : null;
+        }).filter(Boolean)
+      );
+      const nfEmpSel = document.getElementById('nf-empresa-sel');
+      const prevNfEmp = nfEmpSel.value;
+      nfEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
+        state.empresas.filter(e => empIdsComEmpenho.has(e.id))
+          .map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
+      if ([...empIdsComEmpenho].includes(prevNfEmp)) nfEmpSel.value = prevNfEmp;
+      onNfEmpresaChange();
+    }
+
+    function onFiltroAcompEmpresaChange() {
+      updateFiltroAcompEmpenhos();
+      renderAcompanhamento();
+    }
+
+    function updateFiltroAcompEmpenhos() {
+      const empId = document.getElementById('filtroAcompEmpresa').value;
+      const empNumSel = document.getElementById('filtroAcompEmpenho');
+      const prevNum = empNumSel.value;
+
+      const empenhosFiltrados = state.empenhos.filter(emp => {
+        if (!empId) return true;
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        return p && p.empresa_id === empId;
+      });
+
+      const nums = [...new Set(empenhosFiltrados.map(e => e.numero_empenho))].sort();
+      empNumSel.innerHTML = '<option value="">Todos os Empenhos</option>' +
+        nums.map(n => `<option value="${n}">${n}</option>`).join('');
+      if (nums.includes(prevNum)) empNumSel.value = prevNum;
+    }
+
+    function onEmpPregaoChange() {
+      const pregao = document.getElementById('emp-pregao').value;
+      const empSel = document.getElementById('emp-empresa-sel');
+      const prevEmp = empSel.value;
+      empSel.innerHTML = '<option value="">Selecione a empresa...</option>';
+
+      if (!pregao) {
+        refreshAllEmpItemRows();
+        return;
+      }
+      const empIds = [...new Set(state.processos.filter(p => p.numero_pregao === pregao).map(p => p.empresa_id))];
+      empIds.forEach(id => {
+        const e = state.empresas.find(x => x.id === id);
+        if (e) empSel.innerHTML += `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`;
+      });
+      if (empIds.includes(prevEmp)) empSel.value = prevEmp;
+      refreshAllEmpItemRows();
+    }
+
+    function onEmpEmpresaChange() {
+      refreshAllEmpItemRows();
+    }
+
+    // Dependentes Notas Fiscais
+    function onNfEmpresaChange() {
+      const empId = document.getElementById('nf-empresa-sel').value;
+      const empNumSel = document.getElementById('nf-empenho-sel');
+      const itemSel = document.getElementById('nf-item-sel');
+      empNumSel.innerHTML = '<option value="">Selecione o empenho...</option>';
+      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
+      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
+
+      if (!empId) return;
+      const empenhosDaEmpresa = state.empenhos.filter(emp => {
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+        return proc && proc.empresa_id === empId;
+      });
+      const numsUnicos = [...new Set(empenhosDaEmpresa.map(e => e.numero_empenho))].sort();
+      numsUnicos.forEach(num => {
+        empNumSel.innerHTML += `<option value="${num}">${num}</option>`;
+      });
+    }
+
+    function onNfEmpenhoChange() {
+      const empId = document.getElementById('nf-empresa-sel').value;
+      const numEmpenho = document.getElementById('nf-empenho-sel').value;
+      const itemSel = document.getElementById('nf-item-sel');
+      itemSel.innerHTML = '<option value="">Selecione o item...</option>';
+      document.getElementById('nf-saldo-hint').textContent = 'Selecione o item para consultar o saldo reservado.';
+
+      if (!empId || !numEmpenho) return;
+      const linhas = state.empenhos.filter(emp => {
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+        return proc && proc.empresa_id === empId && emp.numero_empenho === numEmpenho;
+      });
+      linhas.forEach(l => {
+        const proc = state.processos.find(p => p.id === l.processo_item_id);
+        itemSel.innerHTML += `<option value="${l.id}">Item ${proc.numero_item} - ${proc.descricao_item} | ${proc.unidade_fornecimento} | ${fmtBRL(proc.valor_unitario)}</option>`;
+      });
+    }
+
+    function onNfItemChange() {
+      const empenhoId = document.getElementById('nf-item-sel').value;
+      const hint = document.getElementById('nf-saldo-hint');
+      if (!empenhoId) return;
+
+      const emp = state.empenhos.find(e => e.id === empenhoId);
+      const proc = state.processos.find(p => p.id === emp.processo_item_id);
+      const usado = state.notas
+        .filter(n => n.empenho_id === empenhoId && n.situacao !== 'Cancelada')
+        .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+      const saldo = Number(emp.quantidade_empenhada) - usado;
+
+      document.getElementById('nf-valor').value = Number(proc.valor_unitario).toFixed(2);
+      hint.textContent = `Saldo a faturar neste empenho: ${fmtNum(saldo)} ${proc.unidade_fornecimento} | Vlr. Empenhado: ${fmtBRL(proc.valor_unitario)}`;
+    }
+
+    // =========================================================================
+    // OPERAÇÕES DE CADASTRO (CRUD)
+    // =========================================================================
+    async function addEmpresa(e) {
+      e.preventDefault();
+      const nome_fantasia = document.getElementById('emp-nome').value.trim();
+      const id_resumido = document.getElementById('emp-id').value.trim();
+      const cnpj = document.getElementById('emp-cnpj').value.trim();
+      const email = document.getElementById('emp-contato').value.trim();
+
+      const { error } = await sb.from('empresas').insert([{ nome_fantasia, id_resumido, cnpj, email }]);
+      if (error) {
+        showToast('Erro ao cadastrar empresa (verifique se o ID Resumido já existe): ' + error.message, true);
+        return;
+      }
+      e.target.reset();
+      showToast('Empresa cadastrada com sucesso!');
+      await loadAllData();
+    }
+
+    async function saveMultiProcessoItens(e) {
+      e.preventDefault();
+      const numero_pregao = document.getElementById('proc-numero').value.trim();
+      const empresa_id = document.getElementById('proc-empresa').value;
+      const rowElements = document.querySelectorAll('.proc-item-row');
+
+      const records = [];
+      const itemNumsSet = new Set();
+
+      for (const row of rowElements) {
+        const numero_item = parseInt(row.querySelector('.row-item-num').value, 10);
+        const descricao_item = row.querySelector('.row-item-desc').value.trim();
+        const unidade_fornecimento = row.querySelector('.row-item-unid').value.trim().toUpperCase();
+        const valor_unitario = parseFloat(row.querySelector('.row-item-val').value);
+        const quantidade_autorizada = parseFloat(row.querySelector('.row-item-qtd').value);
+
+        if (itemNumsSet.has(numero_item)) {
+          showToast(`Número de item repetido na lista: Item ${numero_item}.`, true);
+          return;
+        }
+        itemNumsSet.add(numero_item);
+
+        records.push({
+          numero_pregao,
+          empresa_id,
+          numero_item,
+          descricao_item,
+          unidade_fornecimento,
+          valor_unitario,
+          quantidade_autorizada
+        });
+      }
+
+      const { error } = await sb.from('processos_itens').insert(records);
+      if (error) {
+        showToast('Erro ao salvar itens (verifique se algum item já existe neste pregão para esta empresa): ' + error.message, true);
+        return;
+      }
+
+      resetProcessoItemRows();
+      showToast(`${records.length} item(ns) cadastrado(s) no pregão ${numero_pregao}!`);
+      await loadAllData();
+    }
+
+    async function saveMultiEmpenho(e) {
+      e.preventDefault();
+      const numero_empenho = document.getElementById('emp-num').value.trim();
+      const data_empenho = document.getElementById('emp-data').value;
+      const empresaId = document.getElementById('emp-empresa-sel').value;
+      const rowElements = document.querySelectorAll('.emp-item-row');
+
+      const empenhoOutraEmpresa = state.empenhos.find(emp => {
+        if (emp.numero_empenho !== numero_empenho) return false;
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        return p && p.empresa_id !== empresaId;
+      });
+      if (empenhoOutraEmpresa) {
+        showToast('BLOQUEADO: Este número de empenho já está vinculado a outra empresa.', true);
+        return;
+      }
+
+      const vistosNoForm = new Set();
+      const somaPorItemNoForm = {};
+      const records = [];
+
+      for (const row of rowElements) {
+        const processo_item_id = row.querySelector('.emp-row-item').value;
+        const quantidade_empenhada = parseFloat(row.querySelector('.emp-row-qtd').value);
+
+        if (!processo_item_id || isNaN(quantidade_empenhada) || quantidade_empenhada <= 0) {
+          showToast('Preencha o item e uma quantidade válida em todas as linhas.', true);
+          return;
+        }
+
+        if (vistosNoForm.has(processo_item_id)) {
+          showToast('BLOQUEADO: O mesmo item foi repetido mais de uma vez neste empenho.', true);
+          return;
+        }
+        vistosNoForm.add(processo_item_id);
+        somaPorItemNoForm[processo_item_id] = (somaPorItemNoForm[processo_item_id] || 0) + quantidade_empenhada;
+      }
+
+      for (const [processo_item_id, qtdSolicitada] of Object.entries(somaPorItemNoForm)) {
+        const proc = state.processos.find(p => p.id === processo_item_id);
+        const jaEmpenhado = state.empenhos
+          .filter(emp => emp.processo_item_id === processo_item_id)
+          .reduce((acc, emp) => acc + Number(emp.quantidade_empenhada), 0);
+
+        if (jaEmpenhado + qtdSolicitada > Number(proc.quantidade_autorizada) + 0.0001) {
+          showToast(
+            `BLOQUEADO no Item ${proc.numero_item}: Saldo excedido! Disponível: ${fmtNum(proc.quantidade_autorizada - jaEmpenhado)} ${proc.unidade_fornecimento}.`,
+            true
+          );
+          return;
+        }
+
+        records.push({
+          numero_empenho,
+          data_empenho,
+          processo_item_id,
+          quantidade_empenhada: qtdSolicitada
+        });
+      }
+
+      const { error } = await sb.from('empenhos').insert(records);
+      if (error) {
+        showToast('Erro ao registrar empenho: ' + error.message, true);
+        return;
+      }
+
+      resetEmpenhoItemRows();
+      showToast(`${records.length} item(ns) registrado(s) no empenho ${numero_empenho}!`);
+      await loadAllData();
+    }
+
+    async function addNotaFiscal(e) {
+      e.preventDefault();
+      const numero_nf = document.getElementById('nf-num').value.trim();
+      const data_nf = document.getElementById('nf-data').value;
+      const empenho_id = document.getElementById('nf-item-sel').value;
+      const quantidade_nf = parseFloat(document.getElementById('nf-qtd').value);
+      const valor_unitario_nf = parseFloat(document.getElementById('nf-valor').value);
+      const situacao = document.getElementById('nf-situacao').value;
+
+      const emp = state.empenhos.find(x => x.id === empenho_id);
+      const proc = state.processos.find(p => p.id === emp.processo_item_id);
+
+      if (situacao !== 'Cancelada') {
+        if (Math.abs(valor_unitario_nf - Number(proc.valor_unitario)) >= 0.005) {
+          showToast(`BLOQUEADO: Preço divergente do empenho (${fmtBRL(proc.valor_unitario)}).`, true);
+          return;
+        }
+        const usado = state.notas
+          .filter(n => n.empenho_id === empenho_id && n.situacao !== 'Cancelada')
+          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+
+        if (usado + quantidade_nf > Number(emp.quantidade_empenhada) + 0.0001) {
+          showToast(`BLOQUEADO: Quantidade excede o saldo do empenho (${fmtNum(emp.quantidade_empenhada - usado)}).`, true);
+          return;
+        }
+      }
+
+      const { error } = await sb.from('notas_fiscais').insert([{
+        numero_nf, data_nf, empenho_id, quantidade_nf, valor_unitario_nf, situacao
+      }]);
+      if (error) {
+        showToast('Erro ao lançar NF: ' + error.message, true);
+        return;
+      }
+      document.getElementById('nf-num').value = '';
+      document.getElementById('nf-qtd').value = '';
+      showToast('Nota Fiscal lançada!');
+      await loadAllData();
+    }
+
+    async function updateNfSituacao(id, novaSituacao) {
+      const { error } = await sb.from('notas_fiscais').update({ situacao: novaSituacao }).eq('id', id);
+      if (error) {
+        showToast('Erro ao atualizar status: ' + error.message, true);
+        return;
+      }
+      showToast('Situação da NF atualizada!');
+      await loadAllData();
+    }
+
+    async function deleteRecord(table, id) {
+      if (!confirm('Confirma a exclusão deste registro?')) return;
+      const { error } = await sb.from(table).delete().eq('id', id);
+      if (error) {
+        showToast('Não é possível excluir: existem registros vinculados a este item.', true);
+        return;
+      }
+      showToast('Registro excluído.');
+      await loadAllData();
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO DAS TABELAS E DASHBOARD
+    // =========================================================================
+    function renderEmpresas() {
+      const tbody = document.getElementById('tbl-empresas');
+      tbody.innerHTML = state.empresas.map(e => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="px-4 py-3 font-semibold text-blue-300">${e.id_resumido}</td>
+          <td class="px-4 py-3 text-slate-200">${e.nome_fantasia}</td>
+          <td class="px-4 py-3 text-slate-400">${e.cnpj || '-'}</td>
+          <td class="px-4 py-3 text-slate-400">${e.email || '-'}</td>
+          <td class="px-4 py-3 text-right">
+            <button onclick="deleteRecord('empresas', '${e.id}')" class="text-red-400 hover:underline text-xs">Excluir</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">Nenhuma empresa cadastrada.</td></tr>';
+    }
+
+    function renderProcessos() {
+      const filtro = (document.getElementById('filtroProc')?.value || '').toLowerCase();
+      const tbody = document.getElementById('tbl-processos');
+
+      const filtered = state.processos.filter(p => {
+        const emp = state.empresas.find(e => e.id === p.empresa_id);
+        const empStr = emp ? `${emp.id_resumido} ${emp.nome_fantasia}`.toLowerCase() : '';
+        return (
+          p.numero_pregao.toLowerCase().includes(filtro) ||
+          p.descricao_item.toLowerCase().includes(filtro) ||
+          empStr.includes(filtro)
+        );
+      });
+
+      tbody.innerHTML = filtered.map(p => {
+        const emp = state.empresas.find(e => e.id === p.empresa_id);
+        const qtdEmp = state.empenhos
+          .filter(e => e.processo_item_id === p.id)
+          .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
+        const saldoQtd = Number(p.quantidade_autorizada) - qtdEmp;
+        const saldoFin = saldoQtd * Number(p.valor_unitario);
+
+        return `
+          <tr class="hover:bg-slate-800/50">
+            <td class="px-3 py-3 font-semibold text-slate-100">${p.numero_pregao}</td>
+            <td class="px-3 py-3 text-slate-300">${emp ? emp.id_resumido : '-'}</td>
+            <td class="px-3 py-3 text-slate-300">${p.numero_item}</td>
+            <td class="px-3 py-3 text-slate-200">${p.descricao_item}</td>
+            <td class="px-3 py-3 text-slate-400">${p.unidade_fornecimento}</td>
+            <td class="px-3 py-3 text-right text-slate-200">${fmtBRL(p.valor_unitario)}</td>
+            <td class="px-3 py-3 text-right text-slate-300">${fmtNum(p.quantidade_autorizada)}</td>
+            <td class="px-3 py-3 text-right font-medium text-indigo-300">${fmtNum(qtdEmp)}</td>
+            <td class="px-3 py-3 text-right font-semibold ${saldoQtd <= 0 ? 'text-red-400' : 'text-emerald-400'}">${fmtNum(saldoQtd)}</td>
+            <td class="px-3 py-3 text-right font-medium text-slate-200">${fmtBRL(saldoFin)}</td>
+            <td class="px-3 py-3 text-right">
+              <button onclick="deleteRecord('processos_itens', '${p.id}')" class="text-red-400 hover:underline">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">Nenhum processo encontrado.</td></tr>';
+    }
+
+    function renderEmpenhos() {
+      const tbody = document.getElementById('tbl-empenhos');
+      tbody.innerHTML = state.empenhos.map(e => {
+        const p = state.processos.find(x => x.id === e.processo_item_id);
+        const emp = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const vlrUnit = p ? Number(p.valor_unitario) : 0;
+        const vlrTotal = Number(e.quantidade_empenhada) * vlrUnit;
+
+        return `
+          <tr class="hover:bg-slate-800/50">
+            <td class="px-3 py-3 font-semibold text-blue-300">${e.numero_empenho}</td>
+            <td class="px-3 py-3 text-slate-300">${e.data_empenho}</td>
+            <td class="px-3 py-3 text-slate-300">${p ? p.numero_pregao : '-'}</td>
+            <td class="px-3 py-3 text-slate-300">${emp ? emp.id_resumido : '-'}</td>
+            <td class="px-3 py-3 text-slate-300">${p ? p.numero_item : '-'}</td>
+            <td class="px-3 py-3 text-slate-200">${p ? p.descricao_item : '-'}</td>
+            <td class="px-3 py-3 text-right text-slate-200">${fmtNum(e.quantidade_empenhada)}</td>
+            <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(vlrUnit)}</td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(vlrTotal)}</td>
+            <td class="px-3 py-3 text-right">
+              <button onclick="deleteRecord('empenhos', '${e.id}')" class="text-red-400 hover:underline">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhum empenho registrado.</td></tr>';
+    }
+
+    function renderNotas() {
+      const tbody = document.getElementById('tbl-notas');
+      const statusOptions = ['Pendente de ateste', 'Atestada', 'Liquidada', 'Paga', 'Cancelada'];
+
+      tbody.innerHTML = state.notas.map(n => {
+        const emp = state.empenhos.find(x => x.id === n.empenho_id);
+        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
+
+        return `
+          <tr class="hover:bg-slate-800/50 ${n.situacao === 'Cancelada' ? 'opacity-50' : ''}">
+            <td class="px-3 py-3 font-semibold text-slate-100">${n.numero_nf}</td>
+            <td class="px-3 py-3 text-slate-300">${n.data_nf}</td>
+            <td class="px-3 py-3 text-slate-300">${empresa ? empresa.id_resumido : '-'}</td>
+            <td class="px-3 py-3 text-blue-300">${emp ? emp.numero_empenho : '-'}</td>
+            <td class="px-3 py-3 text-slate-200">${p ? `Item ${p.numero_item} - ${p.descricao_item}` : '-'}</td>
+            <td class="px-3 py-3 text-right text-slate-200">${fmtNum(n.quantidade_nf)}</td>
+            <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(n.valor_unitario_nf)}</td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(total)}</td>
+            <td class="px-3 py-3 text-center">
+              <select onchange="updateNfSituacao('${n.id}', this.value)" class="px-2 py-1 text-xs rounded border border-slate-700 bg-slate-950 text-slate-100">
+                ${statusOptions.map(st => `<option value="${st}" ${n.situacao === st ? 'selected' : ''}>${st}</option>`).join('')}
+              </select>
+            </td>
+            <td class="px-3 py-3 text-right">
+              <button onclick="deleteRecord('notas_fiscais', '${n.id}')" class="text-red-400 hover:underline">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhuma Nota Fiscal lançada.</td></tr>';
+    }
+
+    function renderAcompanhamento() {
+      const empIdFiltro = document.getElementById('filtroAcompEmpresa').value;
+      const empenhoFiltro = document.getElementById('filtroAcompEmpenho').value;
+      const textoFiltro = (document.getElementById('filtroAcompTexto').value || '').toLowerCase();
+      const tbody = document.getElementById('tbl-acompanhamento');
+
+      const rows = state.empenhos.map(emp => {
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const nfsDoItem = state.notas.filter(n => n.empenho_id === emp.id);
+
+        const qtdAtestada = nfsDoItem
+          .filter(n => ['Atestada', 'Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+
+        const vlrLiquidado = nfsDoItem
+          .filter(n => ['Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + (Number(n.quantidade_nf) * Number(n.valor_unitario_nf)), 0);
+
+        const qtdEmp = Number(emp.quantidade_empenhada);
+        const saldoQtd = qtdEmp - qtdAtestada;
+        const vlrUnit = p ? Number(p.valor_unitario) : 0;
+        const vlrEmp = qtdEmp * vlrUnit;
+        const saldoFin = vlrEmp - vlrLiquidado;
+
+        return {
+          empresaId: empresa ? empresa.id : '',
+          empresaNome: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-',
+          numero_empenho: emp.numero_empenho,
+          pregao: p ? p.numero_pregao : '-',
+          item: p ? p.numero_item : '-',
+          desc: p ? p.descricao_item : '-',
+          qtdEmp, qtdAtestada, saldoQtd, vlrEmp, vlrLiquidado, saldoFin
+        };
+      }).filter(r => {
+        if (empIdFiltro && r.empresaId !== empIdFiltro) return false;
+        if (empenhoFiltro && r.numero_empenho !== empenhoFiltro) return false;
+        if (textoFiltro) {
+          const match =
+            r.empresaNome.toLowerCase().includes(textoFiltro) ||
+            r.numero_empenho.toLowerCase().includes(textoFiltro) ||
+            r.pregao.toLowerCase().includes(textoFiltro) ||
+            r.desc.toLowerCase().includes(textoFiltro);
+          if (!match) return false;
+        }
+        return true;
+      });
+
+      const somaEmp = rows.reduce((a, b) => a + b.vlrEmp, 0);
+      const somaLiq = rows.reduce((a, b) => a + b.vlrLiquidado, 0);
+      const somaSaldo = rows.reduce((a, b) => a + b.saldoFin, 0);
+      document.getElementById('acomp-total-emp').textContent = fmtBRL(somaEmp);
+      document.getElementById('acomp-total-liq').textContent = fmtBRL(somaLiq);
+      document.getElementById('acomp-total-saldo').textContent = fmtBRL(somaSaldo);
+
+      tbody.innerHTML = rows.map(r => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="px-3 py-3 font-medium text-slate-200">${r.empresaNome}</td>
+          <td class="px-3 py-3 font-semibold text-blue-300">${r.numero_empenho}</td>
+          <td class="px-3 py-3 text-slate-300">${r.pregao}</td>
+          <td class="px-3 py-3 text-slate-300">${r.item}</td>
+          <td class="px-3 py-3 text-slate-200">${r.desc}</td>
+          <td class="px-3 py-3 text-right text-slate-200">${fmtNum(r.qtdEmp)}</td>
+          <td class="px-3 py-3 text-right text-blue-300 font-medium">${fmtNum(r.qtdAtestada)}</td>
+          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtNum(r.saldoQtd)}</td>
+          <td class="px-3 py-3 text-right text-slate-200">${fmtBRL(r.vlrEmp)}</td>
+          <td class="px-3 py-3 text-right text-emerald-400 font-medium">${fmtBRL(r.vlrLiquidado)}</td>
+          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(r.saldoFin)}</td>
+          <td class="px-3 py-3 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${r.saldoFin <= 0.01 ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/60' : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'}">
+              ${r.saldoFin <= 0.01 ? 'Concluído' : 'Em execução'}
+            </span>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="12" class="px-4 py-6 text-center text-slate-500">Nenhum dado para o filtro selecionado.</td></tr>';
+    }
+
+    function renderDashboard() {
+      document.getElementById('kpi-fornecedores').textContent = state.empresas.length;
+      document.getElementById('kpi-itens').textContent = state.processos.length;
+      document.getElementById('kpi-empenhos-qtd').textContent = state.empenhos.length;
+
+      let totalAutorizado = 0;
+      let totalEmpenhado = 0;
+      let totalLiquidado = 0;
+      let qtdAutorizada = 0;
+      let qtdEmpenhada = 0;
+
+      state.processos.forEach(p => {
+        totalAutorizado += Number(p.valor_unitario) * Number(p.quantidade_autorizada);
+        qtdAutorizada += Number(p.quantidade_autorizada);
+      });
+
+      state.empenhos.forEach(emp => {
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        const vlrUnit = p ? Number(p.valor_unitario) : 0;
+        totalEmpenhado += Number(emp.quantidade_empenhada) * vlrUnit;
+        qtdEmpenhada += Number(emp.quantidade_empenhada);
+      });
+
+      state.notas.forEach(n => {
+        if (['Liquidada', 'Paga'].includes(n.situacao)) {
+          totalLiquidado += Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
+        }
+      });
+
+      const saldoDisponivel = totalAutorizado - totalEmpenhado;
+      const pctExec = qtdAutorizada > 0 ? (qtdEmpenhada / qtdAutorizada) * 100 : 0;
+
+      document.getElementById('kpi-val-autorizado').textContent = fmtBRL(totalAutorizado);
+      document.getElementById('kpi-val-empenhado').textContent = fmtBRL(totalEmpenhado);
+      document.getElementById('kpi-val-liquidado').textContent = fmtBRL(totalLiquidado);
+      document.getElementById('kpi-val-saldo').textContent = fmtBRL(saldoDisponivel);
+
+      document.getElementById('kpi-qtd-auth').textContent = fmtNum(qtdAutorizada);
+      document.getElementById('kpi-qtd-emp').textContent = fmtNum(qtdEmpenhada);
+      document.getElementById('kpi-exec-pct').textContent = pctExec.toFixed(1).replace('.', ',') + '%';
+      document.getElementById('kpi-exec-bar').style.width = Math.min(100, pctExec) + '%';
+
+      const tbody = document.getElementById('tbl-resumo-empresas');
+      tbody.innerHTML = state.empresas.map(empresa => {
+        const empenhosEmp = state.empenhos.filter(e => {
+          const p = state.processos.find(x => x.id === e.processo_item_id);
+          return p && p.empresa_id === empresa.id;
+        });
+
+        const vlrEmp = empenhosEmp.reduce((acc, e) => {
+          const p = state.processos.find(x => x.id === e.processo_item_id);
+          return acc + Number(e.quantidade_empenhada) * (p ? Number(p.valor_unitario) : 0);
+        }, 0);
+
+        const empenhoIds = new Set(empenhosEmp.map(e => e.id));
+        const vlrLiq = state.notas
+          .filter(n => empenhoIds.has(n.empenho_id) && ['Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + Number(n.quantidade_nf) * Number(n.valor_unitario_nf), 0);
+
+        return `
+          <tr class="hover:bg-slate-800/50">
+            <td class="px-4 py-3 font-semibold text-blue-300">${empresa.id_resumido}</td>
+            <td class="px-4 py-3 text-slate-200">${empresa.nome_fantasia}</td>
+            <td class="px-4 py-3 text-right font-medium text-slate-200">${fmtBRL(vlrEmp)}</td>
+            <td class="px-4 py-3 text-right text-emerald-400 font-medium">${fmtBRL(vlrLiq)}</td>
+            <td class="px-4 py-3 text-right font-bold text-slate-100">${fmtBRL(vlrEmp - vlrLiq)}</td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">Cadastre uma empresa para visualizar o resumo.</td></tr>';
+    }
+
+    // Inicializar
+    resetProcessoItemRows();
+    resetEmpenhoItemRows();
+    initConfigUI();
+  </script>
+</body>
+</html>
