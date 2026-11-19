@@ -18,6 +18,13 @@
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    @media print {
+      body { background-color: #ffffff !important; color: #0f172a !important; }
+      header, nav, #toast, .no-print { display: none !important; }
+      #presentationModal { position: static !important; background: #ffffff !important; padding: 0 !important; }
+      #presentationCard { box-shadow: none !important; border: none !important; max-width: 100% !important; background: #ffffff !important; color: #0f172a !important; }
+      #presentationCard * { color: #0f172a !important; border-color: #cbd5e1 !important; background-color: transparent !important; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#090d16] text-slate-200">
@@ -75,6 +82,49 @@
           Entrar no Sistema
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE RESUMO PARA APRESENTAÇÃO -->
+  <div id="presentationModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div id="presentationCard" class="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-5xl w-full p-6 space-y-5 my-auto">
+      <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-blue-400">Resumo Executivo para Apresentação</span>
+          <h2 class="text-lg font-bold text-slate-100 mt-0.5">Execução de Empenhos por Empresa e Saldos</h2>
+          <p id="pres-subtitle" class="text-xs text-slate-400 mt-0.5"></p>
+        </div>
+        <div class="flex flex-wrap gap-2 no-print">
+          <button type="button" onclick="copyPresentationText()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
+            📋 Copiar Resumo
+          </button>
+          <button type="button" onclick="window.print()" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition">
+            🖨️ Imprimir / PDF
+          </button>
+          <button type="button" onclick="closePresentationModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
+            ✕ Fechar
+          </button>
+        </div>
+      </div>
+
+      <div id="pres-kpis" class="grid grid-cols-1 sm:grid-cols-4 gap-3"></div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-950/80 text-slate-400 uppercase border-b border-slate-800">
+            <tr>
+              <th class="px-3 py-2.5">ID</th>
+              <th class="px-3 py-2.5">Empresa</th>
+              <th class="px-3 py-2.5 text-right">% do Empenhado</th>
+              <th class="px-3 py-2.5 text-right">Vlr. Empenhado</th>
+              <th class="px-3 py-2.5 text-right">Vlr. Liquidado / Pago</th>
+              <th class="px-3 py-2.5 text-right">Saldo a Liquidar</th>
+              <th class="px-3 py-2.5 text-right">% Execução</th>
+            </tr>
+          </thead>
+          <tbody id="pres-tbody" class="divide-y divide-slate-800/80"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -186,10 +236,21 @@
       </div>
 
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+        <div class="px-6 py-4 border-b border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
             <h2 class="text-base font-bold text-slate-100">Resumo Global por Empresa</h2>
-            <p class="text-xs text-slate-400">Consolidado automático de valores empenhados, liquidados/pagos e saldo a liquidar</p>
+            <p class="text-xs text-slate-400">Participação percentual nos empenhos, valores empenhados, liquidados/pagos e saldo a liquidar</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="openPresentationModal()" class="px-3 py-1.5 bg-blue-950 hover:bg-blue-900 border border-blue-800/70 text-blue-200 text-xs font-semibold rounded-lg transition">
+              🖥️ Modo Apresentação
+            </button>
+            <button type="button" onclick="exportApresentacaoCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
+              📥 CSV Apresentação
+            </button>
+            <button type="button" onclick="exportPregaoSaldosCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
+              📋 CSV Saldos Pregões
+            </button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -198,6 +259,7 @@
               <tr>
                 <th class="px-4 py-3">ID da Empresa</th>
                 <th class="px-4 py-3">Nome Fantasia</th>
+                <th class="px-4 py-3 text-right">% do Empenhado</th>
                 <th class="px-4 py-3 text-right">Valor Total Empenhado</th>
                 <th class="px-4 py-3 text-right">Valor Total Liquidado / Pago</th>
                 <th class="px-4 py-3 text-right">Saldo Remanescente (Empenho)</th>
@@ -220,8 +282,8 @@
             <p class="text-xs text-slate-400">Selecione uma empresa ou empenho para ver os saldos físicos e financeiros detalhados por item.</p>
           </div>
 
-          <!-- BARRA DE FILTROS -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto">
+          <!-- BARRA DE FILTROS + EXPORTAÇÃO -->
+          <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
             <select id="filtroAcompEmpresa" onchange="onFiltroAcompEmpresaChange()" class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600">
               <option value="">Todas as Empresas</option>
             </select>
@@ -229,6 +291,9 @@
               <option value="">Todos os Empenhos</option>
             </select>
             <input type="text" id="filtroAcompTexto" onkeyup="renderAcompanhamento()" placeholder="Buscar item ou pregão..." class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600" />
+            <button type="button" onclick="exportEmpenhosSaldosCSV()" class="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+              📥 Exportar Empenhos e Saldos
+            </button>
           </div>
         </div>
 
@@ -336,7 +401,6 @@
         </div>
 
         <form onsubmit="saveMultiProcessoItens(event)" class="space-y-4">
-          <!-- Cabeçalho do Pregão + Empresa -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1">Nº do Pregão / Processo *</label>
@@ -348,7 +412,6 @@
             </div>
           </div>
 
-          <!-- Lista dinâmica de linhas de itens -->
           <div id="proc-itens-container" class="space-y-3"></div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -365,7 +428,12 @@
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
         <div class="px-4 py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span class="text-xs font-bold uppercase text-slate-400">Itens Cadastrados nos Pregões</span>
-          <input type="text" id="filtroProc" onkeyup="renderProcessos()" placeholder="Filtrar por pregão, empresa ou item..." class="px-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-64" />
+          <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+            <input type="text" id="filtroProc" onkeyup="renderProcessos()" placeholder="Filtrar por pregão, empresa ou item..." class="px-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-64" />
+            <button type="button" onclick="exportPregaoSaldosCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
+              📥 Exportar Saldos
+            </button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left">
@@ -425,7 +493,6 @@
             </div>
           </div>
 
-          <!-- Lista dinâmica de itens do empenho -->
           <div id="emp-itens-container" class="space-y-3"></div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -518,6 +585,12 @@
       </div>
 
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+          <span class="text-xs font-bold uppercase text-slate-400">Notas Fiscais Lançadas</span>
+          <button type="button" onclick="exportNotasCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
+            📥 Exportar Notas Fiscais
+          </button>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left">
             <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
@@ -556,6 +629,7 @@
 
     const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtNum = (v) => Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+    const fmtPct = (v) => Number(v || 0).toFixed(1).replace('.', ',') + '%';
 
     function showToast(msg, isError = false) {
       const el = document.getElementById('toast');
@@ -680,6 +754,315 @@
       renderNotas();
       renderAcompanhamento();
       renderDashboard();
+    }
+
+    // =========================================================================
+    // CÁLCULOS CONSOLIDADOS PARA RELATÓRIOS E DASHBOARD
+    // =========================================================================
+    function getAcompanhamentoRows() {
+      const empIdFiltro = document.getElementById('filtroAcompEmpresa')?.value || '';
+      const empenhoFiltro = document.getElementById('filtroAcompEmpenho')?.value || '';
+      const textoFiltro = (document.getElementById('filtroAcompTexto')?.value || '').toLowerCase();
+
+      return state.empenhos.map(emp => {
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const nfsDoItem = state.notas.filter(n => n.empenho_id === emp.id);
+
+        const qtdAtestada = nfsDoItem
+          .filter(n => ['Atestada', 'Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
+
+        const vlrLiquidado = nfsDoItem
+          .filter(n => ['Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + (Number(n.quantidade_nf) * Number(n.valor_unitario_nf)), 0);
+
+        const qtdEmp = Number(emp.quantidade_empenhada);
+        const saldoQtd = qtdEmp - qtdAtestada;
+        const vlrUnit = p ? Number(p.valor_unitario) : 0;
+        const vlrEmp = qtdEmp * vlrUnit;
+        const saldoFin = vlrEmp - vlrLiquidado;
+
+        return {
+          empresaId: empresa ? empresa.id : '',
+          empresaSigla: empresa ? empresa.id_resumido : '-',
+          empresaFantasia: empresa ? empresa.nome_fantasia : '-',
+          empresaNome: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-',
+          numero_empenho: emp.numero_empenho,
+          data_empenho: emp.data_empenho,
+          pregao: p ? p.numero_pregao : '-',
+          item: p ? p.numero_item : '-',
+          desc: p ? p.descricao_item : '-',
+          unidade: p ? p.unidade_fornecimento : '-',
+          vlrUnit,
+          qtdEmp,
+          qtdAtestada,
+          saldoQtd,
+          vlrEmp,
+          vlrLiquidado,
+          saldoFin
+        };
+      }).filter(r => {
+        if (empIdFiltro && r.empresaId !== empIdFiltro) return false;
+        if (empenhoFiltro && r.numero_empenho !== empenhoFiltro) return false;
+        if (textoFiltro) {
+          const match =
+            r.empresaNome.toLowerCase().includes(textoFiltro) ||
+            r.numero_empenho.toLowerCase().includes(textoFiltro) ||
+            r.pregao.toLowerCase().includes(textoFiltro) ||
+            r.desc.toLowerCase().includes(textoFiltro);
+          if (!match) return false;
+        }
+        return true;
+      });
+    }
+
+    function getResumoPorEmpresa() {
+      const totalGeralEmp = state.empenhos.reduce((acc, e) => {
+        const p = state.processos.find(x => x.id === e.processo_item_id);
+        return acc + Number(e.quantidade_empenhada) * (p ? Number(p.valor_unitario) : 0);
+      }, 0);
+
+      return state.empresas.map(empresa => {
+        const procsEmp = state.processos.filter(p => p.empresa_id === empresa.id);
+        const vlrAutorizado = procsEmp.reduce((acc, p) => acc + Number(p.valor_unitario) * Number(p.quantidade_autorizada), 0);
+
+        const empenhosEmp = state.empenhos.filter(e => {
+          const p = state.processos.find(x => x.id === e.processo_item_id);
+          return p && p.empresa_id === empresa.id;
+        });
+
+        const vlrEmp = empenhosEmp.reduce((acc, e) => {
+          const p = state.processos.find(x => x.id === e.processo_item_id);
+          return acc + Number(e.quantidade_empenhada) * (p ? Number(p.valor_unitario) : 0);
+        }, 0);
+
+        const empenhoIds = new Set(empenhosEmp.map(e => e.id));
+        const vlrLiq = state.notas
+          .filter(n => empenhoIds.has(n.empenho_id) && ['Liquidada', 'Paga'].includes(n.situacao))
+          .reduce((acc, n) => acc + Number(n.quantidade_nf) * Number(n.valor_unitario_nf), 0);
+
+        const saldo = vlrEmp - vlrLiq;
+        const pctParticipacaoEmp = totalGeralEmp > 0 ? (vlrEmp / totalGeralEmp) * 100 : 0;
+        const pctExecucaoEmp = vlrEmp > 0 ? (vlrLiq / vlrEmp) * 100 : 0;
+
+        return {
+          id_resumido: empresa.id_resumido,
+          nome_fantasia: empresa.nome_fantasia,
+          vlrAutorizado,
+          vlrEmp,
+          vlrLiq,
+          saldo,
+          pctParticipacaoEmp,
+          pctExecucaoEmp
+        };
+      }).sort((a, b) => b.vlrEmp - a.vlrEmp);
+    }
+
+    // =========================================================================
+    // EXPORTAÇÃO CSV E MODO APRESENTAÇÃO
+    // =========================================================================
+    function downloadCSV(filename, headers, rows) {
+      const escapeCell = (val) => {
+        const str = String(val ?? '');
+        return `"${str.replace(/"/g, '""')}"`;
+      };
+      const lines = [
+        headers.map(escapeCell).join(';'),
+        ...rows.map(r => r.map(escapeCell).join(';'))
+      ];
+      const csvContent = '\uFEFF' + lines.join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Relatório "${filename}" baixado!`);
+    }
+
+    function exportEmpenhosSaldosCSV() {
+      const rows = getAcompanhamentoRows();
+      if (!rows.length) {
+        showToast('Não há linhas para exportar com o filtro atual.', true);
+        return;
+      }
+      const headers = [
+        'ID Empresa', 'Empresa', 'Nº Empenho', 'Data Empenho', 'Pregão', 'Item',
+        'Descrição', 'Unidade', 'Qtd. Empenhada', 'Qtd. Atestada', 'Saldo Qtd.',
+        'Vlr. Unitário', 'Vlr. Empenhado', 'Vlr. Liquidado/Pago', 'Saldo Financeiro', 'Status'
+      ];
+      const csvRows = rows.map(r => [
+        r.empresaSigla,
+        r.empresaFantasia,
+        r.numero_empenho,
+        r.data_empenho,
+        r.pregao,
+        r.item,
+        r.desc,
+        r.unidade,
+        fmtNum(r.qtdEmp),
+        fmtNum(r.qtdAtestada),
+        fmtNum(r.saldoQtd),
+        fmtBRL(r.vlrUnit),
+        fmtBRL(r.vlrEmp),
+        fmtBRL(r.vlrLiquidado),
+        fmtBRL(r.saldoFin),
+        r.saldoFin <= 0.01 ? 'Concluído' : 'Em execução'
+      ]);
+      downloadCSV('relatorio_empenhos_saldos.csv', headers, csvRows);
+    }
+
+    function exportApresentacaoCSV() {
+      const resumo = getResumoPorEmpresa();
+      const headers = [
+        'ID Empresa', 'Nome Fantasia', '% do Total Empenhado',
+        'Vlr. Total Empenhado', 'Vlr. Total Liquidado/Pago', 'Saldo a Liquidar', '% Execução Financeira'
+      ];
+      const csvRows = resumo.map(r => [
+        r.id_resumido,
+        r.nome_fantasia,
+        fmtPct(r.pctParticipacaoEmp),
+        fmtBRL(r.vlrEmp),
+        fmtBRL(r.vlrLiq),
+        fmtBRL(r.saldo),
+        fmtPct(r.pctExecucaoEmp)
+      ]);
+      downloadCSV('relatorio_apresentacao_empresas.csv', headers, csvRows);
+    }
+
+    function exportPregaoSaldosCSV() {
+      const headers = [
+        'Pregão', 'ID Empresa', 'Empresa', 'Item', 'Descrição', 'Unidade',
+        'Vlr. Unitário', 'Qtd. Autorizada', 'Qtd. Empenhada', 'Saldo Qtd.', 'Saldo Financeiro'
+      ];
+      const csvRows = state.processos.map(p => {
+        const emp = state.empresas.find(e => e.id === p.empresa_id);
+        const qtdEmp = state.empenhos
+          .filter(e => e.processo_item_id === p.id)
+          .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
+        const saldoQtd = Number(p.quantidade_autorizada) - qtdEmp;
+        const saldoFin = saldoQtd * Number(p.valor_unitario);
+        return [
+          p.numero_pregao,
+          emp ? emp.id_resumido : '-',
+          emp ? emp.nome_fantasia : '-',
+          p.numero_item,
+          p.descricao_item,
+          p.unidade_fornecimento,
+          fmtBRL(p.valor_unitario),
+          fmtNum(p.quantidade_autorizada),
+          fmtNum(qtdEmp),
+          fmtNum(saldoQtd),
+          fmtBRL(saldoFin)
+        ];
+      });
+      downloadCSV('relatorio_saldos_pregoes.csv', headers, csvRows);
+    }
+
+    function exportNotasCSV() {
+      const headers = [
+        'Nº NF', 'Data NF', 'ID Empresa', 'Empresa', 'Nº Empenho', 'Pregão',
+        'Item', 'Descrição', 'Qtd. NF', 'Vlr. Unitário', 'Vlr. Total', 'Situação'
+      ];
+      const csvRows = state.notas.map(n => {
+        const emp = state.empenhos.find(x => x.id === n.empenho_id);
+        const p = emp ? state.processos.find(x => x.id === emp.processo_item_id) : null;
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const total = Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
+        return [
+          n.numero_nf,
+          n.data_nf,
+          empresa ? empresa.id_resumido : '-',
+          empresa ? empresa.nome_fantasia : '-',
+          emp ? emp.numero_empenho : '-',
+          p ? p.numero_pregao : '-',
+          p ? p.numero_item : '-',
+          p ? p.descricao_item : '-',
+          fmtNum(n.quantidade_nf),
+          fmtBRL(n.valor_unitario_nf),
+          fmtBRL(total),
+          n.situacao
+        ];
+      });
+      downloadCSV('relatorio_notas_fiscais.csv', headers, csvRows);
+    }
+
+    function openPresentationModal() {
+      const resumo = getResumoPorEmpresa();
+      const totalEmp = resumo.reduce((a, b) => a + b.vlrEmp, 0);
+      const totalLiq = resumo.reduce((a, b) => a + b.vlrLiq, 0);
+      const totalSaldo = resumo.reduce((a, b) => a + b.saldo, 0);
+      const pctGeral = totalEmp > 0 ? (totalLiq / totalEmp) * 100 : 0;
+
+      document.getElementById('pres-subtitle').textContent =
+        `Gerado em ${new Date().toLocaleString('pt-BR')} • Execução financeira geral dos empenhos: ${fmtPct(pctGeral)}`;
+
+      document.getElementById('pres-kpis').innerHTML = `
+        <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[11px] uppercase text-slate-400 font-semibold">Total Empenhado</span>
+          <p class="text-base font-bold text-slate-100 mt-0.5">${fmtBRL(totalEmp)}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[11px] uppercase text-slate-400 font-semibold">Total Liquidado / Pago</span>
+          <p class="text-base font-bold text-emerald-400 mt-0.5">${fmtBRL(totalLiq)}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[11px] uppercase text-slate-400 font-semibold">Saldo a Liquidar</span>
+          <p class="text-base font-bold text-blue-300 mt-0.5">${fmtBRL(totalSaldo)}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[11px] uppercase text-slate-400 font-semibold">% Executado</span>
+          <p class="text-base font-bold text-amber-300 mt-0.5">${fmtPct(pctGeral)}</p>
+        </div>
+      `;
+
+      document.getElementById('pres-tbody').innerHTML = resumo.map(r => `
+        <tr>
+          <td class="px-3 py-2.5 font-semibold text-blue-300">${r.id_resumido}</td>
+          <td class="px-3 py-2.5 text-slate-200">${r.nome_fantasia}</td>
+          <td class="px-3 py-2.5 text-right font-semibold text-indigo-300">${fmtPct(r.pctParticipacaoEmp)}</td>
+          <td class="px-3 py-2.5 text-right text-slate-200">${fmtBRL(r.vlrEmp)}</td>
+          <td class="px-3 py-2.5 text-right text-emerald-400">${fmtBRL(r.vlrLiq)}</td>
+          <td class="px-3 py-2.5 text-right font-semibold text-slate-100">${fmtBRL(r.saldo)}</td>
+          <td class="px-3 py-2.5 text-right text-slate-300">${fmtPct(r.pctExecucaoEmp)}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="7" class="px-3 py-5 text-center text-slate-500">Sem dados para apresentação.</td></tr>';
+
+      const modal = document.getElementById('presentationModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePresentationModal() {
+      const modal = document.getElementById('presentationModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function copyPresentationText() {
+      const resumo = getResumoPorEmpresa();
+      const totalEmp = resumo.reduce((a, b) => a + b.vlrEmp, 0);
+      const totalLiq = resumo.reduce((a, b) => a + b.vlrLiq, 0);
+      const totalSaldo = resumo.reduce((a, b) => a + b.saldo, 0);
+
+      const linhas = [
+        `RESUMO EXECUTIVO - EMPENHOS POR EMPRESA`,
+        `Total Empenhado: ${fmtBRL(totalEmp)} | Liquidado/Pago: ${fmtBRL(totalLiq)} | Saldo a Liquidar: ${fmtBRL(totalSaldo)}`,
+        `----------------------------------------`,
+        ...resumo.map(r =>
+          `${r.nome_fantasia} (${r.id_resumido}): ${fmtPct(r.pctParticipacaoEmp)} do empenhado | Emp: ${fmtBRL(r.vlrEmp)} | Liq: ${fmtBRL(r.vlrLiq)} | Saldo: ${fmtBRL(r.saldo)} (${fmtPct(r.pctExecucaoEmp)} exec.)`
+        )
+      ];
+
+      navigator.clipboard.writeText(linhas.join('\n')).then(() => {
+        showToast('Resumo copiado para a área de transferência!');
+      }).catch(() => {
+        showToast('Não foi possível copiar automaticamente.', true);
+      });
     }
 
     // =========================================================================
@@ -834,14 +1217,12 @@
     // DROPDOWNS DEPENDENTES E FILTROS
     // =========================================================================
     function populateDropdowns() {
-      // Aba Processo Licitatório -> Empresas
       const procEmpSel = document.getElementById('proc-empresa');
       const prevProcEmp = procEmpSel.value;
       procEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
         state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
       if (state.empresas.some(e => e.id === prevProcEmp)) procEmpSel.value = prevProcEmp;
 
-      // Aba Empenhos por Empresa -> Filtro de Empresas
       const acompEmpSel = document.getElementById('filtroAcompEmpresa');
       const prevAcompEmp = acompEmpSel.value;
       acompEmpSel.innerHTML = '<option value="">Todas as Empresas</option>' +
@@ -849,7 +1230,6 @@
       if (state.empresas.some(e => e.id === prevAcompEmp)) acompEmpSel.value = prevAcompEmp;
       updateFiltroAcompEmpenhos();
 
-      // Aba Empenhos -> Pregões Únicos
       const pregoesUnicos = [...new Set(state.processos.map(p => p.numero_pregao))].sort();
       const empPregaoSel = document.getElementById('emp-pregao');
       const prevPregao = empPregaoSel.value;
@@ -858,7 +1238,6 @@
       if (pregoesUnicos.includes(prevPregao)) empPregaoSel.value = prevPregao;
       onEmpPregaoChange();
 
-      // Aba Notas Fiscais -> Empresas com Empenho
       const empIdsComEmpenho = new Set(
         state.empenhos.map(emp => {
           const proc = state.processos.find(p => p.id === emp.processo_item_id);
@@ -919,7 +1298,6 @@
       refreshAllEmpItemRows();
     }
 
-    // Dependentes Notas Fiscais
     function onNfEmpresaChange() {
       const empId = document.getElementById('nf-empresa-sel').value;
       const empNumSel = document.getElementById('nf-empenho-sel');
@@ -1290,52 +1668,8 @@
     }
 
     function renderAcompanhamento() {
-      const empIdFiltro = document.getElementById('filtroAcompEmpresa').value;
-      const empenhoFiltro = document.getElementById('filtroAcompEmpenho').value;
-      const textoFiltro = (document.getElementById('filtroAcompTexto').value || '').toLowerCase();
       const tbody = document.getElementById('tbl-acompanhamento');
-
-      const rows = state.empenhos.map(emp => {
-        const p = state.processos.find(x => x.id === emp.processo_item_id);
-        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const nfsDoItem = state.notas.filter(n => n.empenho_id === emp.id);
-
-        const qtdAtestada = nfsDoItem
-          .filter(n => ['Atestada', 'Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + Number(n.quantidade_nf), 0);
-
-        const vlrLiquidado = nfsDoItem
-          .filter(n => ['Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + (Number(n.quantidade_nf) * Number(n.valor_unitario_nf)), 0);
-
-        const qtdEmp = Number(emp.quantidade_empenhada);
-        const saldoQtd = qtdEmp - qtdAtestada;
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        const vlrEmp = qtdEmp * vlrUnit;
-        const saldoFin = vlrEmp - vlrLiquidado;
-
-        return {
-          empresaId: empresa ? empresa.id : '',
-          empresaNome: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-',
-          numero_empenho: emp.numero_empenho,
-          pregao: p ? p.numero_pregao : '-',
-          item: p ? p.numero_item : '-',
-          desc: p ? p.descricao_item : '-',
-          qtdEmp, qtdAtestada, saldoQtd, vlrEmp, vlrLiquidado, saldoFin
-        };
-      }).filter(r => {
-        if (empIdFiltro && r.empresaId !== empIdFiltro) return false;
-        if (empenhoFiltro && r.numero_empenho !== empenhoFiltro) return false;
-        if (textoFiltro) {
-          const match =
-            r.empresaNome.toLowerCase().includes(textoFiltro) ||
-            r.numero_empenho.toLowerCase().includes(textoFiltro) ||
-            r.pregao.toLowerCase().includes(textoFiltro) ||
-            r.desc.toLowerCase().includes(textoFiltro);
-          if (!match) return false;
-        }
-        return true;
-      });
+      const rows = getAcompanhamentoRows();
 
       const somaEmp = rows.reduce((a, b) => a + b.vlrEmp, 0);
       const somaLiq = rows.reduce((a, b) => a + b.vlrLiquidado, 0);
@@ -1405,36 +1739,21 @@
 
       document.getElementById('kpi-qtd-auth').textContent = fmtNum(qtdAutorizada);
       document.getElementById('kpi-qtd-emp').textContent = fmtNum(qtdEmpenhada);
-      document.getElementById('kpi-exec-pct').textContent = pctExec.toFixed(1).replace('.', ',') + '%';
+      document.getElementById('kpi-exec-pct').textContent = fmtPct(pctExec);
       document.getElementById('kpi-exec-bar').style.width = Math.min(100, pctExec) + '%';
 
+      const resumoEmpresas = getResumoPorEmpresa();
       const tbody = document.getElementById('tbl-resumo-empresas');
-      tbody.innerHTML = state.empresas.map(empresa => {
-        const empenhosEmp = state.empenhos.filter(e => {
-          const p = state.processos.find(x => x.id === e.processo_item_id);
-          return p && p.empresa_id === empresa.id;
-        });
-
-        const vlrEmp = empenhosEmp.reduce((acc, e) => {
-          const p = state.processos.find(x => x.id === e.processo_item_id);
-          return acc + Number(e.quantidade_empenhada) * (p ? Number(p.valor_unitario) : 0);
-        }, 0);
-
-        const empenhoIds = new Set(empenhosEmp.map(e => e.id));
-        const vlrLiq = state.notas
-          .filter(n => empenhoIds.has(n.empenho_id) && ['Liquidada', 'Paga'].includes(n.situacao))
-          .reduce((acc, n) => acc + Number(n.quantidade_nf) * Number(n.valor_unitario_nf), 0);
-
-        return `
-          <tr class="hover:bg-slate-800/50">
-            <td class="px-4 py-3 font-semibold text-blue-300">${empresa.id_resumido}</td>
-            <td class="px-4 py-3 text-slate-200">${empresa.nome_fantasia}</td>
-            <td class="px-4 py-3 text-right font-medium text-slate-200">${fmtBRL(vlrEmp)}</td>
-            <td class="px-4 py-3 text-right text-emerald-400 font-medium">${fmtBRL(vlrLiq)}</td>
-            <td class="px-4 py-3 text-right font-bold text-slate-100">${fmtBRL(vlrEmp - vlrLiq)}</td>
-          </tr>
-        `;
-      }).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">Cadastre uma empresa para visualizar o resumo.</td></tr>';
+      tbody.innerHTML = resumoEmpresas.map(empresa => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="px-4 py-3 font-semibold text-blue-300">${empresa.id_resumido}</td>
+          <td class="px-4 py-3 text-slate-200">${empresa.nome_fantasia}</td>
+          <td class="px-4 py-3 text-right font-semibold text-indigo-300">${fmtPct(empresa.pctParticipacaoEmp)}</td>
+          <td class="px-4 py-3 text-right font-medium text-slate-200">${fmtBRL(empresa.vlrEmp)}</td>
+          <td class="px-4 py-3 text-right text-emerald-400 font-medium">${fmtBRL(empresa.vlrLiq)}</td>
+          <td class="px-4 py-3 text-right font-bold text-slate-100">${fmtBRL(empresa.saldo)}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Cadastre uma empresa para visualizar o resumo.</td></tr>';
     }
 
     // Inicializar
