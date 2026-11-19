@@ -196,9 +196,9 @@
           <p id="kpi-itens" class="text-2xl font-bold text-slate-100 mt-1">0</p>
         </div>
         <div class="card-kpi bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Itens Empenhados (Qtd.)</p>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Itens Empenhados</p>
           <p id="kpi-itens-empenhados-qtd" class="text-2xl font-bold text-indigo-300 mt-1">0</p>
-          <p class="text-[11px] text-slate-400 mt-0.5">Soma considerando todos os empenhos</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Itens distintos empenhados (sem duplicar)</p>
         </div>
         <div class="card-kpi bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Empenhos (Nº Únicos)</p>
@@ -1932,14 +1932,19 @@
         state.empenhos.map(e => String(e.numero_empenho || '').trim()).filter(Boolean)
       ).size;
 
-      const totalItensEmpenhadosQtd = state.empenhos.reduce(
-        (acc, emp) => acc + Number(emp.quantidade_empenhada || 0),
-        0
+      const itensEmpenhadosDistintosSet = new Set(
+        state.empenhos.map(emp => {
+          const p = state.processos.find(x => x.id === emp.processo_item_id);
+          if (p) {
+            return `${p.numero_pregao || ''}__${p.empresa_id || ''}__${p.numero_item || ''}__${String(p.descricao_item || '').trim().toLowerCase()}`;
+          }
+          return emp.processo_item_id;
+        }).filter(Boolean)
       );
 
       document.getElementById('kpi-fornecedores').textContent = state.empresas.length;
       document.getElementById('kpi-itens').textContent = state.processos.length;
-      document.getElementById('kpi-itens-empenhados-qtd').textContent = fmtNum(totalItensEmpenhadosQtd);
+      document.getElementById('kpi-itens-empenhados-qtd').textContent = itensEmpenhadosDistintosSet.size;
       document.getElementById('kpi-empenhos-qtd').textContent = empenhosUnicosCount;
 
       let totalAutorizado = 0;
