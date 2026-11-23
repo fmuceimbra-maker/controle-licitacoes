@@ -973,8 +973,10 @@
       empenhos: [],
       notas: [],
       preSolemps: [],
-      pedidosGeneros: []
+      pedidosGeneros: [],
+      editingProcessValidity: null
     };
+    let loadingPreSolempIntoEmpenho = false;
 
     const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtNum = (v) => Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
@@ -1524,23 +1526,77 @@
     }
 
     // =========================================================================
+    // CONTROLE CENTRALIZADO DE SALDOS: PROCESSO -> PRE-SOLEMP -> EMPENHO -> PEDIDO
+    // =========================================================================
+    function getPendingPreSolempReservedQuantity(processoItemId, excludePreSolempId = '') {
+      return state.preSolemps
+        .filter(pre => pre.id !== excludePreSolempId && !['Empenho gerado', 'Cancelada', 'Anulada'].includes(String(pre.status || 'Pendente')))
+        .reduce((sum, pre) => sum + (pre.itens || [])
+          .filter(item => String(item.processo_item_id || '') === String(processoItemId))
+          .reduce((sub, item) => sub + Number(item.quantidade || 0), 0), 0);
+    }
+
+    function getProcessItemBalance(processoItemId, excludePreSolempId = '') {
+      const proc = state.processos.find(item => String(item.id) === String(processoItemId));
+      if (!proc) return { autorizada:0, empenhada:0, reservadoPreSolemp:0, disponivel:0, valorUnitario:0, valorDisponivel:0 };
+      const autorizada = Number(proc.quantidade_autorizada || 0);
+      const empenhada = state.empenhos
+        .filter(emp => String(emp.processo_item_id) === String(processoItemId))
+        .reduce((sum, emp) => sum + Number(emp.quantidade_empenhada || 0), 0);
+      const reservadoPreSolemp = getPendingPreSolempReservedQuantity(processoItemId, excludePreSolempId);
+      const disponivel = Math.max(0, autorizada - empenhada - reservadoPreSolemp);
+      const valorUnitario = Number(proc.valor_unitario || 0);
+      return { autorizada, empenhada, reservadoPreSolemp, disponivel, valorUnitario, valorDisponivel:disponivel * valorUnitario };
+    }
+
+    function getPreSolempItemAvailability(processoItemId) {
+      const currentId = document.getElementById('ps-id')?.value || '';
+      const current = state.preSolemps.find(pre => pre.id === currentId);
+      const generated = current?.status === 'Empenho gerado';
+      const balance = getProcessItemBalance(processoItemId, generated ? '' : currentId);
+      if (generated) {
+        const currentItem = (current.itens || []).find(item => String(item.processo_item_id) === String(processoItemId));
+        const linkedQuantity = Number(currentItem?.quantidade || 0);
+        return { ...balance, disponivel:linkedQuantity, maximo:linkedQuantity, gerada:true, saldoParaNovasSolicitacoes:balance.disponivel };
+      }
+      return { ...balance, maximo:balance.disponivel, gerada:false, saldoParaNovasSolicitacoes:balance.disponivel };
+    }
+
+    function getEmpenhoItemAvailability(processoItemId) {
+      const preId = document.getElementById('emp-presolemp-sel')?.value || '';
+      const pre = state.preSolemps.find(item => item.id === preId);
+      const balance = getProcessItemBalance(processoItemId, preId);
+      if (!pre) return { ...balance, maximo:balance.disponivel, quantidadePreSolemp:null };
+      const sourceItem = (pre.itens || []).find(item => String(item.processo_item_id) === String(processoItemId));
+      const quantidadePreSolemp = Number(sourceItem?.quantidade || 0);
+      const maximo = sourceItem ? Math.min(balance.disponivel, quantidadePreSolemp) : 0;
+      return { ...balance, disponivel:maximo, maximo, quantidadePreSolemp };
+    }
+
+    // =========================================================================
     // LINHAS DINÂMICAS DO CADASTRO DE EMPENHOS (MÚLTIPLOS ITENS POR EMPENHO)
     // =========================================================================
     function getAvailableProcessoItens() {
       const pregao = document.getElementById('emp-pregao').value;
       const empresaId = document.getElementById('emp-empresa-sel').value;
       if (!pregao || !empresaId) return [];
-      return state.processos.filter(p => p.numero_pregao === pregao && p.empresa_id === empresaId);
+      const preId = document.getElementById('emp-presolemp-sel')?.value || '';
+      const pre = state.preSolemps.find(item => item.id === preId);
+      const sourceIds = pre ? new Set((pre.itens || []).map(item => String(item.processo_item_id || ''))) : null;
+      return state.processos.filter(p => p.numero_pregao === pregao && p.empresa_id === empresaId && (!sourceIds || sourceIds.has(String(p.id))));
     }
 
     function buildEmpItemOptionsHtml(selectedId = '') {
       const itens = getAvailableProcessoItens();
       if (itens.length === 0) {
-        return '<option value="">Selecione pregão e empresa...</option>';
+        return '<option value="">Selecione pregão, empresa ou item da Pré-SOLEMP...</option>';
       }
-      return '<option value="">Selecione o item...</option>' + itens.map(it =>
-        `<option value="${it.id}" ${it.id === selectedId ? 'selected' : ''}>Item ${it.numero_item} - ${it.descricao_item} (${it.unidade_fornecimento} | ${fmtBRL(it.valor_unitario)})</option>`
-      ).join('');
+      return '<option value="">Selecione o item...</option>' + itens.map(it => {
+        const balance = getEmpenhoItemAvailability(it.id);
+        const unavailable = balance.maximo <= 0 && String(it.id) !== String(selectedId);
+        const suffix = ` • saldo para empenhar: ${fmtNum(balance.maximo)} ${it.unidade_fornecimento}`;
+        return `<option value="${escapeHtml(it.id)}" ${String(it.id) === String(selectedId) ? 'selected' : ''} ${unavailable ? 'disabled' : ''}>Item ${escapeHtml(it.numero_item)} - ${escapeHtml(it.descricao_item)} (${escapeHtml(it.unidade_fornecimento)} | ${fmtBRL(it.valor_unitario)})${escapeHtml(suffix)}</option>`;
+      }).join('');
     }
 
     function addEmpenhoItemRow(selectedId = '') {
@@ -1558,7 +1614,8 @@
         <div class="sm:col-span-4 flex gap-2 items-start">
           <div class="flex-1">
             <label class="block text-[11px] font-medium text-slate-400 mb-1">Quantidade a Empenhar *</label>
-            <input type="number" required step="0.001" min="0.001" placeholder="0" class="emp-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            <input type="number" required step="0.001" min="0.001" placeholder="0" oninput="updateEmpRowHint(this.closest('.emp-item-row').querySelector('.emp-row-item'))" class="emp-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+            <p class="emp-row-balance text-[10px] text-emerald-300 mt-1">Saldo autorizado do processo será exibido aqui.</p>
           </div>
           <button type="button" onclick="removeEmpenhoItemRow(this)" title="Remover linha" class="mt-5 px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">
             ✕
@@ -1598,17 +1655,27 @@
     function updateEmpRowHint(selectEl) {
       const row = selectEl.closest('.emp-item-row');
       const hint = row.querySelector('.emp-row-hint');
+      const balanceEl = row.querySelector('.emp-row-balance');
+      const qtyInput = row.querySelector('.emp-row-qtd');
       const procId = selectEl.value;
       if (!procId) {
-        hint.textContent = 'Selecione um item para ver o saldo disponível.';
+        hint.textContent = 'Selecione um item para consultar o saldo autorizado.';
+        balanceEl.textContent = 'Selecione um item para ver o limite de empenho.';
+        qtyInput.removeAttribute('max');
         return;
       }
-      const proc = state.processos.find(p => p.id === procId);
-      const jaEmpenhado = state.empenhos
-        .filter(e => e.processo_item_id === procId)
-        .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
-      const saldo = Number(proc.quantidade_autorizada) - jaEmpenhado;
-      hint.textContent = `Saldo disponível no pregão: ${fmtNum(saldo)} ${proc.unidade_fornecimento} (Unitário: ${fmtBRL(proc.valor_unitario)})`;
+      const proc = state.processos.find(p => String(p.id) === String(procId));
+      if (!proc) return;
+      const info = getEmpenhoItemAvailability(procId);
+      const quantidadeAtual = Number(qtyInput.value || 0);
+      const restanteAposLancamento = Math.max(0, info.maximo - quantidadeAtual);
+      qtyInput.max = String(Math.max(0, info.maximo));
+      hint.textContent = `Item ${proc.numero_item} • ${proc.unidade_fornecimento} • Unitário: ${fmtBRL(proc.valor_unitario)}`;
+      const origem = info.quantidadePreSolemp !== null
+        ? ` • Limite da Pré-SOLEMP: ${fmtNum(info.quantidadePreSolemp)} ${proc.unidade_fornecimento}`
+        : '';
+      balanceEl.textContent = `Autorizada no processo: ${fmtNum(info.autorizada)} • Já empenhada: ${fmtNum(info.empenhada)} • Reservada em outras Pré-SOLEMPs: ${fmtNum(info.reservadoPreSolemp)} • Disponível para empenhar: ${fmtNum(info.maximo)} ${proc.unidade_fornecimento} (${fmtBRL(info.maximo * Number(proc.valor_unitario))}) • Saldo após esta linha: ${fmtNum(restanteAposLancamento)} ${proc.unidade_fornecimento}${origem}`;
+      balanceEl.className = `emp-row-balance text-[10px] mt-1 ${quantidadeAtual > info.maximo + 0.0001 ? 'text-red-300 font-semibold' : 'text-emerald-300'}`;
     }
 
     // =========================================================================
@@ -1833,6 +1900,12 @@
 
     function onEmpPregaoChange() {
       const pregao = document.getElementById('emp-pregao').value;
+      const preSel = document.getElementById('emp-presolemp-sel');
+      const pre = state.preSolemps.find(item => item.id === preSel?.value);
+      if (pre && !loadingPreSolempIntoEmpenho && pre.numero_pregao !== pregao) {
+        preSel.value = '';
+        showToast('A Pré-SOLEMP foi desmarcada porque pertence a outro processo licitatório.', true);
+      }
       const empSel = document.getElementById('emp-empresa-sel');
       const prevEmp = empSel.value;
       empSel.innerHTML = '<option value="">Selecione a empresa...</option>';
@@ -1851,12 +1924,20 @@
     }
 
     function onEmpEmpresaChange() {
+      const preSel = document.getElementById('emp-presolemp-sel');
+      const pre = state.preSolemps.find(item => item.id === preSel?.value);
+      const empresaId = document.getElementById('emp-empresa-sel').value;
+      if (pre && !loadingPreSolempIntoEmpenho && pre.empresa_id !== empresaId) {
+        preSel.value = '';
+        showToast('A Pré-SOLEMP foi desmarcada porque pertence a outra empresa.', true);
+      }
       refreshAllEmpItemRows();
     }
 
     function onEmpPreSolempChange() {
       const id = document.getElementById('emp-presolemp-sel').value;
       if (id) loadPreSolempIntoEmpenho(id);
+      else refreshAllEmpItemRows();
     }
 
     function loadPreSolempIntoEmpenho(id) {
@@ -1872,11 +1953,13 @@
         showToast('O pregão desta Pré-SOLEMP não está disponível nos processos carregados.', true);
         return;
       }
+      loadingPreSolempIntoEmpenho = true;
       pregaoSel.value = pre.numero_pregao;
       onEmpPregaoChange();
       const empresaSel = document.getElementById('emp-empresa-sel');
       empresaSel.value = pre.empresa_id;
       onEmpEmpresaChange();
+      loadingPreSolempIntoEmpenho = false;
 
       document.getElementById('emp-num').value = '';
       document.getElementById('emp-data').value = '';
@@ -1885,7 +1968,10 @@
       (pre.itens || []).forEach(item => {
         addEmpenhoItemRow(item.processo_item_id);
         const row = container.lastElementChild;
-        if (row) row.querySelector('.emp-row-qtd').value = item.quantidade;
+        if (row) {
+          row.querySelector('.emp-row-qtd').value = item.quantidade;
+          updateEmpRowHint(row.querySelector('.emp-row-item'));
+        }
       });
       if (!pre.itens?.length) addEmpenhoItemRow();
       switchTab('empenhos');
@@ -2046,7 +2132,13 @@
       const numero_empenho = document.getElementById('emp-num').value.trim();
       const data_empenho = document.getElementById('emp-data').value;
       const empresaId = document.getElementById('emp-empresa-sel').value;
+      const preSolempId = document.getElementById('emp-presolemp-sel').value || null;
+      const preSolempOrigem = preSolempId ? state.preSolemps.find(p => p.id === preSolempId) : null;
       const rowElements = document.querySelectorAll('.emp-item-row');
+      if (preSolempId && (!preSolempOrigem || preSolempOrigem.status === 'Empenho gerado' || preSolempOrigem.numero_pregao !== document.getElementById('emp-pregao').value || preSolempOrigem.empresa_id !== empresaId)) {
+        showToast('A Pré-SOLEMP selecionada não corresponde ao processo e à empresa do empenho, ou já foi utilizada.', true);
+        return;
+      }
 
       const empenhoOutraEmpresa = state.empenhos.find(emp => {
         if (emp.numero_empenho !== numero_empenho) return false;
@@ -2080,14 +2172,12 @@
       }
 
       for (const [processo_item_id, qtdSolicitada] of Object.entries(somaPorItemNoForm)) {
-        const proc = state.processos.find(p => p.id === processo_item_id);
-        const jaEmpenhado = state.empenhos
-          .filter(emp => emp.processo_item_id === processo_item_id)
-          .reduce((acc, emp) => acc + Number(emp.quantidade_empenhada), 0);
-
-        if (jaEmpenhado + qtdSolicitada > Number(proc.quantidade_autorizada) + 0.0001) {
+        const proc = state.processos.find(p => String(p.id) === String(processo_item_id));
+        if (!proc) { showToast('Item do processo não localizado. Atualize os dados e tente novamente.', true); return; }
+        const info = getEmpenhoItemAvailability(processo_item_id);
+        if (qtdSolicitada > info.maximo + 0.0001) {
           showToast(
-            `BLOQUEADO no Item ${proc.numero_item}: Saldo excedido! Disponível: ${fmtNum(proc.quantidade_autorizada - jaEmpenhado)} ${proc.unidade_fornecimento}.`,
+            `BLOQUEADO no Item ${proc.numero_item}: quantidade a empenhar (${fmtNum(qtdSolicitada)}) supera o saldo disponível do processo (${fmtNum(info.maximo)} ${proc.unidade_fornecimento}). O saldo considera empenhos anteriores e Pré-SOLEMPs ainda pendentes.`,
             true
           );
           return;
@@ -2097,7 +2187,8 @@
           numero_empenho,
           data_empenho,
           processo_item_id,
-          quantidade_empenhada: qtdSolicitada
+          quantidade_empenhada: qtdSolicitada,
+          presolemp_id: preSolempId
         });
       }
 
@@ -2107,7 +2198,6 @@
         return;
       }
 
-      const preSolempId = document.getElementById('emp-presolemp-sel').value;
       if (preSolempId) await markPreSolempAsGenerated(preSolempId, numero_empenho, data_empenho);
       document.getElementById('emp-presolemp-sel').value = '';
       resetEmpenhoItemRows();
@@ -2520,9 +2610,12 @@ function mapPreSolempFromDb(row) {
     function buildPreSolempItemOptionsHtml(selectedId = '') {
       const items = getPreSolempProcessos();
       if (!items.length) return '<option value="">Selecione pregão e empresa primeiro...</option>';
-      return '<option value="">Selecione o item...</option>' + items.map(p =>
-        `<option value="${escapeHtml(p.id)}" ${p.id === selectedId ? 'selected' : ''}>Item ${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)} | ${fmtBRL(p.valor_unitario)})</option>`
-      ).join('');
+      return '<option value="">Selecione o item...</option>' + items.map(p => {
+        const info = getPreSolempItemAvailability(p.id);
+        const unavailable = info.maximo <= 0 && String(p.id) !== String(selectedId);
+        const suffix = ` • saldo para Pré-SOLEMP: ${fmtNum(info.maximo)} ${p.unidade_fornecimento}`;
+        return `<option value="${escapeHtml(p.id)}" ${String(p.id) === String(selectedId) ? 'selected' : ''} ${unavailable ? 'disabled' : ''}>Item ${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)} | ${fmtBRL(p.valor_unitario)})${escapeHtml(suffix)}</option>`;
+      }).join('');
     }
 
     function addPreSolempItemRow(selectedId = '', quantity = '') {
@@ -2542,6 +2635,7 @@ function mapPreSolempFromDb(row) {
         <div class="sm:col-span-2">
           <label class="block text-[11px] font-medium text-slate-400 mb-1">Quantidade *</label>
           <input type="number" required min="0.001" step="0.001" value="${escapeHtml(quantity)}" oninput="updatePreSolempTotals()" placeholder="0" class="ps-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+          <p class="ps-row-balance text-[10px] text-emerald-300 mt-1">Saldo autorizado do processo será exibido aqui.</p>
         </div>
         <div class="sm:col-span-1 flex items-end justify-end">
           <button type="button" onclick="removePreSolempItemRow(this)" title="Remover item" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">✕</button>
@@ -2575,11 +2669,29 @@ function mapPreSolempFromDb(row) {
     function updatePreSolempItemHint(selectEl) {
       const row = selectEl.closest('.ps-item-row');
       const hint = row.querySelector('.ps-row-hint');
+      const balanceEl = row.querySelector('.ps-row-balance');
       const price = row.querySelector('.ps-row-price');
-      const proc = state.processos.find(p => p.id === selectEl.value);
-      if (!proc) { hint.textContent = 'Selecione um item para carregar preço e unidade.'; price.value = ''; return; }
+      const qtyInput = row.querySelector('.ps-row-qtd');
+      const proc = state.processos.find(p => String(p.id) === String(selectEl.value));
+      if (!proc) {
+        hint.textContent = 'Selecione um item para carregar preço e unidade.';
+        balanceEl.textContent = 'Selecione um item para consultar o saldo autorizado.';
+        price.value = '';
+        qtyInput.removeAttribute('max');
+        return;
+      }
+      const info = getPreSolempItemAvailability(proc.id);
+      const quantidadeAtual = Number(qtyInput.value || 0);
+      const restanteAposSolicitacao = Math.max(0, info.maximo - quantidadeAtual);
       price.value = fmtBRL(proc.valor_unitario);
-      hint.textContent = `Item ${proc.numero_item} • ${proc.unidade_fornecimento} • Preço do cadastro: ${fmtBRL(proc.valor_unitario)}`;
+      qtyInput.max = String(Math.max(0, info.maximo));
+      hint.textContent = `Item ${proc.numero_item} • ${proc.unidade_fornecimento} • Preço unitário: ${fmtBRL(proc.valor_unitario)}`;
+      if (info.gerada) {
+        balanceEl.textContent = `Pré-SOLEMP já vinculada a empenho. Quantidade deste documento: ${fmtNum(info.maximo)} ${proc.unidade_fornecimento}. Saldo do processo para novas solicitações: ${fmtNum(info.saldoParaNovasSolicitacoes)} ${proc.unidade_fornecimento}.`;
+      } else {
+        balanceEl.textContent = `Autorizada no processo: ${fmtNum(info.autorizada)} • Já empenhada: ${fmtNum(info.empenhada)} • Reservada em outras Pré-SOLEMPs: ${fmtNum(info.reservadoPreSolemp)} • Disponível para esta Pré-SOLEMP: ${fmtNum(info.maximo)} ${proc.unidade_fornecimento} (${fmtBRL(info.maximo * Number(proc.valor_unitario))}) • Saldo após informar: ${fmtNum(restanteAposSolicitacao)} ${proc.unidade_fornecimento}`;
+      }
+      balanceEl.className = `ps-row-balance text-[10px] mt-1 ${quantidadeAtual > info.maximo + 0.0001 ? 'text-red-300 font-semibold' : 'text-emerald-300'}`;
     }
 
     function getPreSolempDraft(validate = false) {
@@ -2606,6 +2718,13 @@ function mapPreSolempFromDb(row) {
         const proc = state.processos.find(p => p.id === processo_item_id);
         if (!proc) continue;
         const valor_unitario = Number(proc.valor_unitario);
+        if (validate) {
+          const availability = getPreSolempItemAvailability(processo_item_id);
+          if (quantidade > availability.maximo + 0.0001) {
+            showToast(`BLOQUEADO no Item ${proc.numero_item}: quantidade solicitada (${fmtNum(quantidade)}) supera o saldo autorizado disponível para esta Pré-SOLEMP (${fmtNum(availability.maximo)} ${proc.unidade_fornecimento}). O limite considera empenhos e outras Pré-SOLEMPs pendentes.`, true);
+            return null;
+          }
+        }
         itens.push({
           processo_item_id, numero_item: proc.numero_item, descricao_item: proc.descricao_item,
           unidade: proc.unidade_fornecimento, valor_unitario, quantidade,
@@ -2651,8 +2770,10 @@ function mapPreSolempFromDb(row) {
     function updatePreSolempTotals() {
       let count = 0, qtd = 0, total = 0;
       document.querySelectorAll('.ps-item-row').forEach(row => {
-        const proc = state.processos.find(p => p.id === row.querySelector('.ps-row-item').value);
+        const select = row.querySelector('.ps-row-item');
+        const proc = state.processos.find(p => p.id === select.value);
         const quantity = Number(row.querySelector('.ps-row-qtd').value);
+        if (proc) updatePreSolempItemHint(select);
         if (proc && Number.isFinite(quantity) && quantity > 0) { count++; qtd += quantity; total += quantity * Number(proc.valor_unitario); }
       });
       document.getElementById('ps-qtd-itens').textContent = count;
@@ -2995,20 +3116,78 @@ function mapPreSolempFromDb(row) {
       upsertProcessValidity(numero_pregao, validade);
     }
 
+    // Atualiza o cabecalho existente diretamente. Se o cabecalho ainda nao existir
+    // (processo legado criado antes da migracao), cria-o sem alterar os itens.
     async function upsertProcessValidity(numero_pregao, validade) {
-      const { error } = await sb.from('processos_licitatorios').upsert({ numero_pregao, validade }, { onConflict: 'numero_pregao' });
-      if (error) { showToast('Não foi possível atualizar a validade: ' + error.message, true); return; }
-      showToast(`Validade do processo ${numero_pregao} atualizada para ${dateShortPtBR(validade)}.`);
+      if (!sb) { showToast('Conexao com o Supabase indisponivel.', true); return false; }
+      const numero = String(numero_pregao || '').trim();
+      if (!numero || !validade) { showToast('Informe o processo e sua data de validade.', true); return false; }
+
+      const { data, error } = await sb
+        .from('processos_licitatorios')
+        .update({ validade })
+        .eq('numero_pregao', numero)
+        .select('numero_pregao, validade')
+        .maybeSingle();
+
+      if (error) {
+        showToast('Não foi possível atualizar a validade: ' + error.message, true);
+        console.error('Erro ao atualizar validade do processo:', error);
+        return false;
+      }
+
+      // Compatibilidade com processos antigos cujo cabecalho ainda nao foi criado.
+      if (!data) {
+        const { error: insertError } = await sb
+          .from('processos_licitatorios')
+          .upsert({ numero_pregao: numero, validade }, { onConflict: 'numero_pregao' });
+        if (insertError) {
+          showToast('Não foi possível gravar a validade: ' + insertError.message, true);
+          console.error('Erro ao criar cabecalho do processo:', insertError);
+          return false;
+        }
+      }
+
+      state.editingProcessValidity = null;
+      showToast(`Validade do processo ${numero} atualizada para ${dateShortPtBR(validade)}.`);
       await loadAllData();
+      return true;
     }
 
     function editarValidadeProcesso(numeroPregao) {
-      const meta = getProcessMeta(numeroPregao);
-      document.getElementById('proc-numero').value = numeroPregao;
-      document.getElementById('proc-validade').value = meta?.validade || '';
-      document.getElementById('proc-numero').scrollIntoView({ behavior:'smooth', block:'center' });
-      document.getElementById('proc-validade').focus();
-      showToast('Altere a validade e clique em "Salvar somente validade".');
+      // A edicao ocorre diretamente na linha do processo, evitando depender
+      // dos campos do formulario de inclusao de novos itens.
+      state.editingProcessValidity = String(numeroPregao || '').trim();
+      renderProcessos();
+      requestAnimationFrame(() => {
+        const input = [...document.querySelectorAll('[data-process-validity-input]')]
+          .find(el => el.getAttribute('data-process-number') === state.editingProcessValidity);
+        if (input) {
+          input.scrollIntoView({ behavior:'smooth', block:'center' });
+          input.focus();
+        }
+      });
+    }
+
+    async function salvarValidadeInline(button) {
+      const numero = button.getAttribute('data-process-number') || '';
+      const input = [...document.querySelectorAll('[data-process-validity-input]')]
+        .find(el => el.getAttribute('data-process-number') === numero);
+      const validade = input?.value || '';
+      if (!validade) { showToast('Informe a nova data de validade.', true); input?.focus(); return; }
+      button.disabled = true;
+      button.textContent = 'Salvando...';
+      const ok = await upsertProcessValidity(numero, validade);
+      if (ok) state.editingProcessValidity = null;
+      else {
+        button.disabled = false;
+        button.textContent = 'Salvar';
+      }
+    }
+
+    function cancelarEdicaoValidade() {
+      state.editingProcessValidity = null;
+      renderProcessos();
     }
 
     function renderProcessos() {
@@ -3089,20 +3268,28 @@ function mapPreSolempFromDb(row) {
         const validade = proc.meta?.validade || '';
         const days = validade ? Math.ceil((new Date(`${validade}T12:00:00`).getTime() - new Date(`${localTodayISO()}T12:00:00`).getTime()) / 86400000) : null;
         const validityClass = days === null ? 'text-slate-400' : days < 0 ? 'text-red-400 font-semibold' : days <= 60 ? 'text-amber-300 font-semibold' : 'text-emerald-300';
+        const isEditingValidity = state.editingProcessValidity === proc.numero;
+        const validityCell = isEditingValidity
+          ? `<div class="flex flex-col gap-2 min-w-[190px]"><input type="date" data-process-validity-input data-process-number="${escapeHtml(proc.numero)}" value="${escapeHtml(validade)}" class="w-full px-2 py-1.5 text-xs border border-blue-700 rounded-lg bg-slate-900 text-slate-100" /><div class="flex gap-2"><button type="button" data-process-action="save-validity" data-process-number="${escapeHtml(proc.numero)}" class="px-2.5 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold">Salvar</button><button type="button" data-process-action="cancel-validity" class="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs">Cancelar</button></div></div>`
+          : `<div>${escapeHtml(validade ? dateShortPtBR(validade) : 'Não cadastrada')}${days !== null ? `<div class="text-[10px] font-normal">${days < 0 ? `Vencido há ${Math.abs(days)} dia(s)` : `${days} dia(s) restantes`}</div>` : ''}</div>`;
         return `<tr class="hover:bg-slate-800/50">
           <td class="px-3 py-3 font-semibold text-slate-100">${escapeHtml(proc.numero)}</td>
-          <td class="px-3 py-3 ${validityClass}">${escapeHtml(validade ? dateShortPtBR(validade) : 'Não cadastrada')}${days !== null ? `<div class="text-[10px] font-normal">${days < 0 ? `Vencido há ${Math.abs(days)} dia(s)` : `${days} dia(s) restantes`}</div>` : ''}</td>
+          <td class="px-3 py-3 ${validityClass}">${validityCell}</td>
           <td class="px-3 py-3 text-right">${proc.qtdEmpresas}</td>
           <td class="px-3 py-3 text-right">${proc.itens.length}</td>
           <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(proc.valorTotal)}</td>
           <td class="px-3 py-3 text-center"><button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="px-3 py-1.5 rounded-lg bg-blue-950/70 border border-blue-800/70 text-blue-200 text-xs font-semibold"><span data-toggle-label data-open-label="Ocultar empresas" data-closed-label="Detalhamento">Detalhamento</span></button></td>
-          <td class="px-3 py-3 text-center"><button type="button" data-process-action="edit-validity" data-process-number="${escapeHtml(proc.numero)}" class="text-amber-300 hover:underline">Editar validade</button></td>
+          <td class="px-3 py-3 text-center">${isEditingValidity ? '<span class="text-xs text-blue-300">Editando validade</span>' : `<button type="button" data-process-action="edit-validity" data-process-number="${escapeHtml(proc.numero)}" class="text-amber-300 hover:underline">Editar validade</button>`}</td>
         </tr>
         <tr id="${detailId}" class="hidden bg-slate-950/40"><td colspan="7" class="px-4 py-4"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><strong class="text-sm text-slate-100">Empresas vinculadas ao processo ${escapeHtml(proc.numero)}</strong><span class="text-xs text-slate-400">Valor total: ${fmtBRL(proc.valorTotal)} • ${proc.itens.length} item(ns)</span></div><div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-xs text-left min-w-[1250px]"><thead class="bg-slate-900 text-slate-400 uppercase"><tr><th class="px-3 py-2">Empresa</th><th class="px-3 py-2 text-right">Itens</th><th class="px-3 py-2 text-right">Total autorizado</th><th class="px-3 py-2 text-right">Total empenhado</th><th class="px-3 py-2 text-right">Usado (liq./pago)</th><th class="px-3 py-2 text-right">Saldo financeiro</th><th class="px-3 py-2 text-right">Qtd. autorizada</th><th class="px-3 py-2 text-right">Qtd. empenhada</th><th class="px-3 py-2 text-right">Saldo qtd.</th><th class="px-3 py-2 text-center">Detalhamento</th></tr></thead><tbody>${companiesHtml || '<tr><td colspan="10" class="px-3 py-5 text-center text-slate-500">Nenhuma empresa vinculada.</td></tr>'}</tbody></table></div></td></tr>`;
       }).join('') || '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">Nenhum processo licitatório encontrado.</td></tr>';
       tbody.onclick = event => {
-        const button = event.target.closest('button[data-process-action="edit-validity"]');
-        if (button) editarValidadeProcesso(button.getAttribute('data-process-number'));
+        const button = event.target.closest('button[data-process-action]');
+        if (!button) return;
+        const action = button.getAttribute('data-process-action');
+        if (action === 'edit-validity') editarValidadeProcesso(button.getAttribute('data-process-number'));
+        else if (action === 'save-validity') salvarValidadeInline(button);
+        else if (action === 'cancel-validity') cancelarEdicaoValidade();
       };
     }
 
@@ -3625,7 +3812,7 @@ function getPedidoSignatureDefaults() {
         <div class="sm:col-span-5"><label class="block text-[11px] text-slate-400 mb-1">Discriminação *</label><select class="pedido-row-item w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" required onchange="updatePedidoItemHint(this); updatePedidoTotals();">${buildPedidoItemOptionsHtml(selectedId)}</select><p class="pedido-row-hint text-[10px] text-blue-300 mt-1">Selecione um empenho e depois um de seus itens.</p></div>
         <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Marca</label><input value="${escapeHtml(data?.marca || '')}" class="pedido-row-marca w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="Marca" /></div>
         <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">UF</label><input readonly class="pedido-row-unid w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
-        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Qtd. *</label><input type="number" min="0.001" step="0.001" required value="${escapeHtml(data?.quantidade ?? '')}" oninput="updatePedidoTotals()" class="pedido-row-qtd w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="0" /></div>
+        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Qtd. *</label><input type="number" min="0.001" step="0.001" required value="${escapeHtml(data?.quantidade ?? '')}" oninput="updatePedidoItemHint(this.closest('.pedido-item-row').querySelector('.pedido-row-item')); updatePedidoTotals()" class="pedido-row-qtd w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="0" /><p class="pedido-row-balance text-[10px] text-emerald-300 mt-1">Saldo do empenho será exibido aqui.</p></div>
         <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">P. Unit.</label><input readonly class="pedido-row-price w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
         <div class="sm:col-span-1 flex items-end justify-end"><button type="button" onclick="removePedidoItemRow(this)" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">✕</button></div>`;
       container.appendChild(row);
@@ -3653,19 +3840,25 @@ function getPedidoSignatureDefaults() {
       const unit = row.querySelector('.pedido-row-unid');
       const price = row.querySelector('.pedido-row-price');
       const hint = row.querySelector('.pedido-row-hint');
+      const balanceEl = row.querySelector('.pedido-row-balance');
       const qtyInput = row.querySelector('.pedido-row-qtd');
       if (!proc || !group) {
         unit.value = '';
         price.value = '';
         qtyInput.removeAttribute('max');
         hint.textContent = group ? 'Selecione um item deste empenho.' : 'Selecione primeiro um empenho.';
+        balanceEl.textContent = 'Saldo do empenho será exibido após selecionar um item.';
         return;
       }
       const availability = getPedidoItemAvailability(group, proc.id);
+      const quantidadeAtual = Number(qtyInput.value || 0);
+      const restanteAposPedido = Math.max(0, availability.disponivel - quantidadeAtual);
       unit.value = proc.unidade_fornecimento || '';
       price.value = fmtBRL(proc.valor_unitario);
       qtyInput.max = String(Math.max(0, availability.disponivel));
-      hint.textContent = `Empenho ${group.numero_empenho} • Qtd. empenhada: ${fmtNum(availability.empenhada)} • Já pedida: ${fmtNum(availability.jaPedida)} • Disponível: ${fmtNum(availability.disponivel)} ${proc.unidade_fornecimento || ''}`;
+      hint.textContent = `Empenho ${group.numero_empenho} • Unidade: ${proc.unidade_fornecimento || ''} • Unitário: ${fmtBRL(proc.valor_unitario)}`;
+      balanceEl.textContent = `Empenhado: ${fmtNum(availability.empenhada)} • Já solicitado em outros pedidos: ${fmtNum(availability.jaPedida)} • Disponível para este pedido: ${fmtNum(availability.disponivel)} ${proc.unidade_fornecimento || ''} (${fmtBRL(availability.disponivel * Number(proc.valor_unitario))}) • Saldo após informar: ${fmtNum(restanteAposPedido)} ${proc.unidade_fornecimento || ''}`;
+      balanceEl.className = `pedido-row-balance text-[10px] mt-1 ${quantidadeAtual > availability.disponivel + 0.0001 ? 'text-red-300 font-semibold' : 'text-emerald-300'}`;
     }
 
     async function updateNewPedidoNumber() {
@@ -3714,8 +3907,10 @@ function getPedidoSignatureDefaults() {
     function updatePedidoTotals() {
       let count = 0, quantityTotal = 0, total = 0;
       document.querySelectorAll('.pedido-item-row').forEach(row => {
-        const proc = state.processos.find(p => p.id === row.querySelector('.pedido-row-item').value);
+        const select = row.querySelector('.pedido-row-item');
+        const proc = state.processos.find(p => p.id === select.value);
         const qty = Number(row.querySelector('.pedido-row-qtd').value || 0);
+        if (proc) updatePedidoItemHint(select);
         if (proc && qty > 0) { count++; quantityTotal += qty; total += qty * Number(proc.valor_unitario); }
       });
       document.getElementById('pedido-qtd-itens').textContent = count;
