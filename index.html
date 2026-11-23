@@ -25,6 +25,71 @@
       #presentationCard { box-shadow: none !important; border: none !important; max-width: 100% !important; background: #ffffff !important; color: #0f172a !important; }
       #presentationCard * { color: #0f172a !important; border-color: #cbd5e1 !important; background-color: transparent !important; }
     }
+    /* Pré-SOLEMP: editor, A4 preview and clean print */
+    .presolemp-sheet {
+      box-sizing: border-box; width: 210mm; min-height: 297mm; padding: 10mm 9mm 9mm;
+      margin: 0 auto; background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt; line-height: 1.18; position: relative; display: flex; flex-direction: column;
+      box-shadow: 0 8px 30px rgba(0,0,0,.22);
+    }
+    .presolemp-sheet * { box-sizing: border-box; }
+    .presolemp-brand { display:flex; justify-content:center; align-items:center; position:relative; min-height:26mm; }
+    .presolemp-brand img { width:25mm; height:22mm; object-fit:contain; }
+    .presolemp-brand .brand-note { position:absolute; left:0; top:0; font-size:7pt; color:#555; }
+    .presolemp-sheet h1, .presolemp-sheet h2, .presolemp-sheet h3 { margin:0; text-align:center; color:#111; }
+    .presolemp-sheet h1 { font-size:11pt; font-weight:700; margin-top:1mm; }
+    .presolemp-sheet h2 { font-size:11pt; font-weight:700; margin-top:1mm; }
+    .presolemp-sheet h3 { font-size:11pt; font-weight:700; margin-top:5mm; }
+    .presolemp-date { text-align:right; margin:6mm 0 3mm; font-size:9pt; }
+    .presolemp-headgrid { display:grid; grid-template-columns:minmax(0,1fr) 44mm; gap:4mm; align-items:start; }
+    .presolemp-meta { font-size:9pt; line-height:1.35; }
+    .presolemp-meta div { min-height:4.2mm; }
+    .presolemp-meta strong { font-weight:700; margin-right:2mm; }
+    .presolemp-empenho-box { border:1.5px solid #111; display:grid; grid-template-rows:auto 10mm auto 10mm; font-size:9pt; text-align:center; }
+    .presolemp-empenho-box strong { background:#d9d9d9; border-bottom:1px solid #111; padding:1mm; }
+    .presolemp-empenho-box .blank { border-bottom:1px solid #111; }
+    .presolemp-empenho-box .blank:last-child { border-bottom:0; }
+    .presolemp-budget, .presolemp-items { width:100%; border-collapse:collapse; table-layout:fixed; font-size:8pt; margin-top:2mm; }
+    .presolemp-budget th, .presolemp-budget td, .presolemp-items th, .presolemp-items td { border:1px solid #111; padding:1.1mm 1mm; vertical-align:middle; }
+    .presolemp-budget th, .presolemp-items th { background:#d3d3d3; font-weight:700; text-align:center; }
+    .presolemp-budget td { text-align:center; overflow-wrap:anywhere; }
+    .presolemp-items th { font-size:8pt; }
+    .presolemp-items td { font-size:7.7pt; }
+    .presolemp-items .num, .presolemp-items .money { text-align:right; white-space:nowrap; }
+    .presolemp-items .center { text-align:center; }
+    .presolemp-totalrow { display:grid; grid-template-columns:1fr auto; align-items:center; gap:4mm; margin-top:1.5mm; font-weight:700; }
+    .presolemp-totalbox { border:1.5px solid #111; padding:1mm 2mm; min-width:45mm; text-align:right; }
+    .presolemp-purpose { margin-top:3mm; display:grid; grid-template-columns:auto 1fr; gap:2mm; align-items:start; font-size:9pt; }
+    .presolemp-purpose strong { font-size:9pt; }
+    .presolemp-purpose span { color:#c62828; font-weight:700; text-transform:uppercase; overflow-wrap:anywhere; }
+    .presolemp-generated { text-align:right; margin:6mm 7mm 6mm 0; font-size:8pt; font-weight:700; }
+    .presolemp-signatures { display:grid; grid-template-columns:repeat(4,1fr); gap:2mm; text-align:center; margin-top:1mm; font-size:7pt; }
+    .presolemp-signature { min-width:0; display:flex; flex-direction:column; justify-content:flex-end; min-height:17mm; }
+    .presolemp-signature .sig-name { font-weight:700; text-transform:uppercase; white-space:normal; overflow-wrap:anywhere; min-height:5mm; }
+    .presolemp-signature .sig-rank { margin-top:1mm; }
+    .presolemp-signature .sig-role { margin-top:1mm; }
+    .presolemp-spacer { flex:1; min-height:10mm; }
+    .presolemp-footer { display:flex; justify-content:space-between; align-items:end; font-size:7pt; color:#444; margin-top:8mm; }
+    .presolemp-preview-wrap { overflow-x:auto; padding:8px 0 18px; }
+    .presolemp-preview-label { max-width:210mm; margin:0 auto 8px; }
+    @media screen and (max-width: 850px) { .presolemp-sheet { transform-origin:top left; } }
+    @media print {
+      @page { size:A4 portrait; margin:0; }
+      body.printing-presolemp { background:#fff !important; color:#111 !important; display:block !important; }
+      body.printing-presolemp * { visibility:hidden !important; }
+      body.printing-presolemp #presolempPrintSheet,
+      body.printing-presolemp #presolempPrintSheet * { visibility:visible !important; }
+      body.printing-presolemp #presolempPrintSheet {
+        position:absolute !important; left:0 !important; top:0 !important; width:210mm !important;
+        margin:0 !important; box-shadow:none !important; display:flex !important;
+      }
+      body.printing-presolemp .presolemp-preview-wrap { overflow:visible !important; padding:0 !important; }
+      body.printing-presolemp .presolemp-sheet {
+        width:210mm !important; min-height:297mm !important; height:auto !important;
+        padding:10mm 9mm 9mm !important; box-shadow:none !important; margin:0 !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#090d16] text-slate-200">
@@ -165,6 +230,9 @@
         </button>
         <button onclick="switchTab('processos')" id="tab-processos" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
           📋 Processo Licitatório
+        </button>
+        <button onclick="switchTab('presolemp')" id="tab-presolemp" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
+          📄 Pré-SOLEMP / Impressão
         </button>
         <button onclick="switchTab('empenhos')" id="tab-empenhos" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
           💰 Empenhos
@@ -478,7 +546,13 @@
         </div>
 
         <form onsubmit="saveMultiEmpenho(event)" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div class="sm:col-span-2 lg:col-span-1">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Pré-SOLEMP (opcional)</label>
+              <select id="emp-presolemp-sel" onchange="onEmpPreSolempChange()" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100">
+                <option value="">Lançamento manual / selecione...</option>
+              </select>
+            </div>
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1">Número do Empenho *</label>
               <input type="text" id="emp-num" required placeholder="Ex: 2026NE000123" class="w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
@@ -530,6 +604,127 @@
             <tbody id="tbl-empenhos" class="divide-y divide-slate-800/80"></tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA: PRÉ-SOLEMP / IMPRESSÃO OFICIAL          -->
+    <!-- ========================================== -->
+    <section id="view-presolemp" class="view-section hidden space-y-6">
+      <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Cadastrar Pré-SOLEMP</h2>
+            <p class="text-xs text-slate-400 mt-1">Selecione o pregão e a empresa; os itens, preços e dados do fornecedor serão vinculados ao cadastro existente.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 no-print">
+            <button type="button" onclick="newPreSolemp()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Nova Pré-SOLEMP</button>
+            <button type="button" onclick="savePreSolempDefaults()" class="px-3 py-2 bg-indigo-800 hover:bg-indigo-700 border border-indigo-700 text-white text-xs font-semibold rounded-lg">Salvar Campos/Assinaturas como Padrão</button>
+          </div>
+        </div>
+
+        <form id="preSolempForm" onsubmit="savePreSolemp(event)" class="space-y-5">
+          <input type="hidden" id="ps-id" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Nº da Pré-SOLEMP *</label>
+              <input id="ps-numero" required type="text" placeholder="Ex.: 120" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Data *</label>
+              <input id="ps-data" required type="date" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Pregão *</label>
+              <select id="ps-pregao" required onchange="onPreSolempPregaoChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100">
+                <option value="">Selecione o pregão...</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Empresa *</label>
+              <select id="ps-empresa" required onchange="onPreSolempEmpresaChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100">
+                <option value="">Selecione a empresa...</option>
+              </select>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Nome do Fornecedor (automático)</label>
+              <input id="ps-fornecedor" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-300 mb-1">CNPJ (automático)</label>
+              <input id="ps-cnpj" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" />
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-sm font-bold text-slate-100">Dados administrativos e orçamentários</h3>
+                <p class="text-[11px] text-slate-400">Os valores abaixo iniciam preenchidos conforme o template anexado e podem ser ajustados para cada solicitação.</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="lg:col-span-2"><label class="block text-xs text-slate-300 mb-1">Organização</label><input id="ps-organizacao" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Tipo de Empenho</label><input id="ps-tipo" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Modalidade</label><input id="ps-modalidade" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Classificação Itens</label><input id="ps-classificacao" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Centro de Custo</label><input id="ps-centro-custo" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">UASG Licitação</label><input id="ps-uasg" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">NR do Processo</label><input id="ps-processo" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+              <div><label class="block text-xs text-slate-300 mb-1">UG</label><input id="ps-ug" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">PTRES</label><input id="ps-ptres" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">AI</label><input id="ps-ai" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">DO</label><input id="ps-do" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">BI</label><input id="ps-bi" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">FR</label><input id="ps-fr" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">ND</label><input id="ps-nd" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">CONTA</label><input id="ps-conta" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            </div>
+            <div><label class="block text-xs text-slate-300 mb-1">Finalidade</label><textarea id="ps-finalidade" rows="2" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100"></textarea></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Pré-SOLEMP gerada por</label><input id="ps-gerada-por" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div><h3 class="text-sm font-bold text-slate-100">Itens da Pré-SOLEMP</h3><p class="text-[11px] text-slate-400">Os preços unitários vêm do cadastro do pregão; informe as quantidades solicitadas.</p></div>
+              <button type="button" onclick="addPreSolempItemRow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Adicionar item</button>
+            </div>
+            <div id="ps-itens-container" class="space-y-3"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+              <div><span class="block text-[11px] uppercase text-slate-400 font-semibold">Quantidade de itens</span><strong id="ps-qtd-itens" class="text-lg text-slate-100">0</strong></div>
+              <div><span class="block text-[11px] uppercase text-slate-400 font-semibold">Quantidade total</span><strong id="ps-qtd-total" class="text-lg text-slate-100">0</strong></div>
+              <div class="col-span-2 sm:col-span-1"><span class="block text-[11px] uppercase text-slate-400 font-semibold">Total geral</span><strong id="ps-total-geral" class="text-lg text-emerald-300">R$ 0,00</strong></div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div><h3 class="text-sm font-bold text-slate-100">Assinaturas</h3><p class="text-[11px] text-slate-400">Os quatro blocos abaixo são editáveis. Use o botão superior para salvar os dados como padrão neste navegador.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2"><p class="text-xs font-bold text-blue-300">Assinatura 1</p><input id="ps-sig1-nome" placeholder="Nome completo" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig1-posto" placeholder="Posto / graduação" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig1-funcao" placeholder="Função" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2"><p class="text-xs font-bold text-blue-300">Assinatura 2</p><input id="ps-sig2-nome" placeholder="Nome completo" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig2-posto" placeholder="Posto / graduação" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig2-funcao" placeholder="Função" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2"><p class="text-xs font-bold text-blue-300">Assinatura 3</p><input id="ps-sig3-nome" placeholder="Nome completo" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig3-posto" placeholder="Posto / graduação" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig3-funcao" placeholder="Função" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2"><p class="text-xs font-bold text-blue-300">Assinatura 4</p><input id="ps-sig4-nome" placeholder="Nome completo" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig4-posto" placeholder="Posto / graduação" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><input id="ps-sig4-funcao" placeholder="Função" class="ps-signature-field w-full px-2.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-end gap-2 border-t border-slate-800 pt-4 no-print">
+            <button type="button" onclick="newPreSolemp()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-semibold rounded-lg">Limpar / Nova</button>
+            <button type="button" onclick="printCurrentPreSolemp()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-700 text-white text-sm font-semibold rounded-lg">🖨️ Imprimir / Salvar PDF</button>
+            <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg">Salvar Pré-SOLEMP</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold text-slate-100">Pré-SOLEMPs salvas</h3><p class="text-xs text-slate-400 mt-1">Os registros desta lista ficam armazenados localmente neste navegador.</p></div><span id="ps-count" class="text-xs text-slate-400">0 registro(s)</span></div>
+        <div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800"><tr><th class="px-3 py-3">Nº</th><th class="px-3 py-3">Data</th><th class="px-3 py-3">Pregão</th><th class="px-3 py-3">Empresa</th><th class="px-3 py-3 text-right">Itens</th><th class="px-3 py-3 text-right">Total</th><th class="px-3 py-3">Situação</th><th class="px-3 py-3 text-right">Ações</th></tr></thead><tbody id="tbl-presolemp" class="divide-y divide-slate-800/80"></tbody></table></div>
+      </div>
+
+      <div class="presolemp-preview-wrap">
+        <div class="presolemp-preview-label no-print"><h3 class="text-sm font-bold text-slate-100">Pré-visualização do documento oficial</h3><p class="text-xs text-slate-400">A folha abaixo será a única página enviada à impressora ou ao PDF.</p></div>
+        <div id="presolempPrintSheet" class="presolemp-sheet"></div>
       </div>
     </section>
 
@@ -651,7 +846,8 @@
       empresas: [],
       processos: [],
       empenhos: [],
-      notas: []
+      notas: [],
+      preSolemps: []
     };
 
     const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -769,6 +965,7 @@
       state.processos = resProc.data || [];
       state.empenhos = resEmpenhos.data || [];
       state.notas = resNotas.data || [];
+      loadPreSolempData();
 
       renderAll();
     }
@@ -779,6 +976,7 @@
       renderProcessos();
       renderEmpenhos();
       renderNotas();
+      renderPreSolemps();
       renderAcompanhamento();
       renderDashboard();
     }
@@ -1409,6 +1607,56 @@
           .map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
       if ([...empIdsComEmpenho].includes(prevNfEmp)) nfEmpSel.value = prevNfEmp;
       onNfEmpresaChange();
+
+      populatePreSolempDropdowns();
+      populateEmpPreSolempDropdown();
+    }
+
+    function populatePreSolempDropdowns() {
+      const pregaoSel = document.getElementById('ps-pregao');
+      if (!pregaoSel) return;
+      const previous = pregaoSel.value;
+      const pregoes = [...new Set(state.processos.map(p => p.numero_pregao).filter(Boolean))].sort();
+      pregaoSel.innerHTML = '<option value="">Selecione o pregão...</option>' +
+        pregoes.map(pr => `<option value="${escapeHtml(pr)}">${escapeHtml(pr)}</option>`).join('');
+      if (pregoes.includes(previous)) pregaoSel.value = previous;
+      onPreSolempPregaoChange();
+    }
+
+    function populateEmpPreSolempDropdown() {
+      const sel = document.getElementById('emp-presolemp-sel');
+      if (!sel) return;
+      const previous = sel.value;
+      sel.innerHTML = '<option value="">Lançamento manual / selecione...</option>' +
+        [...state.preSolemps].sort((a,b) => String(b.numero || '').localeCompare(String(a.numero || ''), 'pt-BR', {numeric:true})).map(p => {
+          const disabled = p.status === 'Empenho gerado' ? 'disabled' : '';
+          const status = p.status === 'Empenho gerado' ? ` • Empenho ${p.numero_empenho || ''}` : '';
+          return `<option value="${escapeHtml(p.id)}" ${disabled}>Pré-SOLEMP ${escapeHtml(p.numero)} • ${escapeHtml(p.numero_pregao)}${status}</option>`;
+        }).join('');
+      if (state.preSolemps.some(p => p.id === previous && p.status !== 'Empenho gerado')) sel.value = previous;
+    }
+
+    function onPreSolempPregaoChange() {
+      const pregao = document.getElementById('ps-pregao')?.value || '';
+      const empresaSel = document.getElementById('ps-empresa');
+      if (!empresaSel) return;
+      const previous = empresaSel.value;
+      const ids = [...new Set(state.processos.filter(p => p.numero_pregao === pregao).map(p => p.empresa_id))];
+      empresaSel.innerHTML = '<option value="">Selecione a empresa...</option>' + ids.map(id => {
+        const emp = state.empresas.find(e => e.id === id);
+        return emp ? `<option value="${escapeHtml(emp.id)}">${escapeHtml(emp.id_resumido)} | ${escapeHtml(emp.nome_fantasia)}</option>` : '';
+      }).join('');
+      if (ids.includes(previous)) empresaSel.value = previous;
+      onPreSolempEmpresaChange();
+      refreshAllPreSolempItemRows();
+    }
+
+    function onPreSolempEmpresaChange() {
+      const empresaId = document.getElementById('ps-empresa')?.value || '';
+      const empresa = state.empresas.find(e => e.id === empresaId);
+      document.getElementById('ps-fornecedor').value = empresa ? (empresa.nome_fantasia || '') : '';
+      document.getElementById('ps-cnpj').value = empresa ? (empresa.cnpj || '') : '';
+      refreshAllPreSolempItemRows();
     }
 
     function onFiltroAcompEmpresaChange() {
@@ -1454,6 +1702,45 @@
 
     function onEmpEmpresaChange() {
       refreshAllEmpItemRows();
+    }
+
+    function onEmpPreSolempChange() {
+      const id = document.getElementById('emp-presolemp-sel').value;
+      if (id) loadPreSolempIntoEmpenho(id);
+    }
+
+    function loadPreSolempIntoEmpenho(id) {
+      const pre = state.preSolemps.find(p => p.id === id);
+      if (!pre) return;
+      if (pre.status === 'Empenho gerado') {
+        showToast(`Esta Pré-SOLEMP já originou o empenho ${pre.numero_empenho || ''}.`, true);
+        document.getElementById('emp-presolemp-sel').value = '';
+        return;
+      }
+      const pregaoSel = document.getElementById('emp-pregao');
+      if (![...pregaoSel.options].some(o => o.value === pre.numero_pregao)) {
+        showToast('O pregão desta Pré-SOLEMP não está disponível nos processos carregados.', true);
+        return;
+      }
+      pregaoSel.value = pre.numero_pregao;
+      onEmpPregaoChange();
+      const empresaSel = document.getElementById('emp-empresa-sel');
+      empresaSel.value = pre.empresa_id;
+      onEmpEmpresaChange();
+
+      document.getElementById('emp-num').value = '';
+      document.getElementById('emp-data').value = '';
+      const container = document.getElementById('emp-itens-container');
+      container.innerHTML = '';
+      (pre.itens || []).forEach(item => {
+        addEmpenhoItemRow(item.processo_item_id);
+        const row = container.lastElementChild;
+        if (row) row.querySelector('.emp-row-qtd').value = item.quantidade;
+      });
+      if (!pre.itens?.length) addEmpenhoItemRow();
+      switchTab('empenhos');
+      document.getElementById('emp-num').focus();
+      showToast(`Pré-SOLEMP ${pre.numero} carregada. Informe o número e a data do empenho.`);
     }
 
     function onNfEmpresaChange() {
@@ -1612,6 +1899,9 @@
         return;
       }
 
+      const preSolempId = document.getElementById('emp-presolemp-sel').value;
+      if (preSolempId) markPreSolempAsGenerated(preSolempId, numero_empenho, data_empenho);
+      document.getElementById('emp-presolemp-sel').value = '';
       resetEmpenhoItemRows();
       showToast(`${records.length} item(ns) registrado(s) no empenho ${numero_empenho}!`);
       await loadAllData();
@@ -1714,6 +2004,506 @@
       }
       showToast('Registro excluído.');
       await loadAllData();
+    }
+
+    // =========================================================================
+    // PRÉ-SOLEMP: PERSISTÊNCIA LOCAL, CADASTRO, TEMPLATE E IMPRESSÃO
+    // =========================================================================
+    const PRE_SOLEMP_STORAGE_KEY = 'controle_licitatorio_pre_solemps_v1';
+    const PRE_SOLEMP_DEFAULTS_KEY = 'controle_licitatorio_pre_solemp_defaults_v1';
+    const PRE_SOLEMP_LOGO = 'data:image/jpeg;base64,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';
+
+    const PRE_SOLEMP_DEFAULTS = {
+      organizacao: 'CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA',
+      tipo: 'GLOBAL', modalidade: 'NÃO SE APLICA', classificacao: 'MCI',
+      centroCusto: '590103', uasg: '787010', processo: '25189.987520/1000-26',
+      ug: '787010', ptres: '174713', ai: 'B4410100', do: '2', bi: 'DD',
+      fr: '0100000000', nd: '339030', conta: '339030.21 (p/ material descartável)',
+      finalidade: 'AQUISIÇÃO DE GÊNEROS PARA COMPLETAR OS ESTOQUES DESTE CENTRO DE INTENDÊNCIA',
+      geradaPor: '',
+      assinaturas: [
+        { nome: 'MARCELOS GOMES DA CUNHA', posto: 'Capitão de Mar e Guerra (IM)', funcao: 'Ordenador de Despesa' },
+        { nome: 'KEDYSON BRUNO DE S. FERREIRA', posto: 'Capitão de Fragata (IM)', funcao: 'Agente Fiscal' },
+        { nome: 'PAULA CARVALHO DE O. RODRIGUES', posto: 'Capitão de Corveta (IM)', funcao: 'Gestor de Municiamento' },
+        { nome: 'RAFAEL BARBOSA GOMES DE PAULA', posto: 'Terceiro-Sargento (AR)', funcao: 'Fiel de Municiamento' }
+      ]
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function localTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function dateLongPtBR(value) {
+      if (!value) return '';
+      const d = new Date(`${value}T12:00:00`);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    }
+
+    function dateShortPtBR(value) {
+      if (!value) return '';
+      const d = new Date(`${value}T12:00:00`);
+      return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('pt-BR');
+    }
+
+    function loadPreSolempData() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(PRE_SOLEMP_STORAGE_KEY) || '[]');
+        state.preSolemps = Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        state.preSolemps = [];
+        console.warn('Não foi possível ler as Pré-SOLEMPs salvas neste navegador.', err);
+      }
+    }
+
+    function persistPreSolemps() {
+      try {
+        localStorage.setItem(PRE_SOLEMP_STORAGE_KEY, JSON.stringify(state.preSolemps));
+        return true;
+      } catch (err) {
+        showToast('Não foi possível salvar no armazenamento deste navegador. Verifique o espaço disponível.', true);
+        return false;
+      }
+    }
+
+    function getPreSolempDefaults() {
+      try {
+        return { ...PRE_SOLEMP_DEFAULTS, ...(JSON.parse(localStorage.getItem(PRE_SOLEMP_DEFAULTS_KEY) || '{}')) };
+      } catch (_) { return PRE_SOLEMP_DEFAULTS; }
+    }
+
+    function applyPreSolempDefaults() {
+      const defaults = getPreSolempDefaults();
+      const map = {
+        organizacao:'ps-organizacao', tipo:'ps-tipo', modalidade:'ps-modalidade',
+        classificacao:'ps-classificacao', centroCusto:'ps-centro-custo', uasg:'ps-uasg',
+        processo:'ps-processo', ug:'ps-ug', ptres:'ps-ptres', ai:'ps-ai', do:'ps-do',
+        bi:'ps-bi', fr:'ps-fr', nd:'ps-nd', conta:'ps-conta', finalidade:'ps-finalidade',
+        geradaPor:'ps-gerada-por'
+      };
+      Object.entries(map).forEach(([key,id]) => { document.getElementById(id).value = defaults[key] ?? ''; });
+      (defaults.assinaturas || PRE_SOLEMP_DEFAULTS.assinaturas).forEach((s, i) => {
+        const n = i + 1;
+        document.getElementById(`ps-sig${n}-nome`).value = s.nome || '';
+        document.getElementById(`ps-sig${n}-posto`).value = s.posto || '';
+        document.getElementById(`ps-sig${n}-funcao`).value = s.funcao || '';
+      });
+    }
+
+    function savePreSolempDefaults() {
+      const defaults = {
+        organizacao: document.getElementById('ps-organizacao').value,
+        tipo: document.getElementById('ps-tipo').value,
+        modalidade: document.getElementById('ps-modalidade').value,
+        classificacao: document.getElementById('ps-classificacao').value,
+        centroCusto: document.getElementById('ps-centro-custo').value,
+        uasg: document.getElementById('ps-uasg').value,
+        processo: document.getElementById('ps-processo').value,
+        ug: document.getElementById('ps-ug').value,
+        ptres: document.getElementById('ps-ptres').value,
+        ai: document.getElementById('ps-ai').value,
+        do: document.getElementById('ps-do').value,
+        bi: document.getElementById('ps-bi').value,
+        fr: document.getElementById('ps-fr').value,
+        nd: document.getElementById('ps-nd').value,
+        conta: document.getElementById('ps-conta').value,
+        finalidade: document.getElementById('ps-finalidade').value,
+        geradaPor: document.getElementById('ps-gerada-por').value,
+        assinaturas: [1,2,3,4].map(n => ({
+          nome: document.getElementById(`ps-sig${n}-nome`).value,
+          posto: document.getElementById(`ps-sig${n}-posto`).value,
+          funcao: document.getElementById(`ps-sig${n}-funcao`).value
+        }))
+      };
+      try {
+        localStorage.setItem(PRE_SOLEMP_DEFAULTS_KEY, JSON.stringify(defaults));
+        showToast('Campos e assinaturas salvos como padrão neste navegador.');
+      } catch (_) { showToast('Não foi possível salvar os padrões neste navegador.', true); }
+    }
+
+    function getPreSolempProcessos() {
+      const pregao = document.getElementById('ps-pregao')?.value || '';
+      const empresaId = document.getElementById('ps-empresa')?.value || '';
+      if (!pregao || !empresaId) return [];
+      return state.processos.filter(p => p.numero_pregao === pregao && p.empresa_id === empresaId);
+    }
+
+    function buildPreSolempItemOptionsHtml(selectedId = '') {
+      const items = getPreSolempProcessos();
+      if (!items.length) return '<option value="">Selecione pregão e empresa primeiro...</option>';
+      return '<option value="">Selecione o item...</option>' + items.map(p =>
+        `<option value="${escapeHtml(p.id)}" ${p.id === selectedId ? 'selected' : ''}>Item ${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)} | ${fmtBRL(p.valor_unitario)})</option>`
+      ).join('');
+    }
+
+    function addPreSolempItemRow(selectedId = '', quantity = '') {
+      const container = document.getElementById('ps-itens-container');
+      const row = document.createElement('div');
+      row.className = 'ps-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-end';
+      row.innerHTML = `
+        <div class="sm:col-span-7">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Item do Pregão *</label>
+          <select required onchange="updatePreSolempItemHint(this); updatePreSolempTotals();" class="ps-row-item w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100">${buildPreSolempItemOptionsHtml(selectedId)}</select>
+          <p class="ps-row-hint text-[11px] text-blue-300 mt-1">Selecione um item para carregar preço e unidade.</p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Preço Unitário</label>
+          <input readonly class="ps-row-price w-full px-3 py-2 text-sm bg-slate-900/70 text-slate-300 border border-slate-700 rounded-lg" value="" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Quantidade *</label>
+          <input type="number" required min="0.001" step="0.001" value="${escapeHtml(quantity)}" oninput="updatePreSolempTotals()" placeholder="0" class="ps-row-qtd w-full px-3 py-2 text-sm bg-slate-900 text-slate-100 border border-slate-700 rounded-lg" />
+        </div>
+        <div class="sm:col-span-1 flex items-end justify-end">
+          <button type="button" onclick="removePreSolempItemRow(this)" title="Remover item" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">✕</button>
+        </div>
+      `;
+      container.appendChild(row);
+      if (selectedId) updatePreSolempItemHint(row.querySelector('.ps-row-item'));
+      updatePreSolempTotals();
+    }
+
+    function removePreSolempItemRow(btn) {
+      const container = document.getElementById('ps-itens-container');
+      if (container.querySelectorAll('.ps-item-row').length <= 1) {
+        showToast('Mantenha pelo menos um item na Pré-SOLEMP.', true);
+        return;
+      }
+      btn.closest('.ps-item-row').remove();
+      updatePreSolempTotals();
+    }
+
+    function refreshAllPreSolempItemRows() {
+      document.querySelectorAll('.ps-item-row').forEach(row => {
+        const sel = row.querySelector('.ps-row-item');
+        const previous = sel.value;
+        sel.innerHTML = buildPreSolempItemOptionsHtml(previous);
+        updatePreSolempItemHint(sel);
+      });
+      updatePreSolempTotals();
+    }
+
+    function updatePreSolempItemHint(selectEl) {
+      const row = selectEl.closest('.ps-item-row');
+      const hint = row.querySelector('.ps-row-hint');
+      const price = row.querySelector('.ps-row-price');
+      const proc = state.processos.find(p => p.id === selectEl.value);
+      if (!proc) { hint.textContent = 'Selecione um item para carregar preço e unidade.'; price.value = ''; return; }
+      price.value = fmtBRL(proc.valor_unitario);
+      hint.textContent = `Item ${proc.numero_item} • ${proc.unidade_fornecimento} • Preço do cadastro: ${fmtBRL(proc.valor_unitario)}`;
+    }
+
+    function getPreSolempDraft(validate = false) {
+      const numero = document.getElementById('ps-numero').value.trim();
+      const data = document.getElementById('ps-data').value;
+      const numero_pregao = document.getElementById('ps-pregao').value;
+      const empresa_id = document.getElementById('ps-empresa').value;
+      const empresa = state.empresas.find(e => e.id === empresa_id);
+      const linhas = [...document.querySelectorAll('.ps-item-row')];
+      const vistos = new Set();
+      const itens = [];
+      for (const row of linhas) {
+        const processo_item_id = row.querySelector('.ps-row-item').value;
+        const quantidade = Number(row.querySelector('.ps-row-qtd').value);
+        if (!processo_item_id || !Number.isFinite(quantidade) || quantidade <= 0) {
+          if (validate) { showToast('Selecione um item e informe quantidade válida em todas as linhas.', true); return null; }
+          continue;
+        }
+        if (vistos.has(processo_item_id)) {
+          if (validate) { showToast('O mesmo item não pode aparecer duas vezes na Pré-SOLEMP.', true); return null; }
+          continue;
+        }
+        vistos.add(processo_item_id);
+        const proc = state.processos.find(p => p.id === processo_item_id);
+        if (!proc) continue;
+        const valor_unitario = Number(proc.valor_unitario);
+        itens.push({
+          processo_item_id, numero_item: proc.numero_item, descricao_item: proc.descricao_item,
+          unidade: proc.unidade_fornecimento, valor_unitario, quantidade,
+          subtotal: valor_unitario * quantidade
+        });
+      }
+      if (validate) {
+        if (!numero || !data || !numero_pregao || !empresa_id || !empresa) {
+          showToast('Preencha o número, a data, o pregão e a empresa da Pré-SOLEMP.', true);
+          return null;
+        }
+        if (!itens.length) { showToast('Adicione pelo menos um item válido à Pré-SOLEMP.', true); return null; }
+      }
+      const fields = {
+        organizacao:document.getElementById('ps-organizacao').value,
+        tipo:document.getElementById('ps-tipo').value,
+        modalidade:document.getElementById('ps-modalidade').value,
+        classificacao:document.getElementById('ps-classificacao').value,
+        centroCusto:document.getElementById('ps-centro-custo').value,
+        uasg:document.getElementById('ps-uasg').value,
+        processo:document.getElementById('ps-processo').value,
+        ug:document.getElementById('ps-ug').value, ptres:document.getElementById('ps-ptres').value,
+        ai:document.getElementById('ps-ai').value, do:document.getElementById('ps-do').value,
+        bi:document.getElementById('ps-bi').value, fr:document.getElementById('ps-fr').value,
+        nd:document.getElementById('ps-nd').value, conta:document.getElementById('ps-conta').value,
+        finalidade:document.getElementById('ps-finalidade').value,
+        geradaPor:document.getElementById('ps-gerada-por').value
+      };
+      const assinaturas = [1,2,3,4].map(n => ({
+        nome:document.getElementById(`ps-sig${n}-nome`).value,
+        posto:document.getElementById(`ps-sig${n}-posto`).value,
+        funcao:document.getElementById(`ps-sig${n}-funcao`).value
+      }));
+      const total = itens.reduce((sum, item) => sum + item.subtotal, 0);
+      const quantidadeTotal = itens.reduce((sum, item) => sum + item.quantidade, 0);
+      return {
+        id:document.getElementById('ps-id').value || '', numero, data, numero_pregao, empresa_id,
+        empresa_nome:empresa?.nome_fantasia || document.getElementById('ps-fornecedor').value,
+        cnpj:empresa?.cnpj || document.getElementById('ps-cnpj').value,
+        fields, assinaturas, itens, total, quantidadeTotal, quantidadeItens:itens.length
+      };
+    }
+
+    function updatePreSolempTotals() {
+      let count = 0, qtd = 0, total = 0;
+      document.querySelectorAll('.ps-item-row').forEach(row => {
+        const proc = state.processos.find(p => p.id === row.querySelector('.ps-row-item').value);
+        const quantity = Number(row.querySelector('.ps-row-qtd').value);
+        if (proc && Number.isFinite(quantity) && quantity > 0) { count++; qtd += quantity; total += quantity * Number(proc.valor_unitario); }
+      });
+      document.getElementById('ps-qtd-itens').textContent = count;
+      document.getElementById('ps-qtd-total').textContent = fmtNum(qtd);
+      document.getElementById('ps-total-geral').textContent = fmtBRL(total);
+      renderPreSolempPrintSheet();
+    }
+
+    function renderPreSolempPrintSheet(data = null) {
+      const d = data || getPreSolempDraft(false);
+      const f = d.fields || {};
+      const empresaNome = d.empresa_nome || document.getElementById('ps-fornecedor').value || '';
+      const cnpj = d.cnpj || document.getElementById('ps-cnpj').value || '';
+      const itens = d.itens || [];
+      const total = Number(d.total || 0);
+      const signatures = d.assinaturas || [1,2,3,4].map(n => ({
+        nome:document.getElementById(`ps-sig${n}-nome`).value,
+        posto:document.getElementById(`ps-sig${n}-posto`).value,
+        funcao:document.getElementById(`ps-sig${n}-funcao`).value
+      }));
+      const itemRows = itens.map((it, i) => `
+        <tr>
+          <td class="center">${escapeHtml(it.numero_item ?? i + 1)}</td>
+          <td>${escapeHtml(it.descricao_item)}</td>
+          <td class="center">${escapeHtml(it.unidade)}</td>
+          <td class="money">${escapeHtml(fmtBRL(it.valor_unitario))}</td>
+          <td class="num">${escapeHtml(fmtNum(it.quantidade))}</td>
+          <td class="money">${escapeHtml(fmtBRL(it.subtotal))}</td>
+        </tr>`).join('');
+      const signatureHtml = signatures.map(s => `
+        <div class="presolemp-signature">
+          <div class="sig-name">${escapeHtml(s.nome)}</div>
+          <div class="sig-rank">${escapeHtml(s.posto)}</div>
+          <div class="sig-role">${escapeHtml(s.funcao)}</div>
+        </div>`).join('');
+      const sheet = document.getElementById('presolempPrintSheet');
+      if (!sheet) return;
+      sheet.innerHTML = `
+        <div class="presolemp-brand"><span class="brand-note">:: Pedidos 3.0 ::</span><img src="${PRE_SOLEMP_LOGO}" alt="Brasão da Marinha do Brasil" /></div>
+        <h1>MARINHA DO BRASIL</h1>
+        <h2>${escapeHtml(f.organizacao || 'CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA')}</h2>
+        <h3>PRÉ-SOLICITAÇÃO DE EMPENHO - N° ${escapeHtml(d.numero || '')}</h3>
+        <div class="presolemp-date">Data: ${escapeHtml(dateLongPtBR(d.data || ''))}</div>
+        <div class="presolemp-headgrid">
+          <div class="presolemp-meta">
+            <div><strong>Nome do Fornecedor:</strong> ${escapeHtml(empresaNome)}</div>
+            <div><strong>CNPJ:</strong> ${escapeHtml(cnpj)}</div>
+            <div><strong>Tipo de Empenho:</strong> ${escapeHtml(f.tipo)}</div>
+            <div><strong>Modalidade:</strong> ${escapeHtml(f.modalidade)}</div>
+            <div><strong>Classificação Itens:</strong> ${escapeHtml(f.classificacao)}</div>
+            <div><strong>Centro de Custo:</strong> ${escapeHtml(f.centroCusto)}</div>
+            <div><strong>N° do Pregão:</strong> ${escapeHtml(d.numero_pregao || '')}</div>
+            <div><strong>UASG Licitação:</strong> ${escapeHtml(f.uasg)}</div>
+            <div><strong>NR do Processo:</strong> ${escapeHtml(f.processo)}</div>
+          </div>
+          <div class="presolemp-empenho-box"><strong>Número do Empenho:</strong><div class="blank">${escapeHtml(d.numero_empenho || '')}</div><strong>Data do Empenho:</strong><div class="blank">${escapeHtml(dateShortPtBR(d.data_empenho || ''))}</div></div>
+        </div>
+        <table class="presolemp-budget">
+          <colgroup><col style="width:10%"><col style="width:11%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:20%"><col style="width:13%"><col style="width:22%"></colgroup>
+          <thead><tr><th>UG</th><th>PTRES</th><th>AI</th><th>DO</th><th>BI</th><th>FR</th><th>ND</th><th>CONTA</th></tr></thead>
+          <tbody><tr><td>${escapeHtml(f.ug)}</td><td>${escapeHtml(f.ptres)}</td><td>${escapeHtml(f.ai)}</td><td>${escapeHtml(f.do)}</td><td>${escapeHtml(f.bi)}</td><td>${escapeHtml(f.fr)}</td><td>${escapeHtml(f.nd)}</td><td>${escapeHtml(f.conta)}</td></tr></tbody>
+        </table>
+        <table class="presolemp-items">
+          <colgroup><col style="width:7%"><col style="width:43%"><col style="width:8%"><col style="width:14%"><col style="width:13%"><col style="width:15%"></colgroup>
+          <thead><tr><th>Item</th><th>Descrição</th><th>UF</th><th>PREÇO</th><th>QTD EMP.</th><th>TOTAL</th></tr></thead>
+          <tbody>${itemRows || '<tr><td colspan="6" style="text-align:center;padding:3mm">Nenhum item informado</td></tr>'}</tbody>
+        </table>
+        <div class="presolemp-totalrow"><div>Quantidade de itens: ${escapeHtml(d.quantidadeItens ?? itens.length)}</div><div class="presolemp-totalbox">Total: ${escapeHtml(fmtBRL(total))}</div></div>
+        <div class="presolemp-purpose"><strong>Finalidade:</strong><span>${escapeHtml(f.finalidade || '')}</span></div>
+        <div class="presolemp-generated">Pré-SOLEMP gerada por: ${escapeHtml(f.geradaPor || '')}</div>
+        <div class="presolemp-signatures">${signatureHtml}</div>
+        <div class="presolemp-spacer"></div>
+        <div class="presolemp-footer"><strong>PRÉ-SOLEMP - N° ${escapeHtml(d.numero || '')}</strong><span>Página 1 de 1</span></div>
+      `;
+    }
+
+    function validatePreSolempNumber(numero, currentId = '') {
+      return !state.preSolemps.some(p => String(p.numero).trim().toLowerCase() === numero.trim().toLowerCase() && p.id !== currentId);
+    }
+
+    function savePreSolemp(event) {
+      event.preventDefault();
+      const draft = getPreSolempDraft(true);
+      if (!draft) return;
+      if (!validatePreSolempNumber(draft.numero, draft.id)) { showToast('Já existe uma Pré-SOLEMP com este número.', true); return; }
+      const now = new Date().toISOString();
+      const existing = state.preSolemps.find(p => p.id === draft.id);
+      const record = {
+        ...draft,
+        id: draft.id || (crypto.randomUUID ? crypto.randomUUID() : `ps-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+        status: existing?.status || 'Pendente',
+        numero_empenho: existing?.numero_empenho || '',
+        data_empenho: existing?.data_empenho || '',
+        created_at: existing?.created_at || now,
+        updated_at: now
+      };
+      if (existing) state.preSolemps = state.preSolemps.map(p => p.id === record.id ? record : p);
+      else state.preSolemps.unshift(record);
+      if (!persistPreSolemps()) return;
+      document.getElementById('ps-id').value = record.id;
+      renderPreSolemps();
+      populateEmpPreSolempDropdown();
+      renderPreSolempPrintSheet(record);
+      showToast(`Pré-SOLEMP ${record.numero} salva com sucesso.`);
+    }
+
+    function newPreSolemp() {
+      const form = document.getElementById('preSolempForm');
+      form.reset();
+      document.getElementById('ps-id').value = '';
+      document.getElementById('ps-data').value = localTodayISO();
+      applyPreSolempDefaults();
+      document.getElementById('ps-pregao').value = '';
+      onPreSolempPregaoChange();
+      document.getElementById('ps-empresa').value = '';
+      onPreSolempEmpresaChange();
+      document.getElementById('ps-itens-container').innerHTML = '';
+      addPreSolempItemRow();
+      renderPreSolempPrintSheet();
+    }
+
+    function editPreSolemp(id) {
+      const p = state.preSolemps.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('ps-id').value = p.id;
+      document.getElementById('ps-numero').value = p.numero || '';
+      document.getElementById('ps-data').value = p.data || '';
+      document.getElementById('ps-pregao').value = p.numero_pregao || '';
+      onPreSolempPregaoChange();
+      document.getElementById('ps-empresa').value = p.empresa_id || '';
+      onPreSolempEmpresaChange();
+      const f = p.fields || {};
+      const map = {organizacao:'ps-organizacao',tipo:'ps-tipo',modalidade:'ps-modalidade',classificacao:'ps-classificacao',centroCusto:'ps-centro-custo',uasg:'ps-uasg',processo:'ps-processo',ug:'ps-ug',ptres:'ps-ptres',ai:'ps-ai',do:'ps-do',bi:'ps-bi',fr:'ps-fr',nd:'ps-nd',conta:'ps-conta',finalidade:'ps-finalidade',geradaPor:'ps-gerada-por'};
+      Object.entries(map).forEach(([key,id]) => document.getElementById(id).value = f[key] || '');
+      (p.assinaturas || PRE_SOLEMP_DEFAULTS.assinaturas).forEach((s,i) => { const n=i+1; document.getElementById(`ps-sig${n}-nome`).value=s.nome||''; document.getElementById(`ps-sig${n}-posto`).value=s.posto||''; document.getElementById(`ps-sig${n}-funcao`).value=s.funcao||''; });
+      const container = document.getElementById('ps-itens-container');
+      container.innerHTML = '';
+      (p.itens || []).forEach(item => addPreSolempItemRow(item.processo_item_id, item.quantidade));
+      if (!p.itens?.length) addPreSolempItemRow();
+      updatePreSolempTotals();
+      renderPreSolempPrintSheet(p);
+      switchTab('presolemp');
+    }
+
+    function printCurrentPreSolemp() {
+      const draft = getPreSolempDraft(true);
+      if (!draft) return;
+      if (!draft.fields.organizacao) { showToast('Informe a Organização antes de imprimir.', true); return; }
+      renderPreSolempPrintSheet(draft);
+      document.body.classList.add('printing-presolemp');
+      const cleanUp = () => document.body.classList.remove('printing-presolemp');
+      window.addEventListener('afterprint', cleanUp, { once:true });
+      window.print();
+      setTimeout(cleanUp, 1500);
+    }
+
+    function printSavedPreSolemp(id) {
+      const p = state.preSolemps.find(x => x.id === id);
+      if (!p) return;
+      renderPreSolempPrintSheet(p);
+      document.body.classList.add('printing-presolemp');
+      const cleanUp = () => document.body.classList.remove('printing-presolemp');
+      window.addEventListener('afterprint', cleanUp, { once:true });
+      window.print();
+      setTimeout(cleanUp, 1500);
+    }
+
+    function generateEmpenhoFromPreSolemp(id) {
+      const p = state.preSolemps.find(x => x.id === id);
+      if (!p) return;
+      if (p.status === 'Empenho gerado') { showToast(`Esta Pré-SOLEMP já está vinculada ao empenho ${p.numero_empenho || ''}.`, true); return; }
+      switchTab('empenhos');
+      document.getElementById('emp-presolemp-sel').value = id;
+      loadPreSolempIntoEmpenho(id);
+    }
+
+    function markPreSolempAsGenerated(id, numeroEmpenho, dataEmpenho) {
+      state.preSolemps = state.preSolemps.map(p => p.id === id ? {
+        ...p, status:'Empenho gerado', numero_empenho:numeroEmpenho, data_empenho:dataEmpenho,
+        updated_at:new Date().toISOString()
+      } : p);
+      persistPreSolemps();
+      renderPreSolemps();
+      populateEmpPreSolempDropdown();
+    }
+
+    function deletePreSolemp(id) {
+      const p = state.preSolemps.find(x => x.id === id);
+      if (!p) return;
+      if (p.status === 'Empenho gerado') { showToast('Esta Pré-SOLEMP já originou um empenho e não pode ser excluída por aqui.', true); return; }
+      if (!confirm(`Confirma excluir a Pré-SOLEMP n° ${p.numero}?`)) return;
+      state.preSolemps = state.preSolemps.filter(x => x.id !== id);
+      if (persistPreSolemps()) { renderPreSolemps(); populateEmpPreSolempDropdown(); showToast('Pré-SOLEMP excluída.'); }
+    }
+
+    function renderPreSolemps() {
+      const tbody = document.getElementById('tbl-presolemp');
+      if (!tbody) return;
+      const rows = [...state.preSolemps].sort((a,b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+      document.getElementById('ps-count').textContent = `${rows.length} registro(s)`;
+      tbody.innerHTML = rows.map(p => `
+        <tr class="hover:bg-slate-800/50">
+          <td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(p.numero)}</td>
+          <td class="px-3 py-3 text-slate-300">${escapeHtml(p.data)}</td>
+          <td class="px-3 py-3 text-slate-300">${escapeHtml(p.numero_pregao)}</td>
+          <td class="px-3 py-3 text-slate-200">${escapeHtml(p.empresa_nome)}</td>
+          <td class="px-3 py-3 text-right text-slate-300">${escapeHtml(p.quantidadeItens ?? (p.itens || []).length)}</td>
+          <td class="px-3 py-3 text-right font-semibold text-slate-100">${escapeHtml(fmtBRL(p.total))}</td>
+          <td class="px-3 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold border ${p.status === 'Empenho gerado' ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-amber-950 text-amber-300 border-amber-800'}">${escapeHtml(p.status || 'Pendente')}${p.numero_empenho ? ` • ${escapeHtml(p.numero_empenho)}` : ''}</span></td>
+          <td class="px-3 py-3"><div class="flex justify-end flex-wrap gap-2">
+            <button type="button" onclick="editPreSolemp(${JSON.stringify(p.id)})" class="text-blue-300 hover:underline">Editar</button>
+            <button type="button" onclick="printSavedPreSolemp(${JSON.stringify(p.id)})" class="text-slate-300 hover:underline">Imprimir</button>
+            ${p.status === 'Empenho gerado' ? '<span class="text-slate-500">Gerado</span>' : `<button type="button" onclick="generateEmpenhoFromPreSolemp(${JSON.stringify(p.id)})" class="text-emerald-300 hover:underline font-semibold">Gerar Empenho</button>`}
+            <button type="button" onclick="deletePreSolemp(${JSON.stringify(p.id)})" class="text-red-400 hover:underline" ${p.status === 'Empenho gerado' ? 'disabled title="Pré-SOLEMP vinculada a empenho"' : ''}>Excluir</button>
+          </div></td>
+        </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhuma Pré-SOLEMP salva neste navegador.</td></tr>';
+    }
+
+    // Atualiza a folha de impressão sempre que um campo do formulário for alterado.
+    function initPreSolempUI() {
+      loadPreSolempData();
+      document.getElementById('ps-data').value = localTodayISO();
+      applyPreSolempDefaults();
+      addPreSolempItemRow();
+      const form = document.getElementById('preSolempForm');
+      form.addEventListener('input', (ev) => {
+        if (ev.target?.closest?.('.ps-item-row')) updatePreSolempTotals();
+        else renderPreSolempPrintSheet();
+      });
+      form.addEventListener('change', () => renderPreSolempPrintSheet());
+      renderPreSolempPrintSheet();
+      renderPreSolemps();
     }
 
     // =========================================================================
@@ -2002,6 +2792,7 @@
     resetProcessoItemRows();
     resetEmpenhoItemRows();
     resetNfItemRows();
+    initPreSolempUI();
     initConfigUI();
   </script>
 </body>
