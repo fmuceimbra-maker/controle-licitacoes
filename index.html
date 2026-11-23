@@ -601,19 +601,21 @@
 
         <form id="pedidoGeneroForm" onsubmit="savePedidoGenero(event)" class="space-y-5">
           <input type="hidden" id="pedido-id" />
+          <input type="hidden" id="pedido-processo" />
+          <input type="hidden" id="pedido-empresa" />
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
-            <div><label class="block text-xs text-slate-300 mb-1">Nº do Pedido *</label><input id="pedido-numero" required type="text" placeholder="Ex: 11 - 463 - 234" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Nº do Pedido *</label><input id="pedido-numero" required type="text" inputmode="numeric" placeholder="Sequencial automático" title="Sugestão automática; pode ser alterada manualmente" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /><p class="text-[10px] text-slate-400 mt-1">Sequência anual automática, com possibilidade de ajuste manual.</p></div>
             <div><label class="block text-xs text-slate-300 mb-1">Data do Pedido *</label><input id="pedido-data" required type="date" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
-            <div><label class="block text-xs text-slate-300 mb-1">Processo Licitatório *</label><select id="pedido-processo" required onchange="onPedidoProcessoChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="">Selecione o processo...</option></select></div>
-            <div><label class="block text-xs text-slate-300 mb-1">Empresa *</label><select id="pedido-empresa" required onchange="onPedidoEmpresaChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="">Selecione a empresa...</option></select></div>
-            <div class="lg:col-span-2"><label class="block text-xs text-slate-300 mb-1">Empresa (automático)</label><input id="pedido-empresa-nome" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+            <div class="lg:col-span-2"><label class="block text-xs text-slate-300 mb-1">Empenho *</label><select id="pedido-empenho" required onchange="onPedidoEmpenhoChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="">Selecione o empenho...</option></select><p class="text-[10px] text-slate-400 mt-1">Cada Pedido de Gêneros poderá conter itens de um único empenho.</p></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Processo Licitatório (automático)</label><input id="pedido-processo-display" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Empresa (automática)</label><input id="pedido-empresa-nome" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
             <div><label class="block text-xs text-slate-300 mb-1">CNPJ</label><input id="pedido-cnpj" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
             <div><label class="block text-xs text-slate-300 mb-1">E-mail do fornecedor</label><input id="pedido-email" type="email" placeholder="fornecedor@empresa.com" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
             <div><label class="block text-xs text-slate-300 mb-1">Validade do Processo</label><input id="pedido-validade-processo" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
           </div>
 
           <div class="space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold text-slate-100">Itens do Pedido</h3><p class="text-[11px] text-slate-400">Os itens, unidades e preços são carregados do cadastro do processo. Informe a quantidade, a marca e, quando houver, o número do empenho.</p></div><button type="button" onclick="addPedidoItemRow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Adicionar item</button></div>
+            <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold text-slate-100">Itens do Pedido</h3><p class="text-[11px] text-slate-400">Selecione somente os itens que constam no empenho escolhido e informe as quantidades e marcas. Unidade e preço são preenchidos automaticamente.</p></div><button type="button" onclick="addPedidoItemRow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Adicionar item</button></div>
             <div id="pedido-itens-container" class="space-y-3"></div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
               <div><span class="block text-[11px] uppercase text-slate-400 font-semibold">Quantidade de itens</span><strong id="pedido-qtd-itens" class="text-lg text-slate-100">0</strong></div>
@@ -648,7 +650,7 @@
 
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between"><div><h3 class="text-sm font-bold text-slate-100">Pedidos de Gêneros cadastrados</h3><p id="pedido-count" class="text-xs text-slate-400 mt-1">0 registro(s)</p></div><input id="filtroPedido" oninput="renderPedidos()" placeholder="Filtrar pedido, processo ou empresa..." class="px-3 py-2 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-72" /></div>
-        <div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800"><tr><th class="px-3 py-3">Nº Pedido</th><th class="px-3 py-3">Data</th><th class="px-3 py-3">Processo</th><th class="px-3 py-3">Empresa</th><th class="px-3 py-3 text-right">Itens</th><th class="px-3 py-3 text-right">Total</th><th class="px-3 py-3 text-right">Ações</th></tr></thead><tbody id="tbl-pedidos" class="divide-y divide-slate-800/80"></tbody></table></div>
+        <div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800"><tr><th class="px-3 py-3">Nº Pedido</th><th class="px-3 py-3">Data</th><th class="px-3 py-3">Empenho</th><th class="px-3 py-3">Processo</th><th class="px-3 py-3">Empresa</th><th class="px-3 py-3 text-right">Itens</th><th class="px-3 py-3 text-right">Total</th><th class="px-3 py-3 text-right">Ações</th></tr></thead><tbody id="tbl-pedidos" class="divide-y divide-slate-800/80"></tbody></table></div>
       </div>
       <div class="pedido-preview-wrap no-print"><div class="presolemp-preview-label text-xs text-slate-400">Pré-visualização para impressão (A4)</div><div id="pedidoPrintSheet" class="pedido-sheet"></div></div>
     </section>
@@ -1104,6 +1106,7 @@
       state.pedidosGeneros = resPedidos.data || [];
       renderAll();
       if (!document.getElementById('ps-id')?.value) await updateNewPreSolempNumber();
+      if (!document.getElementById('pedido-id')?.value) await updateNewPedidoNumber();
     }
 
     function renderAll() {
@@ -1754,13 +1757,7 @@
         onNfEmpenhoChange();
       }
 
-      const pedidoProc = document.getElementById('pedido-processo');
-      if (pedidoProc) {
-        const prev = pedidoProc.value;
-        pedidoProc.innerHTML = '<option value="">Selecione o processo...</option>' + pregoesUnicos.map(pr => `<option value="${escapeHtml(pr)}">${escapeHtml(pr)}</option>`).join('');
-        if (pregoesUnicos.includes(prev)) pedidoProc.value = prev;
-        onPedidoProcessoChange();
-      }
+      populatePedidoEmpenhoDropdown();
       populatePreSolempDropdowns();
       populateEmpPreSolempDropdown();
     }
@@ -3505,40 +3502,119 @@ function getPedidoSignatureDefaults() {
       document.getElementById('pedido-sig-funcao').value = d.funcao || 'Solicitante';
     }
 
-    function onPedidoProcessoChange() {
-      const numero = document.getElementById('pedido-processo')?.value || '';
-      const meta = getProcessMeta(numero);
-      const validity = document.getElementById('pedido-validade-processo');
-      if (validity) validity.value = meta?.validade ? dateShortPtBR(meta.validade) : 'Não cadastrada';
-      const companySelect = document.getElementById('pedido-empresa');
-      if (!companySelect) return;
-      const previous = companySelect.value;
-      const ids = [...new Set(state.processos.filter(p => p.numero_pregao === numero).map(p => p.empresa_id))];
-      companySelect.innerHTML = '<option value="">Selecione a empresa...</option>' + ids.map(id => {
-        const company = state.empresas.find(e => e.id === id);
-        return company ? `<option value="${escapeHtml(company.id)}">${escapeHtml(company.id_resumido)} | ${escapeHtml(company.nome_fantasia)}</option>` : '';
-      }).join('');
-      if (ids.includes(previous)) companySelect.value = previous;
-      onPedidoEmpresaChange();
-      refreshPedidoItemRows();
+    function getPedidoEmpenhoGroups() {
+      const groups = new Map();
+      state.empenhos.forEach(emp => {
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+        const numero = String(emp.numero_empenho || '').trim();
+        if (!proc || !numero) return;
+        const key = JSON.stringify([numero, proc.numero_pregao || '', proc.empresa_id || '']);
+        if (!groups.has(key)) {
+          const empresa = state.empresas.find(e => e.id === proc.empresa_id);
+          groups.set(key, {
+            key, numero_empenho:numero, data_empenho:emp.data_empenho || '',
+            numero_pregao:proc.numero_pregao || '', empresa_id:proc.empresa_id || '',
+            empresa_nome:empresa?.nome_fantasia || 'Empresa não identificada', rows:[]
+          });
+        }
+        groups.get(key).rows.push({ empenho:emp, processo:proc });
+      });
+      return [...groups.values()].sort((a,b) => {
+        const byDate = String(b.data_empenho).localeCompare(String(a.data_empenho));
+        return byDate || String(a.numero_empenho).localeCompare(String(b.numero_empenho), 'pt-BR', {numeric:true});
+      });
     }
 
-    function onPedidoEmpresaChange() {
-      const id = document.getElementById('pedido-empresa')?.value || '';
-      const company = state.empresas.find(e => e.id === id);
-      document.getElementById('pedido-empresa-nome').value = company?.nome_fantasia || '';
-      document.getElementById('pedido-cnpj').value = company?.cnpj || '';
-      const emailSource = company?.email || company?.contato || '';
-      const emailMatch = String(emailSource).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
-      document.getElementById('pedido-email').value = emailMatch ? emailMatch[0] : '';
+    function populatePedidoEmpenhoDropdown() {
+      const select = document.getElementById('pedido-empenho');
+      if (!select) return;
+      const previous = select.value;
+      const groups = getPedidoEmpenhoGroups();
+      select.innerHTML = '<option value="">Selecione o empenho...</option>' + groups.map(g => {
+        const data = g.data_empenho ? ` • ${dateShortPtBR(g.data_empenho)}` : '';
+        const itemCount = new Set(g.rows.map(r => r.processo.id)).size;
+        const label = `${g.numero_empenho} • ${g.numero_pregao} • ${g.empresa_nome} • ${itemCount} item(ns)${data}`;
+        return `<option value="${escapeHtml(g.key)}">${escapeHtml(label)}</option>`;
+      }).join('');
+      if (groups.some(g => g.key === previous)) select.value = previous;
+      onPedidoEmpenhoChange();
+    }
+
+    function getPedidoSelectedEmpenhoGroup() {
+      const key = document.getElementById('pedido-empenho')?.value || '';
+      return getPedidoEmpenhoGroups().find(g => g.key === key) || null;
+    }
+
+    function getPedidoEmpenhoItemQuantity(group, processoItemId) {
+      if (!group) return 0;
+      return group.rows.filter(r => r.processo.id === processoItemId)
+        .reduce((sum,r) => sum + Number(r.empenho.quantidade_empenhada || 0), 0);
+    }
+
+    function getPedidoAlreadyRequestedQuantity(group, processoItemId, excludePedidoId = '') {
+      if (!group) return 0;
+      return state.pedidosGeneros
+        .filter(p => p.id !== excludePedidoId && String(p.numero_empenho || (p.itens || [])[0]?.numero_empenho || '').trim() === group.numero_empenho)
+        .reduce((sum,p) => sum + (p.itens || []).filter(it => it.processo_item_id === processoItemId && (!it.numero_empenho || String(it.numero_empenho).trim() === group.numero_empenho))
+          .reduce((sub,it) => sub + Number(it.quantidade || 0), 0), 0);
+    }
+
+    function getPedidoItemAvailability(group, processoItemId) {
+      const empenhada = getPedidoEmpenhoItemQuantity(group, processoItemId);
+      const currentId = document.getElementById('pedido-id')?.value || '';
+      const jaPedida = getPedidoAlreadyRequestedQuantity(group, processoItemId, currentId);
+      return { empenhada, jaPedida, disponivel:Math.max(0, empenhada - jaPedida) };
+    }
+
+    function onPedidoEmpenhoChange() {
+      const group = getPedidoSelectedEmpenhoGroup();
+      const processHidden = document.getElementById('pedido-processo');
+      const companyHidden = document.getElementById('pedido-empresa');
+      const processDisplay = document.getElementById('pedido-processo-display');
+      if (!group) {
+        processHidden.value = '';
+        companyHidden.value = '';
+        processDisplay.value = '';
+        document.getElementById('pedido-empresa-nome').value = '';
+        document.getElementById('pedido-cnpj').value = '';
+        document.getElementById('pedido-email').value = '';
+        document.getElementById('pedido-validade-processo').value = '';
+      } else {
+        const empresa = state.empresas.find(e => e.id === group.empresa_id);
+        const meta = getProcessMeta(group.numero_pregao);
+        processHidden.value = group.numero_pregao;
+        companyHidden.value = group.empresa_id;
+        processDisplay.value = group.numero_pregao;
+        document.getElementById('pedido-empresa-nome').value = empresa?.nome_fantasia || group.empresa_nome || '';
+        document.getElementById('pedido-cnpj').value = empresa?.cnpj || '';
+        const emailSource = empresa?.email || empresa?.contato || '';
+        const emailMatch = String(emailSource).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+        const emailInput = document.getElementById('pedido-email');
+        if (emailInput.dataset.companyId !== group.empresa_id) {
+          emailInput.value = emailMatch ? emailMatch[0] : '';
+          emailInput.dataset.auto = '1';
+          emailInput.dataset.companyId = group.empresa_id;
+        } else if (!emailInput.value || emailInput.dataset.auto === '1') {
+          emailInput.value = emailMatch ? emailMatch[0] : '';
+          emailInput.dataset.auto = '1';
+        }
+        document.getElementById('pedido-validade-processo').value = meta?.validade ? dateShortPtBR(meta.validade) : 'Não cadastrada';
+      }
       refreshPedidoItemRows();
     }
 
     function buildPedidoItemOptionsHtml(selectedId = '') {
-      const numero = document.getElementById('pedido-processo')?.value || '';
-      const empresaId = document.getElementById('pedido-empresa')?.value || '';
-      const items = state.processos.filter(p => p.numero_pregao === numero && p.empresa_id === empresaId);
-      return '<option value="">Selecione o item...</option>' + items.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)})</option>`).join('');
+      const group = getPedidoSelectedEmpenhoGroup();
+      if (!group) return '<option value="">Selecione primeiro o empenho...</option>';
+      const uniqueItems = new Map();
+      group.rows.forEach(r => { if (!uniqueItems.has(r.processo.id)) uniqueItems.set(r.processo.id, r.processo); });
+      const items = [...uniqueItems.values()].sort((a,b) => String(a.numero_item).localeCompare(String(b.numero_item), 'pt-BR', {numeric:true}));
+      return '<option value="">Selecione o item do empenho...</option>' + items.map(p => {
+        const availability = getPedidoItemAvailability(group, p.id);
+        const unavailable = availability.disponivel <= 0 && p.id !== selectedId;
+        const suffix = ` • disponível: ${fmtNum(availability.disponivel)} ${p.unidade_fornecimento || ''}`;
+        return `<option value="${escapeHtml(p.id)}" ${p.id === selectedId ? 'selected' : ''} ${unavailable ? 'disabled' : ''}>${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)})${escapeHtml(suffix)}</option>`;
+      }).join('');
     }
 
     function addPedidoItemRow(selectedId = '', data = null) {
@@ -3546,11 +3622,10 @@ function getPedidoSignatureDefaults() {
       const row = document.createElement('div');
       row.className = 'pedido-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-end';
       row.innerHTML = `
-        <div class="sm:col-span-4"><label class="block text-[11px] text-slate-400 mb-1">Discriminação *</label><select class="pedido-row-item w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" required onchange="updatePedidoItemHint(this); updatePedidoTotals();">${buildPedidoItemOptionsHtml(selectedId)}</select><p class="pedido-row-hint text-[10px] text-blue-300 mt-1">Selecione um item do processo.</p></div>
-        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Nº Empenho</label><input value="${escapeHtml(data?.numero_empenho || '')}" class="pedido-row-empenho w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="Opcional" /></div>
+        <div class="sm:col-span-5"><label class="block text-[11px] text-slate-400 mb-1">Discriminação *</label><select class="pedido-row-item w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" required onchange="updatePedidoItemHint(this); updatePedidoTotals();">${buildPedidoItemOptionsHtml(selectedId)}</select><p class="pedido-row-hint text-[10px] text-blue-300 mt-1">Selecione um empenho e depois um de seus itens.</p></div>
         <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Marca</label><input value="${escapeHtml(data?.marca || '')}" class="pedido-row-marca w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="Marca" /></div>
         <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">UF</label><input readonly class="pedido-row-unid w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
-        <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">Qtd. *</label><input type="number" min="0.001" step="0.001" required value="${escapeHtml(data?.quantidade ?? '')}" oninput="updatePedidoTotals()" class="pedido-row-qtd w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="0" /></div>
+        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Qtd. *</label><input type="number" min="0.001" step="0.001" required value="${escapeHtml(data?.quantidade ?? '')}" oninput="updatePedidoTotals()" class="pedido-row-qtd w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="0" /></div>
         <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">P. Unit.</label><input readonly class="pedido-row-price w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
         <div class="sm:col-span-1 flex items-end justify-end"><button type="button" onclick="removePedidoItemRow(this)" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">✕</button></div>`;
       container.appendChild(row);
@@ -3565,7 +3640,7 @@ function getPedidoSignatureDefaults() {
         const select = row.querySelector('.pedido-row-item');
         const oldValue = select.value;
         select.innerHTML = buildPedidoItemOptionsHtml(oldValue);
-        if (!state.processos.some(p => p.id === oldValue && p.numero_pregao === document.getElementById('pedido-processo').value && p.empresa_id === document.getElementById('pedido-empresa').value)) select.value = '';
+        if (!getPedidoSelectedEmpenhoGroup()?.rows.some(r => r.processo.id === oldValue)) select.value = '';
         updatePedidoItemHint(select);
       });
       updatePedidoTotals();
@@ -3574,15 +3649,66 @@ function getPedidoSignatureDefaults() {
     function updatePedidoItemHint(selectEl) {
       const row = selectEl.closest('.pedido-item-row');
       const proc = state.processos.find(p => p.id === selectEl.value);
-      if (!proc) {
-        row.querySelector('.pedido-row-unid').value = '';
-        row.querySelector('.pedido-row-price').value = '';
-        row.querySelector('.pedido-row-hint').textContent = 'Selecione um item do processo.';
+      const group = getPedidoSelectedEmpenhoGroup();
+      const unit = row.querySelector('.pedido-row-unid');
+      const price = row.querySelector('.pedido-row-price');
+      const hint = row.querySelector('.pedido-row-hint');
+      const qtyInput = row.querySelector('.pedido-row-qtd');
+      if (!proc || !group) {
+        unit.value = '';
+        price.value = '';
+        qtyInput.removeAttribute('max');
+        hint.textContent = group ? 'Selecione um item deste empenho.' : 'Selecione primeiro um empenho.';
         return;
       }
-      row.querySelector('.pedido-row-unid').value = proc.unidade_fornecimento || '';
-      row.querySelector('.pedido-row-price').value = fmtBRL(proc.valor_unitario);
-      row.querySelector('.pedido-row-hint').textContent = `Item ${proc.numero_item} • Preço registrado: ${fmtBRL(proc.valor_unitario)}`;
+      const availability = getPedidoItemAvailability(group, proc.id);
+      unit.value = proc.unidade_fornecimento || '';
+      price.value = fmtBRL(proc.valor_unitario);
+      qtyInput.max = String(Math.max(0, availability.disponivel));
+      hint.textContent = `Empenho ${group.numero_empenho} • Qtd. empenhada: ${fmtNum(availability.empenhada)} • Já pedida: ${fmtNum(availability.jaPedida)} • Disponível: ${fmtNum(availability.disponivel)} ${proc.unidade_fornecimento || ''}`;
+    }
+
+    async function updateNewPedidoNumber() {
+      const numberInput = document.getElementById('pedido-numero');
+      const dateInput = document.getElementById('pedido-data');
+      if (!numberInput || !dateInput || document.getElementById('pedido-id')?.value) return;
+      if (numberInput.dataset.isManual === '1') return;
+      const data = dateInput.value || localTodayISO();
+      const year = Number(String(data).slice(0,4));
+      let next = Math.max(0, ...state.pedidosGeneros.filter(p => Number(p.ano_referencia || String(p.data_pedido || '').slice(0,4)) === year)
+        .map(p => /^\d+$/.test(String(p.numero_pedido || '')) ? Number(p.numero_pedido) : 0)) + 1;
+      if (sb) {
+        const { data:rpcData, error } = await sb.rpc('proximo_numero_pedido', { p_data:data });
+        if (!error && rpcData !== null && rpcData !== undefined) next = Number(rpcData);
+        else if (error) console.warn('Não foi possível consultar a sequência de Pedidos de Gêneros:', error.message);
+      }
+      if (!document.getElementById('pedido-id')?.value && numberInput.dataset.isManual !== '1') {
+        numberInput.value = String(next);
+        numberInput.dataset.suggestedYear = String(year);
+      }
+      numberInput.title = `Sugestão sequencial do exercício ${year}. Você pode ajustar este número manualmente.`;
+    }
+
+    function onPedidoDataChange() {
+      const id = document.getElementById('pedido-id')?.value || '';
+      const dataInput = document.getElementById('pedido-data');
+      if (id) {
+        const existing = state.pedidosGeneros.find(p => p.id === id);
+        const existingYear = Number(existing?.ano_referencia || String(existing?.data_pedido || '').slice(0,4));
+        if (existing && Number(String(dataInput.value || '').slice(0,4)) !== existingYear) {
+          showToast('O ano do pedido não pode ser alterado depois de numerado. Crie um novo pedido para outro exercício.', true);
+          dataInput.value = existing.data_pedido || '';
+        }
+      } else {
+        updateNewPedidoNumber();
+      }
+      renderPedidoPrintSheet();
+    }
+
+    function validatePedidoNumero(value, year, currentId = '') {
+      const normalized = String(value || '').trim();
+      if (!/^\d+$/.test(normalized) || Number(normalized) < 1) return false;
+      return !state.pedidosGeneros.some(p => p.id !== currentId && Number(p.ano_referencia || String(p.data_pedido || '').slice(0,4)) === Number(year) && /^\d+$/.test(String(p.numero_pedido || '').trim()) && Number(p.numero_pedido) === Number(normalized));
     }
 
     function updatePedidoTotals() {
@@ -3602,8 +3728,9 @@ function getPedidoSignatureDefaults() {
       const id = document.getElementById('pedido-id').value;
       const numero_pedido = document.getElementById('pedido-numero').value.trim();
       const data_pedido = document.getElementById('pedido-data').value;
-      const numero_pregao = document.getElementById('pedido-processo').value;
-      const empresa_id = document.getElementById('pedido-empresa').value;
+      const group = getPedidoSelectedEmpenhoGroup();
+      const numero_pregao = group?.numero_pregao || '';
+      const empresa_id = group?.empresa_id || '';
       const empresa = state.empresas.find(e => e.id === empresa_id);
       const meta = getProcessMeta(numero_pregao);
       const itens = [];
@@ -3612,26 +3739,37 @@ function getPedidoSignatureDefaults() {
         const processo_item_id = row.querySelector('.pedido-row-item').value;
         const quantidade = Number(row.querySelector('.pedido-row-qtd').value);
         const marca = row.querySelector('.pedido-row-marca').value.trim();
-        const numero_empenho = row.querySelector('.pedido-row-empenho').value.trim();
         if (!processo_item_id || !Number.isFinite(quantidade) || quantidade <= 0) {
-          if (validate) { showToast('Selecione o item e informe uma quantidade válida em todas as linhas do pedido.', true); return null; }
+          if (validate) { showToast('Selecione o item do empenho e informe uma quantidade válida em todas as linhas.', true); return null; }
           continue;
         }
         if (seen.has(processo_item_id)) { if (validate) { showToast('O mesmo item não pode aparecer duas vezes no Pedido de Gêneros.', true); return null; } continue; }
         seen.add(processo_item_id);
         const proc = state.processos.find(p => p.id === processo_item_id);
-        if (!proc || proc.numero_pregao !== numero_pregao || proc.empresa_id !== empresa_id) { if (validate) { showToast('Todos os itens devem pertencer ao processo e à empresa selecionados.', true); return null; } continue; }
+        if (!group || !proc || !group.rows.some(r => r.processo.id === processo_item_id)) {
+          if (validate) { showToast('BLOQUEADO: todos os itens do pedido devem pertencer ao único empenho selecionado.', true); return null; }
+          continue;
+        }
+        const availability = getPedidoItemAvailability(group, processo_item_id);
+        if (validate && quantidade > availability.disponivel + 0.0001) {
+          showToast(`BLOQUEADO no item ${proc.numero_item}: quantidade solicitada (${fmtNum(quantidade)}) superior ao saldo do empenho disponível para pedido (${fmtNum(availability.disponivel)} ${proc.unidade_fornecimento}).`, true);
+          return null;
+        }
         const valor_unitario = Number(proc.valor_unitario);
-        itens.push({ processo_item_id, numero_item:proc.numero_item, descricao_item:proc.descricao_item, numero_empenho, marca, unidade:proc.unidade_fornecimento, quantidade, valor_unitario, subtotal:quantidade*valor_unitario });
+        itens.push({ processo_item_id, numero_item:proc.numero_item, descricao_item:proc.descricao_item,
+          numero_empenho:group.numero_empenho, marca, unidade:proc.unidade_fornecimento,
+          quantidade, valor_unitario, subtotal:quantidade*valor_unitario });
       }
       if (validate) {
-        if (!numero_pedido || !data_pedido || !numero_pregao || !empresa_id || !empresa) { showToast('Preencha número, data, processo e empresa do pedido.', true); return null; }
-        if (!itens.length) { showToast('Adicione pelo menos um item ao Pedido de Gêneros.', true); return null; }
+        if (!numero_pedido || !data_pedido || !group || !empresa) { showToast('Preencha número, data e selecione um empenho válido.', true); return null; }
+        if (!itens.length) { showToast('Adicione pelo menos um item pertencente ao empenho selecionado.', true); return null; }
       }
       const signature = { nome:document.getElementById('pedido-sig-nome').value.trim(), posto:document.getElementById('pedido-sig-posto').value.trim(), funcao:document.getElementById('pedido-sig-funcao').value.trim() };
       const total = itens.reduce((sum, item) => sum + item.subtotal, 0);
       return {
-        id, numero_pedido, ano_referencia:Number(String(data_pedido).slice(0,4)), data_pedido, numero_pregao, empresa_id,
+        id, numero_pedido, ano_referencia:Number(String(data_pedido).slice(0,4)), data_pedido,
+        numero_empenho:group?.numero_empenho || '', data_empenho:group?.data_empenho || null,
+        numero_pregao, empresa_id,
         empresa_nome:empresa?.nome_fantasia || document.getElementById('pedido-empresa-nome').value,
         cnpj:empresa?.cnpj || document.getElementById('pedido-cnpj').value,
         email:document.getElementById('pedido-email').value.trim(), validade_processo:meta?.validade || null,
@@ -3647,7 +3785,7 @@ function getPedidoSignatureDefaults() {
       const sheet = document.getElementById('pedidoPrintSheet');
       if (!sheet || !d) return;
       const items = d.itens || [];
-      const rows = items.map(it => `<tr><td>${escapeHtml(it.descricao_item || '')}</td><td class="center">${escapeHtml(it.numero_empenho || '')}</td><td class="center">${escapeHtml(it.marca || '')}</td><td class="center">${escapeHtml(it.unidade || '')}</td><td class="right">${fmtNum(it.quantidade)}</td><td class="right">${fmtBRL(it.valor_unitario)}</td><td class="right">${fmtBRL(it.subtotal)}</td></tr>`).join('');
+      const rows = items.map(it => `<tr><td>${escapeHtml(it.descricao_item || '')}</td><td class="center">${escapeHtml(it.numero_empenho || d.numero_empenho || '')}</td><td class="center">${escapeHtml(it.marca || '')}</td><td class="center">${escapeHtml(it.unidade || '')}</td><td class="right">${fmtNum(it.quantidade)}</td><td class="right">${fmtBRL(it.valor_unitario)}</td><td class="right">${fmtBRL(it.subtotal)}</td></tr>`).join('');
       const sig = d.assinatura || {};
       const empresa = d.empresa_nome || document.getElementById('pedido-empresa-nome')?.value || '';
       const cnpj = d.cnpj || document.getElementById('pedido-cnpj')?.value || '';
@@ -3703,8 +3841,21 @@ function getPedidoSignatureDefaults() {
       if (!d) return;
       if (!Number.isInteger(d.validade_pedido_dias) || d.validade_pedido_dias < 1) { showToast('Informe uma validade do pedido em dias maior que zero.', true); return; }
       const existing = state.pedidosGeneros.find(p => p.id === d.id);
+      const numberInput = document.getElementById('pedido-numero');
+      const numberWasManuallyEdited = numberInput.dataset.isManual === '1';
+      if (numberWasManuallyEdited && !validatePedidoNumero(d.numero_pedido, d.ano_referencia, existing?.id || '')) {
+        showToast(`O número do Pedido deve ser inteiro positivo e ainda não utilizado no exercício ${d.ano_referencia}.`, true);
+        return;
+      }
+      if (existing && Number(existing.ano_referencia || String(existing.data_pedido || '').slice(0,4)) !== d.ano_referencia) {
+        showToast('Não é permitido transferir um Pedido já numerado para outro exercício. Crie um novo pedido.', true);
+        return;
+      }
       const payload = {
-        numero_pedido:d.numero_pedido, ano_referencia:d.ano_referencia, data_pedido:d.data_pedido,
+        // O trigger gera o número definitivo no banco quando a sugestão não foi alterada.
+        numero_pedido:existing || numberWasManuallyEdited ? d.numero_pedido : null,
+        ano_referencia:d.ano_referencia, data_pedido:d.data_pedido,
+        numero_empenho:d.numero_empenho,
         numero_pregao:d.numero_pregao, empresa_id:d.empresa_id, empresa_nome:d.empresa_nome, cnpj:d.cnpj,
         email:d.email, validade_processo:d.validade_processo, observacoes:d.observacoes,
         data_entrega:d.data_entrega, horario_entrega:d.horario_entrega, validade_pedido_dias:d.validade_pedido_dias,
@@ -3717,22 +3868,48 @@ function getPedidoSignatureDefaults() {
       if (existing) state.pedidosGeneros = state.pedidosGeneros.map(x => x.id === d.id ? result.data : x);
       else state.pedidosGeneros.unshift(result.data);
       renderPedidos();
-      if (existing) { document.getElementById('pedido-id').value = result.data.id; showToast(`Pedido ${d.numero_pedido} atualizado.`); }
-      else { newPedidoGenero(); showToast(`Pedido de Gêneros ${d.numero_pedido} salvo no Supabase.`); }
+      if (existing) {
+        document.getElementById('pedido-id').value = result.data.id;
+        document.getElementById('pedido-numero').value = result.data.numero_pedido;
+        showToast(`Pedido ${result.data.numero_pedido} atualizado.`);
+      } else {
+        const savedNumber = result.data.numero_pedido;
+        newPedidoGenero();
+        showToast(`Pedido de Gêneros ${savedNumber}/${d.ano_referencia} salvo no Supabase. Próxima numeração preparada.`);
+      }
     }
 
     function editPedidoGenero(id) {
       const p = state.pedidosGeneros.find(x => x.id === id);
       if (!p) return;
+      const items = p.itens || [];
+      const itemIds = items.map(it => it.processo_item_id).filter(Boolean);
+      const legacyNumbers = [...new Set(items.map(it => String(it.numero_empenho || '').trim()).filter(Boolean))];
+      const targetNumber = String(p.numero_empenho || (legacyNumbers.length === 1 ? legacyNumbers[0] : '')).trim();
+      if (legacyNumbers.length > 1 || (targetNumber && legacyNumbers.some(n => n !== targetNumber))) {
+        showToast('Este pedido antigo contém itens de mais de um empenho. Ele permanece consultável e imprimível, mas não pode ser editado no novo formato. Cadastre um novo pedido para cada empenho.', true);
+        return;
+      }
+      const groups = getPedidoEmpenhoGroups();
+      let group = groups.find(g => g.numero_empenho === targetNumber && g.numero_pregao === p.numero_pregao && g.empresa_id === p.empresa_id);
+      if (!group && !targetNumber) {
+        const candidates = groups.filter(g => g.numero_pregao === p.numero_pregao && g.empresa_id === p.empresa_id && itemIds.every(itemId => g.rows.some(r => r.processo.id === itemId)));
+        if (candidates.length === 1) group = candidates[0];
+      }
+      if (!group || (itemIds.length && !itemIds.every(itemId => group.rows.some(r => r.processo.id === itemId)))) {
+        showToast('Não foi possível identificar um único empenho que contenha todos os itens deste pedido antigo. O registro continua disponível para consulta e impressão.', true);
+        return;
+      }
       switchTab('pedidos');
       document.getElementById('pedido-id').value = p.id;
       document.getElementById('pedido-numero').value = p.numero_pedido || '';
+      document.getElementById('pedido-numero').dataset.isManual = '0';
       document.getElementById('pedido-data').value = p.data_pedido || '';
-      document.getElementById('pedido-processo').value = p.numero_pregao || '';
-      onPedidoProcessoChange();
-      document.getElementById('pedido-empresa').value = p.empresa_id || '';
-      onPedidoEmpresaChange();
+      document.getElementById('pedido-empenho').value = group.key;
+      onPedidoEmpenhoChange();
       document.getElementById('pedido-email').value = p.email || '';
+      document.getElementById('pedido-email').dataset.auto = '0';
+      document.getElementById('pedido-email').dataset.companyId = group.empresa_id;
       document.getElementById('pedido-observacoes').value = p.observacoes || '';
       document.getElementById('pedido-data-entrega').value = p.data_entrega || '';
       document.getElementById('pedido-horario').value = p.horario_entrega || '';
@@ -3743,11 +3920,11 @@ function getPedidoSignatureDefaults() {
       document.getElementById('pedido-sig-funcao').value = sig.funcao || 'Solicitante';
       const container = document.getElementById('pedido-itens-container');
       container.innerHTML = '';
-      (p.itens || []).forEach(it => addPedidoItemRow(it.processo_item_id, it));
-      if (!(p.itens || []).length) addPedidoItemRow();
+      items.forEach(it => addPedidoItemRow(it.processo_item_id, it));
+      if (!items.length) addPedidoItemRow();
       updatePedidoTotals();
       renderPedidoPrintSheet(p);
-      showToast(`Pedido ${p.numero_pedido} carregado para edição.`);
+      showToast(`Pedido ${p.numero_pedido} carregado para edição. Empenho ${group.numero_empenho}.`);
     }
 
     async function deletePedidoGenero(id) {
@@ -3765,34 +3942,50 @@ function getPedidoSignatureDefaults() {
       const tbody = document.getElementById('tbl-pedidos');
       if (!tbody) return;
       const filter = (document.getElementById('filtroPedido')?.value || '').trim().toLowerCase();
-      const rows = state.pedidosGeneros.filter(p => !filter || [p.numero_pedido,p.numero_pregao,p.empresa_nome].some(v => String(v || '').toLowerCase().includes(filter)));
+      const rows = state.pedidosGeneros.filter(p => !filter || [p.numero_pedido,p.numero_empenho,p.numero_pregao,p.empresa_nome].some(v => String(v || '').toLowerCase().includes(filter)));
       document.getElementById('pedido-count').textContent = `${rows.length} registro(s)`;
-      tbody.innerHTML = rows.map(p => `<tr class="hover:bg-slate-800/50"><td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(p.numero_pedido)}</td><td class="px-3 py-3">${escapeHtml(dateShortPtBR(p.data_pedido))}</td><td class="px-3 py-3">${escapeHtml(p.numero_pregao)}</td><td class="px-3 py-3">${escapeHtml(p.empresa_nome)}</td><td class="px-3 py-3 text-right">${escapeHtml(p.quantidade_itens ?? (p.itens || []).length)}</td><td class="px-3 py-3 text-right font-semibold">${fmtBRL(p.total)}</td><td class="px-3 py-3"><div class="flex justify-end gap-2"><button type="button" onclick="editPedidoGenero('${escapeHtml(p.id)}')" class="text-blue-300 hover:underline">Editar</button><button type="button" onclick="printSavedPedidoGenero('${escapeHtml(p.id)}')" class="text-slate-300 hover:underline">Imprimir</button><button type="button" onclick="deletePedidoGenero('${escapeHtml(p.id)}')" class="text-red-400 hover:underline">Excluir</button></div></td></tr>`).join('') || '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">Nenhum Pedido de Gêneros cadastrado.</td></tr>';
+      tbody.innerHTML = rows.map(p => `<tr class="hover:bg-slate-800/50"><td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(p.numero_pedido)}</td><td class="px-3 py-3">${escapeHtml(dateShortPtBR(p.data_pedido))}</td><td class="px-3 py-3 font-semibold">${escapeHtml(p.numero_empenho || (p.itens || [])[0]?.numero_empenho || 'Legado')}</td><td class="px-3 py-3">${escapeHtml(p.numero_pregao)}</td><td class="px-3 py-3">${escapeHtml(p.empresa_nome)}</td><td class="px-3 py-3 text-right">${escapeHtml(p.quantidade_itens ?? (p.itens || []).length)}</td><td class="px-3 py-3 text-right font-semibold">${fmtBRL(p.total)}</td><td class="px-3 py-3"><div class="flex justify-end gap-2"><button type="button" onclick="editPedidoGenero('${escapeHtml(p.id)}')" class="text-blue-300 hover:underline">Editar</button><button type="button" onclick="printSavedPedidoGenero('${escapeHtml(p.id)}')" class="text-slate-300 hover:underline">Imprimir</button><button type="button" onclick="deletePedidoGenero('${escapeHtml(p.id)}')" class="text-red-400 hover:underline">Excluir</button></div></td></tr>`).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhum Pedido de Gêneros cadastrado.</td></tr>';
     }
 
     function newPedidoGenero() {
       document.getElementById('pedidoGeneroForm').reset();
       document.getElementById('pedido-id').value = '';
+      const numberInput = document.getElementById('pedido-numero');
+      numberInput.value = '';
+      numberInput.dataset.isManual = '0';
+      numberInput.dataset.suggestedYear = '';
       document.getElementById('pedido-data').value = localTodayISO();
       document.getElementById('pedido-validade-dias').value = '60';
       document.getElementById('pedido-horario').value = '09:00h ÀS 11:40h / 14:00h ÀS 16:30h';
-      document.getElementById('pedido-processo').value = '';
-      onPedidoProcessoChange();
+      document.getElementById('pedido-empenho').value = '';
+      document.getElementById('pedido-email').dataset.auto = '0';
+      onPedidoEmpenhoChange();
       document.getElementById('pedido-itens-container').innerHTML = '';
       addPedidoItemRow();
       applyPedidoSignatureDefaults();
       updatePedidoTotals();
+      updateNewPedidoNumber();
       renderPedidoPrintSheet();
     }
 
     function initPedidoUI() {
       document.getElementById('pedido-data').value = localTodayISO();
+      document.getElementById('pedido-numero').dataset.isManual = '0';
       applyPedidoSignatureDefaults();
       addPedidoItemRow();
       const form = document.getElementById('pedidoGeneroForm');
-      form.addEventListener('input', ev => { if (ev.target?.closest?.('.pedido-item-row')) updatePedidoTotals(); else renderPedidoPrintSheet(); });
-      form.addEventListener('change', () => renderPedidoPrintSheet());
+      form.addEventListener('input', ev => {
+        if (ev.target?.id === 'pedido-numero') ev.target.dataset.isManual = '1';
+        if (ev.target?.id === 'pedido-email') ev.target.dataset.auto = '0';
+        if (ev.target?.closest?.('.pedido-item-row')) updatePedidoTotals();
+        else renderPedidoPrintSheet();
+      });
+      form.addEventListener('change', ev => {
+        if (ev.target?.id === 'pedido-data') onPedidoDataChange();
+        else renderPedidoPrintSheet();
+      });
       renderPedidoPrintSheet();
+      updateNewPedidoNumber();
     }
 
         function renderDashboard() {
