@@ -352,35 +352,34 @@
       <div class="bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-800 space-y-4">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h2 class="text-base font-bold text-slate-100">Saldos de Empenhos por Empresa e Item</h2>
-            <p class="text-xs text-slate-400">Selecione uma empresa ou empenho para ver os saldos físicos e financeiros detalhados por item.</p>
+            <h2 class="text-base font-bold text-slate-100">Acompanhamento de Saldos por Empresa, Empenho e Item</h2>
+            <p class="text-xs text-slate-400">Visão consolidada por empresa. Use Detalhamento para consultar os empenhos e, em seguida, os saldos individuais de cada item.</p>
           </div>
 
           <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
-            <select id="filtroAcompEmpresa" onchange="onFiltroAcompEmpresaChange()" class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600">
-              <option value="">Todas as Empresas</option>
-            </select>
-            <select id="filtroAcompEmpenho" onchange="renderAcompanhamento()" class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600">
-              <option value="">Todos os Empenhos</option>
-            </select>
-            <input type="text" id="filtroAcompTexto" onkeyup="renderAcompanhamento()" placeholder="Buscar item ou pregão..." class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600" />
+            <input type="text" id="filtroAcompTexto" oninput="renderAcompanhamento()" placeholder="Buscar empresa..." class="px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-950 text-slate-100 outline-none focus:ring-2 focus:ring-blue-600" />
             <button type="button" onclick="exportEmpenhosSaldosCSV()" class="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
               📥 Exportar Empenhos e Saldos
             </button>
+            <!-- Controles mantidos no DOM para compatibilidade com filtros/rotinas legadas. -->
+            <div class="hidden" aria-hidden="true">
+              <select id="filtroAcompEmpresa"><option value="">Todas as Empresas</option></select>
+              <select id="filtroAcompEmpenho"><option value="">Todos os Empenhos</option></select>
+            </div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-950/70 rounded-xl border border-slate-800">
           <div>
-            <span class="text-[11px] font-semibold uppercase text-slate-400">Empenhado (Filtro)</span>
+            <span class="text-[11px] font-semibold uppercase text-slate-400">Total empenhado</span>
             <p id="acomp-total-emp" class="text-base font-bold text-slate-100">R$ 0,00</p>
           </div>
           <div>
-            <span class="text-[11px] font-semibold uppercase text-slate-400">Liquidado / Pago (Filtro)</span>
+            <span class="text-[11px] font-semibold uppercase text-slate-400">Total usado (liquidado / pago)</span>
             <p id="acomp-total-liq" class="text-base font-bold text-emerald-400">R$ 0,00</p>
           </div>
           <div>
-            <span class="text-[11px] font-semibold uppercase text-slate-400">Saldo Financeiro a Liquidar</span>
+            <span class="text-[11px] font-semibold uppercase text-slate-400">Total disponível</span>
             <p id="acomp-total-saldo" class="text-base font-bold text-blue-300">R$ 0,00</p>
           </div>
         </div>
@@ -390,17 +389,11 @@
             <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
               <tr>
                 <th class="px-3 py-3">Empresa</th>
-                <th class="px-3 py-3">Empenho</th>
-                <th class="px-3 py-3">Processo</th>
-                <th class="px-3 py-3">Item</th>
-                <th class="px-3 py-3">Descrição</th>
-                <th class="px-3 py-3 text-right">Qtd. Emp.</th>
-                <th class="px-3 py-3 text-right">Qtd. Atestada</th>
-                <th class="px-3 py-3 text-right">Saldo Qtd.</th>
-                <th class="px-3 py-3 text-right">Vlr. Empenhado</th>
-                <th class="px-3 py-3 text-right">Vlr. Liq./Pago</th>
-                <th class="px-3 py-3 text-right">Saldo Fin.</th>
-                <th class="px-3 py-3 text-center">Status</th>
+                <th class="px-3 py-3 text-right">Nº de empenhos</th>
+                <th class="px-3 py-3 text-right">Total empenhado</th>
+                <th class="px-3 py-3 text-right">Usado (liq./pago)</th>
+                <th class="px-3 py-3 text-right">Disponível</th>
+                <th class="px-3 py-3 text-center">Detalhamento</th>
               </tr>
             </thead>
             <tbody id="tbl-acompanhamento" class="divide-y divide-slate-800/80"></tbody>
@@ -668,17 +661,16 @@
               <div><label class="block text-xs text-slate-300 mb-1">Classificação Itens</label><input id="ps-classificacao" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">Centro de Custo</label><input id="ps-centro-custo" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">UASG Licitação</label><input id="ps-uasg" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
-              <div><label class="block text-xs text-slate-300 mb-1">NR do Processo</label><input id="ps-processo" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
               <div><label class="block text-xs text-slate-300 mb-1">UG</label><input id="ps-ug" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">PTRES</label><input id="ps-ptres" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
-              <div><label class="block text-xs text-slate-300 mb-1">AI</label><input id="ps-ai" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">AI</label><select id="ps-ai" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="B4410100">B4410100</option><option value="B4410200">B4410200</option></select></div>
               <div><label class="block text-xs text-slate-300 mb-1">DO</label><input id="ps-do" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">BI</label><input id="ps-bi" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">FR</label><input id="ps-fr" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
               <div><label class="block text-xs text-slate-300 mb-1">ND</label><input id="ps-nd" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
-              <div><label class="block text-xs text-slate-300 mb-1">CONTA</label><input id="ps-conta" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">CONTA</label><select id="ps-conta" class="ps-field w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="339030-21">339030-21</option><option value="339030-07">339030-07</option></select></div>
             </div>
             <div><label class="block text-xs text-slate-300 mb-1">Finalidade</label><textarea id="ps-finalidade" rows="2" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100"></textarea></div>
             <div><label class="block text-xs text-slate-300 mb-1">Pré-SOLEMP gerada por</label><input id="ps-gerada-por" class="ps-field w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-slate-100" /></div>
@@ -1005,11 +997,13 @@
         const saldoFin = vlrEmp - vlrLiquidado;
 
         return {
+          empenhoId: emp.id,
+          processoItemId: p ? p.id : emp.processo_item_id,
           empresaId: empresa ? empresa.id : '',
           empresaSigla: empresa ? empresa.id_resumido : '-',
           empresaFantasia: empresa ? empresa.nome_fantasia : '-',
           empresaNome: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-',
-          numero_empenho: emp.numero_empenho,
+          numero_empenho: String(emp.numero_empenho || 'Sem número'),
           data_empenho: emp.data_empenho,
           pregao: p ? p.numero_pregao : '-',
           item: p ? p.numero_item : '-',
@@ -1026,12 +1020,10 @@
       }).filter(r => {
         if (empIdFiltro && r.empresaId !== empIdFiltro) return false;
         if (empenhoFiltro && r.numero_empenho !== empenhoFiltro) return false;
+        // Nesta tela a busca filtra somente a empresa, preservando os totais
+        // consolidados de todos os empenhos e itens vinculados a ela.
         if (textoFiltro) {
-          const match =
-            r.empresaNome.toLowerCase().includes(textoFiltro) ||
-            r.numero_empenho.toLowerCase().includes(textoFiltro) ||
-            r.pregao.toLowerCase().includes(textoFiltro) ||
-            r.desc.toLowerCase().includes(textoFiltro);
+          const match = `${r.empresaSigla} ${r.empresaFantasia}`.toLowerCase().includes(textoFiltro);
           if (!match) return false;
         }
         return true;
@@ -2031,9 +2023,9 @@
     const PRE_SOLEMP_DEFAULTS = {
       organizacao: 'CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA',
       tipo: 'GLOBAL', modalidade: 'NÃO SE APLICA', classificacao: 'MCI',
-      centroCusto: '590103', uasg: '787010', processo: '25189.987520/1000-26',
+      centroCusto: '590103', uasg: '787010',
       ug: '787010', ptres: '174713', ai: 'B4410100', do: '2', bi: 'DD',
-      fr: '0100000000', nd: '339030', conta: '339030.21 (p/ material descartável)',
+      fr: '0100000000', nd: '339030', conta: '339030-21',
       finalidade: 'AQUISIÇÃO DE GÊNEROS PARA COMPLETAR OS ESTOQUES DESTE CENTRO DE INTENDÊNCIA',
       geradaPor: '',
       assinaturas: [
@@ -2043,6 +2035,18 @@
         { nome: 'RAFAEL BARBOSA GOMES DE PAULA', posto: 'Terceiro-Sargento (AR)', funcao: 'Fiel de Municiamento' }
       ]
     };
+
+    // Mantém AI e CONTA restritos às opções fixas, inclusive ao abrir registros antigos.
+    function normalizePreSolempAI(value) {
+      const normalized = String(value ?? '').trim().toUpperCase();
+      return normalized === 'B4410200' ? 'B4410200' : 'B4410100';
+    }
+
+    function normalizePreSolempConta(value) {
+      const normalized = String(value ?? '').trim().replace(/\s+/g, '').toUpperCase();
+      if (/339030[-.]?07/.test(normalized)) return '339030-07';
+      return '339030-21';
+    }
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -2099,11 +2103,15 @@
       const map = {
         organizacao:'ps-organizacao', tipo:'ps-tipo', modalidade:'ps-modalidade',
         classificacao:'ps-classificacao', centroCusto:'ps-centro-custo', uasg:'ps-uasg',
-        processo:'ps-processo', ug:'ps-ug', ptres:'ps-ptres', ai:'ps-ai', do:'ps-do',
+        ug:'ps-ug', ptres:'ps-ptres', ai:'ps-ai', do:'ps-do',
         bi:'ps-bi', fr:'ps-fr', nd:'ps-nd', conta:'ps-conta', finalidade:'ps-finalidade',
         geradaPor:'ps-gerada-por'
       };
-      Object.entries(map).forEach(([key,id]) => { document.getElementById(id).value = defaults[key] ?? ''; });
+      Object.entries(map).forEach(([key,id]) => {
+        const value = key === 'ai' ? normalizePreSolempAI(defaults[key])
+          : key === 'conta' ? normalizePreSolempConta(defaults[key]) : (defaults[key] ?? '');
+        document.getElementById(id).value = value;
+      });
       (defaults.assinaturas || PRE_SOLEMP_DEFAULTS.assinaturas).forEach((s, i) => {
         const n = i + 1;
         document.getElementById(`ps-sig${n}-nome`).value = s.nome || '';
@@ -2120,7 +2128,6 @@
         classificacao: document.getElementById('ps-classificacao').value,
         centroCusto: document.getElementById('ps-centro-custo').value,
         uasg: document.getElementById('ps-uasg').value,
-        processo: document.getElementById('ps-processo').value,
         ug: document.getElementById('ps-ug').value,
         ptres: document.getElementById('ps-ptres').value,
         ai: document.getElementById('ps-ai').value,
@@ -2259,11 +2266,10 @@
         classificacao:document.getElementById('ps-classificacao').value,
         centroCusto:document.getElementById('ps-centro-custo').value,
         uasg:document.getElementById('ps-uasg').value,
-        processo:document.getElementById('ps-processo').value,
         ug:document.getElementById('ps-ug').value, ptres:document.getElementById('ps-ptres').value,
-        ai:document.getElementById('ps-ai').value, do:document.getElementById('ps-do').value,
+        ai:normalizePreSolempAI(document.getElementById('ps-ai').value), do:document.getElementById('ps-do').value,
         bi:document.getElementById('ps-bi').value, fr:document.getElementById('ps-fr').value,
-        nd:document.getElementById('ps-nd').value, conta:document.getElementById('ps-conta').value,
+        nd:document.getElementById('ps-nd').value, conta:normalizePreSolempConta(document.getElementById('ps-conta').value),
         finalidade:document.getElementById('ps-finalidade').value,
         geradaPor:document.getElementById('ps-gerada-por').value
       };
@@ -2302,6 +2308,8 @@
       const cnpj = d.cnpj || document.getElementById('ps-cnpj').value || '';
       const itens = d.itens || [];
       const total = Number(d.total || 0);
+      const aiPrint = normalizePreSolempAI(f.ai);
+      const contaPrint = normalizePreSolempConta(f.conta);
       const signatures = d.assinaturas || [1,2,3,4].map(n => ({
         nome:document.getElementById(`ps-sig${n}-nome`).value,
         posto:document.getElementById(`ps-sig${n}-posto`).value,
@@ -2340,14 +2348,13 @@
             <div><strong>Centro de Custo:</strong> ${escapeHtml(f.centroCusto)}</div>
             <div><strong>N° do Pregão:</strong> ${escapeHtml(d.numero_pregao || '')}</div>
             <div><strong>UASG Licitação:</strong> ${escapeHtml(f.uasg)}</div>
-            <div><strong>NR do Processo:</strong> ${escapeHtml(f.processo)}</div>
           </div>
           <div class="presolemp-empenho-box"><strong>Número do Empenho:</strong><div class="blank">${escapeHtml(d.numero_empenho || '')}</div><strong>Data do Empenho:</strong><div class="blank">${escapeHtml(dateShortPtBR(d.data_empenho || ''))}</div></div>
         </div>
         <table class="presolemp-budget">
           <colgroup><col style="width:10%"><col style="width:11%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:20%"><col style="width:13%"><col style="width:22%"></colgroup>
           <thead><tr><th>UG</th><th>PTRES</th><th>AI</th><th>DO</th><th>BI</th><th>FR</th><th>ND</th><th>CONTA</th></tr></thead>
-          <tbody><tr><td>${escapeHtml(f.ug)}</td><td>${escapeHtml(f.ptres)}</td><td>${escapeHtml(f.ai)}</td><td>${escapeHtml(f.do)}</td><td>${escapeHtml(f.bi)}</td><td>${escapeHtml(f.fr)}</td><td>${escapeHtml(f.nd)}</td><td>${escapeHtml(f.conta)}</td></tr></tbody>
+          <tbody><tr><td>${escapeHtml(f.ug)}</td><td>${escapeHtml(f.ptres)}</td><td>${escapeHtml(aiPrint)}</td><td>${escapeHtml(f.do)}</td><td>${escapeHtml(f.bi)}</td><td>${escapeHtml(f.fr)}</td><td>${escapeHtml(f.nd)}</td><td>${escapeHtml(contaPrint)}</td></tr></tbody>
         </table>
         <table class="presolemp-items">
           <colgroup><col style="width:7%"><col style="width:43%"><col style="width:8%"><col style="width:14%"><col style="width:13%"><col style="width:15%"></colgroup>
@@ -2420,8 +2427,12 @@
       document.getElementById('ps-empresa').value = p.empresa_id || '';
       onPreSolempEmpresaChange();
       const f = p.fields || {};
-      const map = {organizacao:'ps-organizacao',tipo:'ps-tipo',modalidade:'ps-modalidade',classificacao:'ps-classificacao',centroCusto:'ps-centro-custo',uasg:'ps-uasg',processo:'ps-processo',ug:'ps-ug',ptres:'ps-ptres',ai:'ps-ai',do:'ps-do',bi:'ps-bi',fr:'ps-fr',nd:'ps-nd',conta:'ps-conta',finalidade:'ps-finalidade',geradaPor:'ps-gerada-por'};
-      Object.entries(map).forEach(([key,id]) => document.getElementById(id).value = f[key] || '');
+      const map = {organizacao:'ps-organizacao',tipo:'ps-tipo',modalidade:'ps-modalidade',classificacao:'ps-classificacao',centroCusto:'ps-centro-custo',uasg:'ps-uasg',ug:'ps-ug',ptres:'ps-ptres',ai:'ps-ai',do:'ps-do',bi:'ps-bi',fr:'ps-fr',nd:'ps-nd',conta:'ps-conta',finalidade:'ps-finalidade',geradaPor:'ps-gerada-por'};
+      Object.entries(map).forEach(([key,id]) => {
+        const value = key === 'ai' ? normalizePreSolempAI(f[key])
+          : key === 'conta' ? normalizePreSolempConta(f[key]) : (f[key] || '');
+        document.getElementById(id).value = value;
+      });
       (p.assinaturas || PRE_SOLEMP_DEFAULTS.assinaturas).forEach((s,i) => { const n=i+1; document.getElementById(`ps-sig${n}-nome`).value=s.nome||''; document.getElementById(`ps-sig${n}-posto`).value=s.posto||''; document.getElementById(`ps-sig${n}-funcao`).value=s.funcao||''; });
       const container = document.getElementById('ps-itens-container');
       container.innerHTML = '';
@@ -2616,7 +2627,11 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
         const icon = control.querySelector('[data-chevron]');
         if (icon) icon.textContent = opening ? '▾' : '▸';
         const label = control.querySelector('[data-toggle-label]');
-        if (label) label.textContent = opening ? 'Ocultar itens' : 'Ver itens';
+        if (label) {
+          const openLabel = label.getAttribute('data-open-label') || 'Ocultar itens';
+          const closedLabel = label.getAttribute('data-closed-label') || 'Ver itens';
+          label.textContent = opening ? openLabel : closedLabel;
+        }
       });
     }
 
@@ -2780,35 +2795,183 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
 
     function renderAcompanhamento() {
       const tbody = document.getElementById('tbl-acompanhamento');
+      if (!tbody) return;
       const rows = getAcompanhamentoRows();
 
       const somaEmp = rows.reduce((a, b) => a + b.vlrEmp, 0);
-      const somaLiq = rows.reduce((a, b) => a + b.vlrLiquidado, 0);
-      const somaSaldo = rows.reduce((a, b) => a + b.saldoFin, 0);
+      const somaUsado = rows.reduce((a, b) => a + b.vlrLiquidado, 0);
+      const somaDisponivel = rows.reduce((a, b) => a + b.saldoFin, 0);
       document.getElementById('acomp-total-emp').textContent = fmtBRL(somaEmp);
-      document.getElementById('acomp-total-liq').textContent = fmtBRL(somaLiq);
-      document.getElementById('acomp-total-saldo').textContent = fmtBRL(somaSaldo);
+      document.getElementById('acomp-total-liq').textContent = fmtBRL(somaUsado);
+      document.getElementById('acomp-total-saldo').textContent = fmtBRL(somaDisponivel);
 
-      tbody.innerHTML = rows.map(r => `
-        <tr class="hover:bg-slate-800/50">
-          <td class="px-3 py-3 font-medium text-slate-200">${r.empresaNome}</td>
-          <td class="px-3 py-3 font-semibold text-blue-300">${r.numero_empenho}</td>
-          <td class="px-3 py-3 text-slate-300">${r.pregao}</td>
-          <td class="px-3 py-3 text-slate-300">${r.item}</td>
-          <td class="px-3 py-3 text-slate-200">${r.desc}</td>
-          <td class="px-3 py-3 text-right text-slate-200">${fmtNum(r.qtdEmp)}</td>
-          <td class="px-3 py-3 text-right text-blue-300 font-medium">${fmtNum(r.qtdAtestada)}</td>
-          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtNum(r.saldoQtd)}</td>
-          <td class="px-3 py-3 text-right text-slate-200">${fmtBRL(r.vlrEmp)}</td>
-          <td class="px-3 py-3 text-right text-emerald-400 font-medium">${fmtBRL(r.vlrLiquidado)}</td>
-          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(r.saldoFin)}</td>
-          <td class="px-3 py-3 text-center">
-            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${r.saldoFin <= 0.01 ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/60' : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'}">
-              ${r.saldoFin <= 0.01 ? 'Concluído' : 'Em execução'}
-            </span>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="12" class="px-4 py-6 text-center text-slate-500">Nenhum dado para o filtro selecionado.</td></tr>';
+      // Nível 1: consolidação por empresa.
+      const empresasMap = new Map();
+      rows.forEach(r => {
+        const key = r.empresaId || `sem-empresa-${r.empresaNome}`;
+        if (!empresasMap.has(key)) {
+          empresasMap.set(key, {
+            id: key,
+            sigla: r.empresaSigla,
+            nome: r.empresaFantasia,
+            empenhosMap: new Map(),
+            vlrEmp: 0,
+            vlrUsado: 0,
+            saldoFin: 0
+          });
+        }
+        const empresa = empresasMap.get(key);
+        empresa.vlrEmp += r.vlrEmp;
+        empresa.vlrUsado += r.vlrLiquidado;
+        empresa.saldoFin += r.saldoFin;
+
+        // Nível 2: consolidação dos itens pelo número e data da nota de empenho.
+        const empenhoKey = `${r.numero_empenho}__${r.data_empenho || ''}`;
+        if (!empresa.empenhosMap.has(empenhoKey)) {
+          empresa.empenhosMap.set(empenhoKey, {
+            numero: r.numero_empenho,
+            data: r.data_empenho,
+            pregoes: new Set(),
+            itens: [],
+            vlrEmp: 0,
+            vlrUsado: 0,
+            saldoFin: 0,
+            qtdItensMap: new Map()
+          });
+        }
+        const empenho = empresa.empenhosMap.get(empenhoKey);
+        if (r.pregao && r.pregao !== '-') empenho.pregoes.add(r.pregao);
+        empenho.itens.push(r);
+        empenho.vlrEmp += r.vlrEmp;
+        empenho.vlrUsado += r.vlrLiquidado;
+        empenho.saldoFin += r.saldoFin;
+
+        // Nível 3: consolida eventual repetição do mesmo item no mesmo empenho.
+        const itemKey = r.processoItemId || `${r.item}__${r.desc}__${r.unidade}`;
+        if (!empenho.qtdItensMap.has(itemKey)) {
+          empenho.qtdItensMap.set(itemKey, {
+            item: r.item,
+            descricao: r.desc,
+            unidade: r.unidade,
+            quantidadeEmpenhada: 0,
+            quantidadeUsada: 0,
+            saldoQuantidade: 0,
+            vlrEmp: 0,
+            vlrUsado: 0,
+            saldoFin: 0,
+            registros: 0
+          });
+        }
+        const item = empenho.qtdItensMap.get(itemKey);
+        item.quantidadeEmpenhada += r.qtdEmp;
+        item.quantidadeUsada += r.qtdAtestada;
+        item.saldoQuantidade += r.saldoQtd;
+        item.vlrEmp += r.vlrEmp;
+        item.vlrUsado += r.vlrLiquidado;
+        item.saldoFin += r.saldoFin;
+        item.registros += 1;
+      });
+
+      const empresas = [...empresasMap.values()].sort((a, b) =>
+        String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR')
+      );
+
+      tbody.innerHTML = empresas.map((empresa, empresaIndex) => {
+        const companyDetailId = `acomp-company-details-${empresaIndex}`;
+        const empenhos = [...empresa.empenhosMap.values()].sort((a, b) =>
+          String(a.numero).localeCompare(String(b.numero), 'pt-BR', { numeric: true })
+        );
+        const empenhosHtml = empenhos.map((empenho, empenhoIndex) => {
+          const itemDetailId = `acomp-items-${empresaIndex}-${empenhoIndex}`;
+          const itens = [...empenho.qtdItensMap.values()].sort((a, b) =>
+            String(a.item).localeCompare(String(b.item), 'pt-BR', { numeric: true })
+          );
+          const pregoesLabel = [...empenho.pregoes].join(', ') || '-';
+          const itensHtml = itens.map(item => `
+            <tr class="border-t border-slate-800/80">
+              <td class="px-3 py-2 text-slate-300">${escapeHtml(item.item)}</td>
+              <td class="px-3 py-2 text-slate-100">${escapeHtml(item.descricao)}</td>
+              <td class="px-3 py-2 text-slate-400">${escapeHtml(item.unidade)}</td>
+              <td class="px-3 py-2 text-right text-slate-200">${fmtNum(item.quantidadeEmpenhada)}</td>
+              <td class="px-3 py-2 text-right text-blue-300">${fmtNum(item.quantidadeUsada)}</td>
+              <td class="px-3 py-2 text-right font-semibold text-slate-100">${fmtNum(item.saldoQuantidade)}</td>
+              <td class="px-3 py-2 text-right text-slate-200">${fmtBRL(item.vlrEmp)}</td>
+              <td class="px-3 py-2 text-right text-emerald-400">${fmtBRL(item.vlrUsado)}</td>
+              <td class="px-3 py-2 text-right font-semibold ${item.saldoFin <= 0.01 ? 'text-emerald-300' : 'text-slate-100'}">${fmtBRL(item.saldoFin)}</td>
+              <td class="px-3 py-2 text-center">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${item.saldoFin <= 0.01 ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800/60' : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'}">${item.saldoFin <= 0.01 ? 'Concluído' : 'Em execução'}</span>
+              </td>
+            </tr>`).join('');
+
+          return `
+            <tr class="border-t border-slate-800/80 hover:bg-slate-800/40">
+              <td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(empenho.numero)}</td>
+              <td class="px-3 py-3 text-slate-300">${escapeHtml(dateShortPtBR(empenho.data) || empenho.data || '-')}</td>
+              <td class="px-3 py-3 text-slate-300">${escapeHtml(pregoesLabel)}</td>
+              <td class="px-3 py-3 text-right text-slate-300">${itens.length}</td>
+              <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(empenho.vlrEmp)}</td>
+              <td class="px-3 py-3 text-right text-emerald-400">${fmtBRL(empenho.vlrUsado)}</td>
+              <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(empenho.saldoFin)}</td>
+              <td class="px-3 py-3 text-center">
+                <button type="button" onclick="toggleDocumentDetails('${itemDetailId}', this)" aria-expanded="false" aria-controls="${itemDetailId}" class="text-blue-300 hover:underline">
+                  <span data-toggle-label data-open-label="Ocultar itens" data-closed-label="Detalhar itens">Detalhar itens</span>
+                </button>
+              </td>
+            </tr>
+            <tr id="${itemDetailId}" class="hidden bg-slate-950/60">
+              <td colspan="8" class="px-4 py-4">
+                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <strong class="text-xs text-slate-200">Itens do empenho ${escapeHtml(empenho.numero)}</strong>
+                  <span class="text-[11px] text-slate-400">Qtd. empenhada: ${fmtNum(empenho.itens.reduce((a, x) => a + x.qtdEmp, 0))} • Qtd. atestada: ${fmtNum(empenho.itens.reduce((a, x) => a + x.qtdAtestada, 0))}</span>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-800">
+                  <table class="w-full text-xs text-left min-w-[1050px]">
+                    <thead class="bg-slate-900 text-slate-400 uppercase"><tr>
+                      <th class="px-3 py-2">Item</th><th class="px-3 py-2">Descrição</th><th class="px-3 py-2">Unid.</th>
+                      <th class="px-3 py-2 text-right">Qtd. empenhada</th><th class="px-3 py-2 text-right">Qtd. usada/atestada</th><th class="px-3 py-2 text-right">Qtd. disponível</th>
+                      <th class="px-3 py-2 text-right">Total empenhado</th><th class="px-3 py-2 text-right">Usado (liq./pago)</th><th class="px-3 py-2 text-right">Disponível</th><th class="px-3 py-2 text-center">Status</th>
+                    </tr></thead>
+                    <tbody>${itensHtml || '<tr><td colspan="10" class="px-3 py-4 text-center text-slate-500">Nenhum item encontrado.</td></tr>'}</tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>`;
+        }).join('');
+
+        return `
+          <tr class="hover:bg-slate-800/50 border-t border-slate-800/80">
+            <td class="px-3 py-3">
+              <div class="font-semibold text-slate-100">${escapeHtml(empresa.nome)}</div>
+              <div class="text-[11px] text-slate-400">${escapeHtml(empresa.sigla)}</div>
+            </td>
+            <td class="px-3 py-3 text-right text-slate-300">${empenhos.length}</td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(empresa.vlrEmp)}</td>
+            <td class="px-3 py-3 text-right text-emerald-400">${fmtBRL(empresa.vlrUsado)}</td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(empresa.saldoFin)}</td>
+            <td class="px-3 py-3 text-center">
+              <button type="button" onclick="toggleDocumentDetails('${companyDetailId}', this)" aria-expanded="false" aria-controls="${companyDetailId}" class="px-3 py-1.5 rounded-lg bg-blue-950/70 border border-blue-800/70 text-blue-200 hover:bg-blue-900/70 text-xs font-semibold">
+                <span data-toggle-label data-open-label="Ocultar empenhos" data-closed-label="Detalhamento">Detalhamento</span>
+              </button>
+            </td>
+          </tr>
+          <tr id="${companyDetailId}" class="hidden bg-slate-950/40">
+            <td colspan="6" class="px-4 py-4">
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <strong class="text-sm text-slate-100">Empenhos de ${escapeHtml(empresa.nome)}</strong>
+                <span class="text-xs text-slate-400">Total: ${fmtBRL(empresa.vlrEmp)} • Usado: ${fmtBRL(empresa.vlrUsado)} • Disponível: ${fmtBRL(empresa.saldoFin)}</span>
+              </div>
+              <div class="overflow-x-auto rounded-lg border border-slate-800">
+                <table class="w-full text-xs text-left min-w-[900px]">
+                  <thead class="bg-slate-900 text-slate-400 uppercase"><tr>
+                    <th class="px-3 py-2">Nº do empenho</th><th class="px-3 py-2">Data</th><th class="px-3 py-2">Pregão</th><th class="px-3 py-2 text-right">Itens</th>
+                    <th class="px-3 py-2 text-right">Total empenhado</th><th class="px-3 py-2 text-right">Usado (liq./pago)</th><th class="px-3 py-2 text-right">Disponível</th><th class="px-3 py-2 text-center">Detalhamento</th>
+                  </tr></thead>
+                  <tbody>${empenhosHtml || '<tr><td colspan="8" class="px-3 py-5 text-center text-slate-500">Nenhum empenho cadastrado para esta empresa.</td></tr>'}</tbody>
+                </table>
+              </div>
+            </td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Nenhuma empresa possui empenhos cadastrados ou a busca não retornou resultados.</td></tr>';
     }
 
     function renderDashboard() {
