@@ -538,7 +538,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h2 class="text-base font-bold text-slate-100">Lançar Nota de Empenho (1 ou Mais Itens)</h2>
-            <p class="text-xs text-slate-400">Selecione o Pregão e a Empresa e adicione quantos itens quiser neste mesmo empenho.</p>
+            <p class="text-xs text-slate-400">Selecione o Pregão e a Empresa e adicione quantos itens quiser. A lista abaixo exibe um resumo por empenho; clique no número para abrir os itens.</p>
           </div>
           <button type="button" onclick="addEmpenhoItemRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition self-start sm:self-auto">
             + Adicionar outro item neste empenho
@@ -593,12 +593,10 @@
                 <th class="px-3 py-3">Data</th>
                 <th class="px-3 py-3">Pregão</th>
                 <th class="px-3 py-3">Empresa</th>
-                <th class="px-3 py-3">Item</th>
-                <th class="px-3 py-3">Descrição</th>
-                <th class="px-3 py-3 text-right">Qtd. Emp.</th>
-                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
-                <th class="px-3 py-3 text-right">Vlr. Total</th>
-                <th class="px-3 py-3 text-right">Ações</th>
+                <th class="px-3 py-3 text-right">Itens</th>
+                <th class="px-3 py-3 text-right">Qtd. Total</th>
+                <th class="px-3 py-3 text-right">Valor Total</th>
+                <th class="px-3 py-3 text-center">Detalhamento</th>
               </tr>
             </thead>
             <tbody id="tbl-empenhos" class="divide-y divide-slate-800/80"></tbody>
@@ -790,7 +788,7 @@
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div>
             <span class="text-sm font-bold uppercase text-slate-100">Consulta e Notas Fiscais Lançadas</span>
-            <p class="text-xs text-slate-400">Busque pelo número da NF para verificar rapidamente se foi paga ou qual a situação atual.</p>
+            <p class="text-xs text-slate-400">A lista exibe um resumo por Nota Fiscal. Clique no número da NF para abrir os itens; a alteração de situação vale para todo o documento.</p>
           </div>
           <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
             <input type="text" id="filtroNfNumero" onkeyup="renderNotas()" placeholder="Filtrar por Nº da NF..." class="px-3 py-2 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-48 focus:ring-2 focus:ring-blue-600 outline-none" />
@@ -821,12 +819,10 @@
                 <th class="px-3 py-3">Data</th>
                 <th class="px-3 py-3">Empresa</th>
                 <th class="px-3 py-3">Empenho</th>
-                <th class="px-3 py-3">Item</th>
-                <th class="px-3 py-3 text-right">Qtd. NF</th>
-                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
-                <th class="px-3 py-3 text-right">Vlr. Total</th>
-                <th class="px-3 py-3 text-center">Situação (Alterar)</th>
-                <th class="px-3 py-3 text-right">Ações</th>
+                <th class="px-3 py-3 text-right">Itens</th>
+                <th class="px-3 py-3 text-center">Situação</th>
+                <th class="px-3 py-3 text-right">Valor Total</th>
+                <th class="px-3 py-3 text-center">Detalhamento</th>
               </tr>
             </thead>
             <tbody id="tbl-notas" class="divide-y divide-slate-800/80"></tbody>
@@ -1084,7 +1080,7 @@
       }).sort((a, b) => b.vlrEmp - a.vlrEmp);
     }
 
-    function getFilteredNotasRows() {
+    function getFilteredNotasRows(ignoreSituationFilter = false) {
       const numFiltro = (document.getElementById('filtroNfNumero')?.value || '').trim().toLowerCase();
       const sitFiltro = document.getElementById('filtroNfSituacao')?.value || '';
 
@@ -1096,18 +1092,21 @@
 
         return {
           ...n,
+          empresaId: p ? p.empresa_id : '',
           empresaSigla: empresa ? empresa.id_resumido : '-',
           empresaFantasia: empresa ? empresa.nome_fantasia : '-',
           numeroEmpenho: emp ? emp.numero_empenho : '-',
+          empenhoId: emp ? emp.id : '',
           pregao: p ? p.numero_pregao : '-',
           itemLabel: p ? `Item ${p.numero_item} - ${p.descricao_item}` : '-',
           numeroItem: p ? p.numero_item : '-',
           descricaoItem: p ? p.descricao_item : '-',
+          unidade: p ? p.unidade_fornecimento : '-',
           total
         };
       }).filter(r => {
         if (numFiltro && !String(r.numero_nf).toLowerCase().includes(numFiltro)) return false;
-        if (sitFiltro && r.situacao !== sitFiltro) return false;
+        if (!ignoreSituationFilter && sitFiltro && r.situacao !== sitFiltro) return false;
         return true;
       });
     }
@@ -1986,12 +1985,28 @@
     }
 
     async function updateNfSituacao(id, novaSituacao) {
-      const { error } = await sb.from('notas_fiscais').update({ situacao: novaSituacao }).eq('id', id);
+      const alvo = state.notas.find(n => n.id === id);
+      if (!alvo) return;
+      const empenhoAlvo = state.empenhos.find(e => e.id === alvo.empenho_id);
+      const processoAlvo = empenhoAlvo ? state.processos.find(p => p.id === empenhoAlvo.processo_item_id) : null;
+      const empresaIdAlvo = processoAlvo?.empresa_id || '';
+      const numeroEmpenhoAlvo = empenhoAlvo?.numero_empenho || '';
+      // Cada linha da NF aponta para um empenho-item diferente. O agrupamento correto
+      // usa o número do empenho, a empresa, o número da NF e sua data.
+      const idsDoDocumento = state.notas.filter(n => {
+        if (n.numero_nf !== alvo.numero_nf || n.data_nf !== alvo.data_nf) return false;
+        const empLinha = state.empenhos.find(e => e.id === n.empenho_id);
+        const procLinha = empLinha ? state.processos.find(p => p.id === empLinha.processo_item_id) : null;
+        return (empLinha?.numero_empenho || '') === numeroEmpenhoAlvo && (procLinha?.empresa_id || '') === empresaIdAlvo;
+      }).map(n => n.id);
+      const { error } = await sb.from('notas_fiscais')
+        .update({ situacao: novaSituacao })
+        .in('id', idsDoDocumento);
       if (error) {
-        showToast('Erro ao atualizar status: ' + error.message, true);
+        showToast('Erro ao atualizar situação da NF: ' + error.message, true);
         return;
       }
-      showToast('Situação da NF atualizada!');
+      showToast(`Situação da NF ${alvo.numero_nf} atualizada para ${novaSituacao}.`);
       await loadAllData();
     }
 
@@ -2396,6 +2411,7 @@
     function editPreSolemp(id) {
       const p = state.preSolemps.find(x => x.id === id);
       if (!p) return;
+      switchTab('presolemp');
       document.getElementById('ps-id').value = p.id;
       document.getElementById('ps-numero').value = p.numero || '';
       document.getElementById('ps-data').value = p.data || '';
@@ -2413,7 +2429,7 @@
       if (!p.itens?.length) addPreSolempItemRow();
       updatePreSolempTotals();
       renderPreSolempPrintSheet(p);
-      switchTab('presolemp');
+      showToast(p.status === 'Empenho gerado' ? 'Pré-SOLEMP vinculada carregada para edição. A alteração não modifica o empenho já registrado.' : 'Pré-SOLEMP carregada para edição.');
     }
 
     function printCurrentPreSolemp() {
@@ -2461,10 +2477,20 @@
     function deletePreSolemp(id) {
       const p = state.preSolemps.find(x => x.id === id);
       if (!p) return;
-      if (p.status === 'Empenho gerado') { showToast('Esta Pré-SOLEMP já originou um empenho e não pode ser excluída por aqui.', true); return; }
-      if (!confirm(`Confirma excluir a Pré-SOLEMP n° ${p.numero}?`)) return;
+      const vinculada = p.status === 'Empenho gerado';
+      const detalheVinculo = vinculada
+        ? `
+
+Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(número não informado)'}. A exclusão removerá somente a Pré-SOLEMP do navegador; o empenho já gravado no Supabase permanecerá inalterado.`
+        : '';
+      if (!confirm(`Confirma excluir a Pré-SOLEMP nº ${p.numero}?${detalheVinculo}`)) return;
       state.preSolemps = state.preSolemps.filter(x => x.id !== id);
-      if (persistPreSolemps()) { renderPreSolemps(); populateEmpPreSolempDropdown(); showToast('Pré-SOLEMP excluída.'); }
+      if (persistPreSolemps()) {
+        if (document.getElementById('ps-id').value === id) newPreSolemp();
+        renderPreSolemps();
+        populateEmpPreSolempDropdown();
+        showToast(`Pré-SOLEMP ${p.numero} excluída.`);
+      }
     }
 
     function renderPreSolemps() {
@@ -2475,19 +2501,31 @@
       tbody.innerHTML = rows.map(p => `
         <tr class="hover:bg-slate-800/50">
           <td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(p.numero)}</td>
-          <td class="px-3 py-3 text-slate-300">${escapeHtml(p.data)}</td>
+          <td class="px-3 py-3 text-slate-300">${escapeHtml(dateShortPtBR(p.data) || p.data || '')}</td>
           <td class="px-3 py-3 text-slate-300">${escapeHtml(p.numero_pregao)}</td>
           <td class="px-3 py-3 text-slate-200">${escapeHtml(p.empresa_nome)}</td>
           <td class="px-3 py-3 text-right text-slate-300">${escapeHtml(p.quantidadeItens ?? (p.itens || []).length)}</td>
           <td class="px-3 py-3 text-right font-semibold text-slate-100">${escapeHtml(fmtBRL(p.total))}</td>
           <td class="px-3 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-semibold border ${p.status === 'Empenho gerado' ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-amber-950 text-amber-300 border-amber-800'}">${escapeHtml(p.status || 'Pendente')}${p.numero_empenho ? ` • ${escapeHtml(p.numero_empenho)}` : ''}</span></td>
           <td class="px-3 py-3"><div class="flex justify-end flex-wrap gap-2">
-            <button type="button" onclick="editPreSolemp(${JSON.stringify(p.id)})" class="text-blue-300 hover:underline">Editar</button>
-            <button type="button" onclick="printSavedPreSolemp(${JSON.stringify(p.id)})" class="text-slate-300 hover:underline">Imprimir</button>
-            ${p.status === 'Empenho gerado' ? '<span class="text-slate-500">Gerado</span>' : `<button type="button" onclick="generateEmpenhoFromPreSolemp(${JSON.stringify(p.id)})" class="text-emerald-300 hover:underline font-semibold">Gerar Empenho</button>`}
-            <button type="button" onclick="deletePreSolemp(${JSON.stringify(p.id)})" class="text-red-400 hover:underline" ${p.status === 'Empenho gerado' ? 'disabled title="Pré-SOLEMP vinculada a empenho"' : ''}>Excluir</button>
+            <button type="button" data-ps-action="edit" data-ps-id="${escapeHtml(p.id)}" class="text-blue-300 hover:underline">Editar</button>
+            <button type="button" data-ps-action="print" data-ps-id="${escapeHtml(p.id)}" class="text-slate-300 hover:underline">Imprimir</button>
+            ${p.status === 'Empenho gerado' ? '<span class="text-slate-500" title="Empenho já registrado">Empenho gerado</span>' : `<button type="button" data-ps-action="generate" data-ps-id="${escapeHtml(p.id)}" class="text-emerald-300 hover:underline font-semibold">Gerar Empenho</button>`}
+            <button type="button" data-ps-action="delete" data-ps-id="${escapeHtml(p.id)}" class="text-red-400 hover:underline">Excluir</button>
           </div></td>
         </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhuma Pré-SOLEMP salva neste navegador.</td></tr>';
+
+      // Delegação de eventos: evita o atributo onclick com aspas quebradas no HTML.
+      tbody.onclick = (event) => {
+        const button = event.target.closest('button[data-ps-action]');
+        if (!button) return;
+        const id = button.getAttribute('data-ps-id');
+        const action = button.getAttribute('data-ps-action');
+        if (action === 'edit') editPreSolemp(id);
+        else if (action === 'print') printSavedPreSolemp(id);
+        else if (action === 'generate') generateEmpenhoFromPreSolemp(id);
+        else if (action === 'delete') deletePreSolemp(id);
+      };
     }
 
     // Atualiza a folha de impressão sempre que um campo do formulário for alterado.
@@ -2566,31 +2604,85 @@
       }).join('') || '<tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">Nenhum processo encontrado.</td></tr>';
     }
 
+    function toggleDocumentDetails(detailId, button) {
+      const panel = document.getElementById(detailId);
+      if (!panel) return;
+      const opening = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !opening);
+      // Mantém sincronizados o botão do número do documento e o botão de detalhamento.
+      document.querySelectorAll('[aria-controls]').forEach(control => {
+        if (control.getAttribute('aria-controls') !== detailId) return;
+        control.setAttribute('aria-expanded', String(opening));
+        const icon = control.querySelector('[data-chevron]');
+        if (icon) icon.textContent = opening ? '▾' : '▸';
+        const label = control.querySelector('[data-toggle-label]');
+        if (label) label.textContent = opening ? 'Ocultar itens' : 'Ver itens';
+      });
+    }
+
     function renderEmpenhos() {
       const tbody = document.getElementById('tbl-empenhos');
-      tbody.innerHTML = state.empenhos.map(e => {
-        const p = state.processos.find(x => x.id === e.processo_item_id);
-        const emp = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        const vlrTotal = Number(e.quantidade_empenhada) * vlrUnit;
+      if (!tbody) return;
+      const gruposMap = new Map();
 
+      state.empenhos.forEach(e => {
+        const p = state.processos.find(x => x.id === e.processo_item_id);
+        const empresa = p ? state.empresas.find(x => x.id === p.empresa_id) : null;
+        const chave = JSON.stringify([e.numero_empenho || '', e.data_empenho || '', p?.numero_pregao || '', p?.empresa_id || '']);
+        if (!gruposMap.has(chave)) {
+          gruposMap.set(chave, {
+            numero: e.numero_empenho || '-', data: e.data_empenho || '', pregao: p?.numero_pregao || '-',
+            empresa: empresa ? `${empresa.id_resumido} - ${empresa.nome_fantasia}` : '-', itens: [],
+            quantidadeTotal: 0, valorTotal: 0
+          });
+        }
+        const grupo = gruposMap.get(chave);
+        const quantidade = Number(e.quantidade_empenhada || 0);
+        const unitario = p ? Number(p.valor_unitario || 0) : 0;
+        grupo.itens.push({ registro:e, processo:p, quantidade, unitario, total:quantidade * unitario });
+        grupo.quantidadeTotal += quantidade;
+        grupo.valorTotal += quantidade * unitario;
+      });
+
+      const grupos = [...gruposMap.values()].sort((a,b) => {
+        const porData = String(b.data).localeCompare(String(a.data));
+        return porData || String(b.numero).localeCompare(String(a.numero), 'pt-BR', { numeric:true });
+      });
+
+      tbody.innerHTML = grupos.map((g, index) => {
+        const detailId = `emp-details-${index}`;
+        const itensHtml = g.itens.map(it => `
+          <tr class="border-t border-slate-800/80">
+            <td class="px-3 py-2 text-slate-300">${escapeHtml(it.processo?.numero_item ?? '-')}</td>
+            <td class="px-3 py-2 text-slate-100">${escapeHtml(it.processo?.descricao_item ?? 'Item não localizado')}</td>
+            <td class="px-3 py-2 text-slate-400">${escapeHtml(it.processo?.unidade_fornecimento ?? '-')}</td>
+            <td class="px-3 py-2 text-right text-slate-200">${fmtNum(it.quantidade)}</td>
+            <td class="px-3 py-2 text-right text-slate-300">${fmtBRL(it.unitario)}</td>
+            <td class="px-3 py-2 text-right font-semibold text-slate-100">${fmtBRL(it.total)}</td>
+            <td class="px-3 py-2 text-right"><button type="button" onclick="deleteRecord('empenhos', '${escapeHtml(it.registro.id)}')" class="text-red-400 hover:underline">Excluir item</button></td>
+          </tr>`).join('');
         return `
-          <tr class="hover:bg-slate-800/50">
-            <td class="px-3 py-3 font-semibold text-blue-300">${e.numero_empenho}</td>
-            <td class="px-3 py-3 text-slate-300">${e.data_empenho}</td>
-            <td class="px-3 py-3 text-slate-300">${p ? p.numero_pregao : '-'}</td>
-            <td class="px-3 py-3 text-slate-300">${emp ? emp.id_resumido : '-'}</td>
-            <td class="px-3 py-3 text-slate-300">${p ? p.numero_item : '-'}</td>
-            <td class="px-3 py-3 text-slate-200">${p ? p.descricao_item : '-'}</td>
-            <td class="px-3 py-3 text-right text-slate-200">${fmtNum(e.quantidade_empenhada)}</td>
-            <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(vlrUnit)}</td>
-            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(vlrTotal)}</td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('empenhos', '${e.id}')" class="text-red-400 hover:underline">Excluir</button>
+          <tr class="hover:bg-slate-800/60 border-t border-slate-800/80">
+            <td class="px-3 py-3 font-semibold text-blue-300">
+              <button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="inline-flex items-center gap-2 text-left hover:text-blue-200">
+                <span data-chevron>▸</span><span>${escapeHtml(g.numero)}</span>
+              </button>
             </td>
+            <td class="px-3 py-3 text-slate-300">${escapeHtml(dateShortPtBR(g.data) || g.data || '-')}</td>
+            <td class="px-3 py-3 text-slate-300">${escapeHtml(g.pregao)}</td>
+            <td class="px-3 py-3 text-slate-200">${escapeHtml(g.empresa)}</td>
+            <td class="px-3 py-3 text-right text-slate-300">${g.itens.length}</td>
+            <td class="px-3 py-3 text-right text-slate-200">${fmtNum(g.quantidadeTotal)}</td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(g.valorTotal)}</td>
+            <td class="px-3 py-3 text-center"><button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="text-blue-300 hover:underline"><span data-toggle-label>Ver itens</span></button></td>
           </tr>
-        `;
-      }).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhum empenho registrado.</td></tr>';
+          <tr id="${detailId}" class="hidden bg-slate-950/50">
+            <td colspan="8" class="px-4 py-4">
+              <div class="mb-2 flex flex-wrap items-center justify-between gap-2"><strong class="text-xs text-slate-200">Detalhamento do empenho ${escapeHtml(g.numero)}</strong><span class="text-[11px] text-slate-400">${g.itens.length} item(ns) • ${fmtBRL(g.valorTotal)}</span></div>
+              <div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 uppercase"><tr><th class="px-3 py-2">Item</th><th class="px-3 py-2">Descrição</th><th class="px-3 py-2">Unid.</th><th class="px-3 py-2 text-right">Qtd.</th><th class="px-3 py-2 text-right">Vlr. Unit.</th><th class="px-3 py-2 text-right">Total</th><th class="px-3 py-2 text-right">Ações</th></tr></thead><tbody>${itensHtml}</tbody></table></div>
+            </td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhum empenho registrado.</td></tr>';
     }
 
     function getStatusBadgeClass(situacao) {
@@ -2602,86 +2694,88 @@
     }
 
     function renderNotas() {
-      const numFiltro = (document.getElementById('filtroNfNumero')?.value || '').trim();
+      const numFiltro = (document.getElementById('filtroNfNumero')?.value || '').trim().toLowerCase();
+      const sitFiltro = document.getElementById('filtroNfSituacao')?.value || '';
       const consultaCard = document.getElementById('nf-consulta-card');
       const tbody = document.getElementById('tbl-notas');
       const statusOptions = ['Pendente de ateste', 'Atestada', 'Liquidada', 'Paga', 'Cancelada'];
-      const rows = getFilteredNotasRows();
+      const allRows = getFilteredNotasRows(true);
+      const gruposMap = new Map();
+
+      allRows.forEach(n => {
+        const key = JSON.stringify([n.numero_nf || '', n.data_nf || '', n.empresaId || '', n.numeroEmpenho || '']);
+        if (!gruposMap.has(key)) {
+          gruposMap.set(key, {
+            numero: n.numero_nf || '-', data: n.data_nf || '', empresa: `${n.empresaSigla} - ${n.empresaFantasia}`,
+            empenho: n.numeroEmpenho || '-', itens: [], valorTotal: 0
+          });
+        }
+        const grupo = gruposMap.get(key);
+        grupo.itens.push(n);
+        grupo.valorTotal += Number(n.total || 0);
+      });
+
+      let grupos = [...gruposMap.values()];
+      if (numFiltro) grupos = grupos.filter(g => String(g.numero).toLowerCase().includes(numFiltro));
+      if (sitFiltro) grupos = grupos.filter(g => g.itens.some(n => n.situacao === sitFiltro));
+      grupos.sort((a,b) => String(b.data).localeCompare(String(a.data)) || String(b.numero).localeCompare(String(a.numero), 'pt-BR', {numeric:true}));
 
       if (numFiltro) {
         consultaCard.classList.remove('hidden');
-        if (rows.length === 0) {
-          consultaCard.innerHTML = `
-            <p class="text-xs text-amber-300 font-medium">Nenhuma Nota Fiscal encontrada com o número "<strong>${numFiltro}</strong>".</p>
-          `;
+        if (!grupos.length) {
+          consultaCard.innerHTML = `<p class="text-xs text-amber-300 font-medium">Nenhuma Nota Fiscal encontrada com o número "<strong>${escapeHtml(numFiltro)}</strong>".</p>`;
         } else {
-          const gruposMap = new Map();
-          rows.forEach(r => {
-            const key = `${r.numero_nf}__${r.empresaFantasia}__${r.numeroEmpenho}`;
-            if (!gruposMap.has(key)) {
-              gruposMap.set(key, {
-                numero_nf: r.numero_nf,
-                empresa: `${r.empresaSigla} - ${r.empresaFantasia}`,
-                empenho: r.numeroEmpenho,
-                situacoes: new Set(),
-                valorTotal: 0,
-                itensCount: 0
-              });
-            }
-            const g = gruposMap.get(key);
-            g.situacoes.add(r.situacao);
-            g.valorTotal += r.total;
-            g.itensCount += 1;
-          });
-
-          consultaCard.innerHTML = [...gruposMap.values()].map(g => {
-            const sitTexto = [...g.situacoes].join(' / ');
-            const isPaga = g.situacoes.size === 1 && g.situacoes.has('Paga');
-            const badgeCls = isPaga
-              ? 'bg-emerald-950/90 text-emerald-300 border-emerald-700/70'
-              : 'bg-amber-950/90 text-amber-300 border-amber-700/70';
-
-            return `
-              <div class="flex flex-wrap items-center justify-between gap-3 py-1">
-                <div>
-                  <span class="text-xs font-bold text-slate-100">NF ${g.numero_nf}</span>
-                  <span class="text-xs text-slate-400"> • ${g.empresa} • Empenho ${g.empenho} (${g.itensCount} item(ns))</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span class="text-xs font-bold text-slate-100">${fmtBRL(g.valorTotal)}</span>
-                  <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeCls}">
-                    ${isPaga ? '✓ PAGA' : sitTexto.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-            `;
-          }).join('<hr class="border-slate-800 my-2" />');
+          consultaCard.innerHTML = grupos.map(g => `
+            <div class="flex flex-wrap items-center justify-between gap-3 py-1">
+              <div><span class="text-xs font-bold text-slate-100">NF ${escapeHtml(g.numero)}</span><span class="text-xs text-slate-400"> • ${escapeHtml(g.empresa)} • Empenho ${escapeHtml(g.empenho)} (${g.itens.length} item(ns))</span></div>
+              <span class="text-xs font-bold text-slate-100">${fmtBRL(g.valorTotal)}</span>
+            </div>`).join('<hr class="border-slate-800 my-2" />');
         }
       } else {
         consultaCard.classList.add('hidden');
         consultaCard.innerHTML = '';
       }
 
-      tbody.innerHTML = rows.map(n => `
-        <tr class="hover:bg-slate-800/50 ${n.situacao === 'Cancelada' ? 'opacity-50' : ''}">
-          <td class="px-3 py-3 font-semibold text-slate-100">${n.numero_nf}</td>
-          <td class="px-3 py-3 text-slate-300">${n.data_nf}</td>
-          <td class="px-3 py-3 text-slate-300">${n.empresaSigla}</td>
-          <td class="px-3 py-3 text-blue-300">${n.numeroEmpenho}</td>
-          <td class="px-3 py-3 text-slate-200">${n.itemLabel}</td>
-          <td class="px-3 py-3 text-right text-slate-200">${fmtNum(n.quantidade_nf)}</td>
-          <td class="px-3 py-3 text-right text-slate-300">${fmtBRL(n.valor_unitario_nf)}</td>
-          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(n.total)}</td>
-          <td class="px-3 py-3 text-center">
-            <select onchange="updateNfSituacao('${n.id}', this.value)" class="px-2 py-1 text-xs font-semibold rounded border ${getStatusBadgeClass(n.situacao)} bg-slate-950">
-              ${statusOptions.map(st => `<option value="${st}" ${n.situacao === st ? 'selected' : ''}>${st}</option>`).join('')}
-            </select>
-          </td>
-          <td class="px-3 py-3 text-right">
-            <button onclick="deleteRecord('notas_fiscais', '${n.id}')" class="text-red-400 hover:underline">Excluir</button>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">Nenhuma Nota Fiscal encontrada.</td></tr>';
+      tbody.innerHTML = grupos.map((g, index) => {
+        const detailId = `nf-details-${index}`;
+        const situacoes = [...new Set(g.itens.map(n => n.situacao))];
+        const situacaoResumo = situacoes.length === 1 ? situacoes[0] : 'Múltiplas situações';
+        const badgeClass = situacoes.length === 1 ? getStatusBadgeClass(situacoes[0]) : 'bg-slate-800 text-slate-200 border-slate-600';
+        const situacaoAtual = situacoes.length === 1 ? situacoes[0] : '';
+        const firstId = g.itens[0]?.id || '';
+        const itensHtml = g.itens.map(n => `
+          <tr class="border-t border-slate-800/80 ${n.situacao === 'Cancelada' ? 'opacity-60' : ''}">
+            <td class="px-3 py-2 text-slate-300">${escapeHtml(n.numeroItem ?? '-')}</td>
+            <td class="px-3 py-2 text-slate-100">${escapeHtml(n.descricaoItem ?? n.itemLabel ?? '-')}</td>
+            <td class="px-3 py-2 text-slate-400">${escapeHtml(n.unidade ?? '-')}</td>
+            <td class="px-3 py-2 text-right text-slate-200">${fmtNum(n.quantidade_nf)}</td>
+            <td class="px-3 py-2 text-right text-slate-300">${fmtBRL(n.valor_unitario_nf)}</td>
+            <td class="px-3 py-2 text-right font-semibold text-slate-100">${fmtBRL(n.total)}</td>
+            <td class="px-3 py-2 text-right"><button type="button" onclick="deleteRecord('notas_fiscais', '${escapeHtml(n.id)}')" class="text-red-400 hover:underline">Excluir item</button></td>
+          </tr>`).join('');
+        const statusSelect = `
+          <select onchange="updateNfSituacao('${escapeHtml(firstId)}', this.value)" aria-label="Alterar situação de toda a Nota Fiscal ${escapeHtml(g.numero)}" class="px-2 py-1 text-[11px] font-semibold rounded border ${badgeClass} bg-slate-950">
+            ${situacaoAtual ? '' : '<option value="" selected disabled>Múltiplas situações</option>'}
+            ${statusOptions.map(st => `<option value="${escapeHtml(st)}" ${situacaoAtual === st ? 'selected' : ''}>${escapeHtml(st)}</option>`).join('')}
+          </select>`;
+        return `
+          <tr class="hover:bg-slate-800/60 border-t border-slate-800/80">
+            <td class="px-3 py-3 font-semibold text-slate-100"><button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="inline-flex items-center gap-2 text-left text-blue-300 hover:text-blue-200"><span data-chevron>▸</span>${escapeHtml(g.numero)}</button></td>
+            <td class="px-3 py-3 text-slate-300">${escapeHtml(dateShortPtBR(g.data) || g.data || '-')}</td>
+            <td class="px-3 py-3 text-slate-300">${escapeHtml(g.empresa)}</td>
+            <td class="px-3 py-3 text-blue-300">${escapeHtml(g.empenho)}</td>
+            <td class="px-3 py-3 text-right text-slate-300">${g.itens.length}</td>
+            <td class="px-3 py-3 text-center"><div class="flex flex-col items-center gap-1"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeClass}">${escapeHtml(situacaoResumo)}</span>${statusSelect}</div></td>
+            <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(g.valorTotal)}</td>
+            <td class="px-3 py-3 text-center"><button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="text-blue-300 hover:underline"><span data-toggle-label>Ver itens</span></button></td>
+          </tr>
+          <tr id="${detailId}" class="hidden bg-slate-950/50">
+            <td colspan="8" class="px-4 py-4">
+              <div class="mb-2 flex flex-wrap items-center justify-between gap-2"><strong class="text-xs text-slate-200">Itens da NF ${escapeHtml(g.numero)}</strong><span class="text-[11px] text-slate-400">${g.itens.length} item(ns) • ${fmtBRL(g.valorTotal)} • a alteração de situação vale para todos os itens desta NF</span></div>
+              <div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-xs text-left"><thead class="bg-slate-900 text-slate-400 uppercase"><tr><th class="px-3 py-2">Item</th><th class="px-3 py-2">Descrição</th><th class="px-3 py-2">Unid.</th><th class="px-3 py-2 text-right">Qtd.</th><th class="px-3 py-2 text-right">Vlr. Unit.</th><th class="px-3 py-2 text-right">Total</th><th class="px-3 py-2 text-right">Ações</th></tr></thead><tbody>${itensHtml}</tbody></table></div>
+            </td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhuma Nota Fiscal encontrada.</td></tr>';
     }
 
     function renderAcompanhamento() {
