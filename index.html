@@ -25,6 +25,47 @@
       #presentationCard { box-shadow: none !important; border: none !important; max-width: 100% !important; background: #ffffff !important; color: #0f172a !important; }
       #presentationCard * { color: #0f172a !important; border-color: #cbd5e1 !important; background-color: transparent !important; }
     }
+    /* Pedido de Gêneros: editor, A4 preview and clean print */
+    .pedido-sheet { box-sizing:border-box; width:210mm; min-height:297mm; padding:10mm 10mm 12mm; margin:0 auto; background:#fff; color:#111; font-family:Arial,Helvetica,sans-serif; font-size:9pt; line-height:1.18; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.22); }
+    .pedido-sheet * { box-sizing:border-box; }
+    .pedido-header { display:grid; grid-template-columns:20mm 1fr 18mm; align-items:center; gap:3mm; text-align:center; }
+    .pedido-header img { width:18mm; height:18mm; object-fit:contain; }
+    .pedido-header .pedido-brand-text { font-size:9pt; font-weight:700; line-height:1.2; }
+    .pedido-header .pedido-brand-text .sub { font-size:8pt; }
+    .pedido-sheet h1 { text-align:center; font-size:14pt; margin:10mm 0 9mm; font-weight:700; }
+    .pedido-meta { font-size:9pt; line-height:1.38; margin-bottom:2mm; }
+    .pedido-meta div { min-height:4.3mm; }
+    .pedido-meta strong { display:inline-block; min-width:31mm; }
+    .pedido-process-table, .pedido-items-table { border-collapse:collapse; width:100%; table-layout:fixed; margin-top:2mm; font-size:8pt; }
+    .pedido-process-table th, .pedido-process-table td, .pedido-items-table th, .pedido-items-table td { border:1px solid #111; padding:1.4mm 1mm; vertical-align:middle; }
+    .pedido-process-table th, .pedido-items-table th { background:#d0d0d0; text-align:center; font-weight:700; }
+    .pedido-process-table td { text-align:center; font-weight:700; }
+    .pedido-items-table td { font-size:7.8pt; overflow-wrap:anywhere; }
+    .pedido-items-table .center { text-align:center; }
+    .pedido-items-table .right { text-align:right; white-space:nowrap; }
+    .pedido-total { display:grid; grid-template-columns:1fr auto; align-items:center; gap:4mm; margin-top:1.5mm; font-weight:700; font-size:11pt; }
+    .pedido-total .total-value { border:1.5px solid #111; padding:1.4mm 3mm; min-width:45mm; text-align:right; }
+    .pedido-observation { margin-top:4mm; display:flex; gap:2mm; font-style:italic; }
+    .pedido-observation strong { white-space:nowrap; }
+    .pedido-delivery { border:1px solid #111; margin:4mm auto 0; padding:2.5mm 3mm; width:82%; text-align:center; font-weight:700; line-height:1.4; }
+    .pedido-delivery .warning { color:#c62828; }
+    .pedido-delivery .validity { color:#1d4ed8; font-size:11pt; }
+    .pedido-spacer { flex:1; min-height:18mm; }
+    .pedido-signature { text-align:center; width:65%; margin:8mm auto 0; font-size:8pt; min-height:23mm; display:flex; flex-direction:column; justify-content:flex-end; }
+    .pedido-signature .line { border-top:1px solid #111; width:80%; margin:0 auto 2mm; }
+    .pedido-signature .name { font-weight:700; text-transform:uppercase; }
+    .pedido-signature .rank, .pedido-signature .role { margin-top:1mm; }
+    .pedido-preview-wrap { overflow-x:auto; padding:8px 0 18px; }
+    @media print {
+      body.printing-pedido { background:#fff !important; color:#111 !important; display:block !important; }
+      body.printing-pedido * { visibility:hidden !important; }
+      body.printing-pedido #pedidoPrintSheet, body.printing-pedido #pedidoPrintSheet * { visibility:visible !important; }
+      body.printing-pedido #pedidoPrintSheet { position:absolute !important; left:0 !important; top:0 !important; width:210mm !important; margin:0 !important; box-shadow:none !important; display:flex !important; }
+      /* O preview fica oculto na impressão normal; ao imprimir um Pedido, reexibe-se o contêiner da folha. */
+      body.printing-pedido .pedido-preview-wrap.no-print { display:block !important; visibility:visible !important; overflow:visible !important; padding:0 !important; }
+      body.printing-pedido .pedido-sheet { width:210mm !important; min-height:297mm !important; height:auto !important; padding:10mm 10mm 12mm !important; box-shadow:none !important; margin:0 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      body.printing-pedido .pedido-items-table tr { break-inside:avoid; page-break-inside:avoid; }
+    }
     /* Pré-SOLEMP: editor, A4 preview and clean print */
     .presolemp-sheet {
       box-sizing: border-box; width: 210mm; min-height: 297mm; padding: 10mm 9mm 9mm;
@@ -231,6 +272,9 @@
         <button onclick="switchTab('processos')" id="tab-processos" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
           📋 Processo Licitatório
         </button>
+        <button onclick="switchTab('pedidos')" id="tab-pedidos" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
+          🥬 Pedidos de Gêneros
+        </button>
         <button onclick="switchTab('presolemp')" id="tab-presolemp" class="tab-btn px-4 py-3 text-sm hover:bg-slate-800/60 hover:text-slate-200 transition">
           📄 Pré-SOLEMP / Impressão
         </button>
@@ -307,6 +351,19 @@
         <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
           <div id="kpi-exec-bar" class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
+      </div>
+
+      <div id="process-expiry-card" class="hidden bg-slate-900 p-5 rounded-xl shadow-sm border border-amber-800/70 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-100">⚠️ Validade dos processos licitatórios</h3>
+            <p id="process-expiry-summary" class="text-xs text-slate-400 mt-1"></p>
+          </div>
+          <label class="text-xs text-slate-300 flex items-center gap-2">Avisar com antecedência de
+            <input id="process-expiry-days" type="number" min="1" max="365" value="60" onchange="renderDashboard()" class="w-16 px-2 py-1 bg-slate-950 border border-slate-700 rounded text-slate-100" /> dias
+          </label>
+        </div>
+        <div id="process-expiry-list" class="space-y-2"></div>
       </div>
 
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
@@ -466,14 +523,21 @@
         </div>
 
         <form onsubmit="saveMultiProcessoItens(event)" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Nº do Pregão / Processo *</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Nº do Processo Licitatório / Pregão *</label>
               <input type="text" id="proc-numero" required placeholder="Ex: PE 90001/26" class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Validade do Processo *</label>
+              <input type="date" id="proc-validade" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100" />
             </div>
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1">Empresa Fornecedora *</label>
               <select id="proc-empresa" required class="w-full px-3 py-2 text-sm border border-slate-700 rounded-lg bg-slate-900 text-slate-100"></select>
+            </div>
+            <div class="sm:col-span-3 flex flex-wrap justify-end gap-2">
+              <button type="button" onclick="saveProcessValidityOnly()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold rounded-lg">Salvar somente validade</button>
             </div>
           </div>
 
@@ -484,7 +548,7 @@
               + Mais uma linha de item
             </button>
             <button type="submit" class="py-2.5 px-6 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition shadow-sm">
-              Salvar Itens no Pregão
+              Salvar Itens no Processo
             </button>
           </div>
         </form>
@@ -492,7 +556,7 @@
 
       <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
         <div class="px-4 py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <span class="text-xs font-bold uppercase text-slate-400">Itens Cadastrados nos Pregões</span>
+          <span class="text-xs font-bold uppercase text-slate-400">Processos Licitatórios Cadastrados</span>
           <div class="flex flex-wrap gap-2 w-full sm:w-auto">
             <input type="text" id="filtroProc" onkeyup="renderProcessos()" placeholder="Filtrar por pregão, empresa ou item..." class="px-3 py-1.5 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-64" />
             <button type="button" onclick="exportPregaoSaldosCSV()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg transition">
@@ -504,23 +568,89 @@
           <table class="w-full text-xs text-left">
             <thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800">
               <tr>
-                <th class="px-3 py-3">Pregão</th>
-                <th class="px-3 py-3">Empresa</th>
-                <th class="px-3 py-3">Item</th>
-                <th class="px-3 py-3">Descrição</th>
-                <th class="px-3 py-3">Unid.</th>
-                <th class="px-3 py-3 text-right">Vlr. Unit.</th>
-                <th class="px-3 py-3 text-right">Qtd. Auth.</th>
-                <th class="px-3 py-3 text-right">Qtd. Emp.</th>
-                <th class="px-3 py-3 text-right">Saldo Qtd.</th>
-                <th class="px-3 py-3 text-right">Saldo Fin.</th>
-                <th class="px-3 py-3 text-right">Ações</th>
+                <th class="px-3 py-3">Processo Licitatório</th>
+                <th class="px-3 py-3">Validade</th>
+                <th class="px-3 py-3 text-right">Empresas</th>
+                <th class="px-3 py-3 text-right">Itens</th>
+                <th class="px-3 py-3 text-right">Valor Total do Processo</th>
+                <th class="px-3 py-3 text-center">Detalhamento</th>
+                <th class="px-3 py-3 text-center">Ações</th>
               </tr>
             </thead>
             <tbody id="tbl-processos" class="divide-y divide-slate-800/80"></tbody>
           </table>
         </div>
       </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA: PEDIDOS DE GÊNEROS                     -->
+    <!-- ========================================== -->
+    <section id="view-pedidos" class="view-section hidden space-y-6">
+      <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Cadastrar Pedido de Gêneros</h2>
+            <p class="text-xs text-slate-400 mt-1">Pedido vinculado ao processo licitatório, à empresa fornecedora e aos itens adjudicados. A folha de impressão segue o modelo anexado.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 no-print">
+            <button type="button" onclick="newPedidoGenero()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Novo Pedido</button>
+            <button type="button" onclick="savePedidoSignatureDefaults()" class="px-3 py-2 bg-indigo-800 hover:bg-indigo-700 border border-indigo-700 text-white text-xs font-semibold rounded-lg">Salvar Assinatura como Padrão</button>
+          </div>
+        </div>
+
+        <form id="pedidoGeneroForm" onsubmit="savePedidoGenero(event)" class="space-y-5">
+          <input type="hidden" id="pedido-id" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div><label class="block text-xs text-slate-300 mb-1">Nº do Pedido *</label><input id="pedido-numero" required type="text" placeholder="Ex: 11 - 463 - 234" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Data do Pedido *</label><input id="pedido-data" required type="date" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Processo Licitatório *</label><select id="pedido-processo" required onchange="onPedidoProcessoChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="">Selecione o processo...</option></select></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Empresa *</label><select id="pedido-empresa" required onchange="onPedidoEmpresaChange()" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"><option value="">Selecione a empresa...</option></select></div>
+            <div class="lg:col-span-2"><label class="block text-xs text-slate-300 mb-1">Empresa (automático)</label><input id="pedido-empresa-nome" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">CNPJ</label><input id="pedido-cnpj" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">E-mail do fornecedor</label><input id="pedido-email" type="email" placeholder="fornecedor@empresa.com" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Validade do Processo</label><input id="pedido-validade-processo" readonly class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-sm font-bold text-slate-100">Itens do Pedido</h3><p class="text-[11px] text-slate-400">Os itens, unidades e preços são carregados do cadastro do processo. Informe a quantidade, a marca e, quando houver, o número do empenho.</p></div><button type="button" onclick="addPedidoItemRow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-semibold rounded-lg">+ Adicionar item</button></div>
+            <div id="pedido-itens-container" class="space-y-3"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+              <div><span class="block text-[11px] uppercase text-slate-400 font-semibold">Quantidade de itens</span><strong id="pedido-qtd-itens" class="text-lg text-slate-100">0</strong></div>
+              <div><span class="block text-[11px] uppercase text-slate-400 font-semibold">Quantidade total</span><strong id="pedido-qtd-total" class="text-lg text-slate-100">0</strong></div>
+              <div class="col-span-2 sm:col-span-1"><span class="block text-[11px] uppercase text-slate-400 font-semibold">Total do Pedido</span><strong id="pedido-total-geral" class="text-lg text-emerald-300">R$ 0,00</strong></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
+            <div><label class="block text-xs text-slate-300 mb-1">Data da Entrega</label><input id="pedido-data-entrega" type="date" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div class="lg:col-span-2"><label class="block text-xs text-slate-300 mb-1">Horário de Expediente para Entrega</label><input id="pedido-horario" value="09:00h ÀS 11:40h / 14:00h ÀS 16:30h" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div><label class="block text-xs text-slate-300 mb-1">Validade do Pedido (dias)</label><input id="pedido-validade-dias" type="number" min="1" value="60" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            <div class="sm:col-span-2 lg:col-span-4"><label class="block text-xs text-slate-300 mb-1">Observações</label><textarea id="pedido-observacoes" rows="2" placeholder="Ex.: CARDÁPIO" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100"></textarea></div>
+          </div>
+
+          <div class="space-y-3">
+            <div><h3 class="text-sm font-bold text-slate-100">Assinatura do Solicitante</h3><p class="text-[11px] text-slate-400">O único bloco de assinatura do Pedido de Gêneros. Pode ser alterado em cada pedido ou salvo como padrão.</p></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+              <div><label class="block text-xs text-slate-300 mb-1">Nome completo</label><input id="pedido-sig-nome" placeholder="Nome do solicitante" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Posto / graduação</label><input id="pedido-sig-posto" placeholder="Posto ou graduação" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+              <div><label class="block text-xs text-slate-300 mb-1">Função</label><input id="pedido-sig-funcao" placeholder="Solicitante" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" /></div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-end gap-2 border-t border-slate-800 pt-4 no-print">
+            <button type="button" onclick="newPedidoGenero()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-semibold rounded-lg">Limpar / Novo</button>
+            <button type="button" onclick="printCurrentPedidoGenero()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-700 text-white text-sm font-semibold rounded-lg">🖨️ Imprimir / Salvar PDF</button>
+            <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg">Salvar Pedido de Gêneros</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between"><div><h3 class="text-sm font-bold text-slate-100">Pedidos de Gêneros cadastrados</h3><p id="pedido-count" class="text-xs text-slate-400 mt-1">0 registro(s)</p></div><input id="filtroPedido" oninput="renderPedidos()" placeholder="Filtrar pedido, processo ou empresa..." class="px-3 py-2 text-xs border border-slate-700 rounded-lg bg-slate-950 text-slate-100 w-full sm:w-72" /></div>
+        <div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-slate-950/70 text-slate-400 uppercase border-b border-slate-800"><tr><th class="px-3 py-3">Nº Pedido</th><th class="px-3 py-3">Data</th><th class="px-3 py-3">Processo</th><th class="px-3 py-3">Empresa</th><th class="px-3 py-3 text-right">Itens</th><th class="px-3 py-3 text-right">Total</th><th class="px-3 py-3 text-right">Ações</th></tr></thead><tbody id="tbl-pedidos" class="divide-y divide-slate-800/80"></tbody></table></div>
+      </div>
+      <div class="pedido-preview-wrap no-print"><div class="presolemp-preview-label text-xs text-slate-400">Pré-visualização para impressão (A4)</div><div id="pedidoPrintSheet" class="pedido-sheet"></div></div>
     </section>
 
     <!-- ========================================== -->
@@ -619,7 +749,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1">Nº da Pré-SOLEMP *</label>
-              <input id="ps-numero" required readonly type="text" placeholder="Gerado automaticamente" title="Numeração automática e sequencial por exercício" class="w-full px-3 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300 cursor-not-allowed" />
+              <input id="ps-numero" required type="number" min="1" step="1" placeholder="Número sequencial" title="Sugestão automática; o número pode ser ajustado manualmente" class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" />
             </div>
             <div>
               <label class="block text-xs font-medium text-slate-300 mb-1">Data *</label>
@@ -837,9 +967,11 @@
     let state = {
       empresas: [],
       processos: [],
+      processosMeta: [],
       empenhos: [],
       notas: [],
-      preSolemps: []
+      preSolemps: [],
+      pedidosGeneros: []
     };
 
     const fmtBRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -941,25 +1073,37 @@
     // =========================================================================
     async function loadAllData() {
       if (!sb) return;
-      const [resEmp, resProc, resEmpenhos, resNotas] = await Promise.all([
+      await importLegacyPreSolempsIfNeeded();
+      const [resEmp, resProc, resEmpenhos, resNotas, resProcMeta, resPre, resPedidos] = await Promise.all([
         sb.from('empresas').select('*').order('nome_fantasia'),
         sb.from('processos_itens').select('*').order('numero_pregao').order('numero_item'),
         sb.from('empenhos').select('*').order('data_empenho', { ascending: false }),
-        sb.from('notas_fiscais').select('*').order('data_nf', { ascending: false })
+        sb.from('notas_fiscais').select('*').order('data_nf', { ascending: false }),
+        sb.from('processos_licitatorios').select('*').order('numero_pregao'),
+        sb.from('pre_solemps').select('*').order('ano_referencia', { ascending: false }).order('numero', { ascending: false }),
+        sb.from('pedidos_generos').select('*').order('data_pedido', { ascending: false })
       ]);
-
-      if (resEmp.error || resProc.error || resEmpenhos.error || resNotas.error) {
-        showToast('Erro ao carregar dados. Verifique as tabelas no Supabase.', true);
+      const requiredErrors = [resEmp, resProc, resEmpenhos, resNotas].filter(r => r.error);
+      const newTablesErrors = [resProcMeta, resPre, resPedidos].filter(r => r.error);
+      if (requiredErrors.length) {
+        showToast('Erro ao carregar os dados principais. Verifique as tabelas existentes no Supabase.', true);
+        console.error('Supabase load errors:', requiredErrors.map(r => r.error));
         return;
       }
-
+      if (newTablesErrors.length) {
+        showToast('Execute o SQL atualizado antes de usar Processos com validade, Pré-SOLEMPs centralizadas e Pedidos de Gêneros.', true);
+        console.error('Supabase migration required:', newTablesErrors.map(r => r.error));
+        return;
+      }
       state.empresas = resEmp.data || [];
       state.processos = resProc.data || [];
+      state.processosMeta = resProcMeta.data || [];
       state.empenhos = resEmpenhos.data || [];
       state.notas = resNotas.data || [];
-      loadPreSolempData();
-
+      state.preSolemps = (resPre.data || []).map(mapPreSolempFromDb);
+      state.pedidosGeneros = resPedidos.data || [];
       renderAll();
+      if (!document.getElementById('ps-id')?.value) await updateNewPreSolempNumber();
     }
 
     function renderAll() {
@@ -969,6 +1113,7 @@
       renderEmpenhos();
       renderNotas();
       renderPreSolemps();
+      renderPedidos();
       renderAcompanhamento();
       renderDashboard();
     }
@@ -1570,41 +1715,52 @@
     // =========================================================================
     function populateDropdowns() {
       const procEmpSel = document.getElementById('proc-empresa');
-      const prevProcEmp = procEmpSel.value;
-      procEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
-        state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
-      if (state.empresas.some(e => e.id === prevProcEmp)) procEmpSel.value = prevProcEmp;
+      const prevProcEmp = procEmpSel?.value || '';
+      if (procEmpSel) {
+        procEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
+          state.empresas.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.id_resumido)} | ${escapeHtml(e.nome_fantasia)}</option>`).join('');
+        if (state.empresas.some(e => e.id === prevProcEmp)) procEmpSel.value = prevProcEmp;
+      }
 
       const acompEmpSel = document.getElementById('filtroAcompEmpresa');
-      const prevAcompEmp = acompEmpSel.value;
-      acompEmpSel.innerHTML = '<option value="">Todas as Empresas</option>' +
-        state.empresas.map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
-      if (state.empresas.some(e => e.id === prevAcompEmp)) acompEmpSel.value = prevAcompEmp;
-      updateFiltroAcompEmpenhos();
+      const prevAcompEmp = acompEmpSel?.value || '';
+      if (acompEmpSel) {
+        acompEmpSel.innerHTML = '<option value="">Todas as Empresas</option>' +
+          state.empresas.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.id_resumido)} | ${escapeHtml(e.nome_fantasia)}</option>`).join('');
+        if (state.empresas.some(e => e.id === prevAcompEmp)) acompEmpSel.value = prevAcompEmp;
+        updateFiltroAcompEmpenhos();
+      }
 
-      const pregoesUnicos = [...new Set(state.processos.map(p => p.numero_pregao))].sort();
+      const pregoesUnicos = [...new Set(state.processos.map(p => p.numero_pregao))].sort((a,b) => String(a).localeCompare(String(b), 'pt-BR', {numeric:true}));
       const empPregaoSel = document.getElementById('emp-pregao');
-      const prevPregao = empPregaoSel.value;
-      empPregaoSel.innerHTML = '<option value="">Selecione o pregão...</option>' +
-        pregoesUnicos.map(pr => `<option value="${pr}">${pr}</option>`).join('');
-      if (pregoesUnicos.includes(prevPregao)) empPregaoSel.value = prevPregao;
-      onEmpPregaoChange();
+      const prevPregao = empPregaoSel?.value || '';
+      if (empPregaoSel) {
+        empPregaoSel.innerHTML = '<option value="">Selecione o pregão...</option>' + pregoesUnicos.map(pr => `<option value="${escapeHtml(pr)}">${escapeHtml(pr)}</option>`).join('');
+        if (pregoesUnicos.includes(prevPregao)) empPregaoSel.value = prevPregao;
+        onEmpPregaoChange();
+      }
 
-      const empIdsComEmpenho = new Set(
-        state.empenhos.map(emp => {
-          const proc = state.processos.find(p => p.id === emp.processo_item_id);
-          return proc ? proc.empresa_id : null;
-        }).filter(Boolean)
-      );
+      const empIdsComEmpenho = new Set(state.empenhos.map(emp => {
+        const proc = state.processos.find(p => p.id === emp.processo_item_id);
+        return proc ? proc.empresa_id : null;
+      }).filter(Boolean));
       const nfEmpSel = document.getElementById('nf-empresa-sel');
-      const prevNfEmp = nfEmpSel.value;
-      nfEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
-        state.empresas.filter(e => empIdsComEmpenho.has(e.id))
-          .map(e => `<option value="${e.id}">${e.id_resumido} | ${e.nome_fantasia}</option>`).join('');
-      if ([...empIdsComEmpenho].includes(prevNfEmp)) nfEmpSel.value = prevNfEmp;
-      populateNfEmpenhoDropdowns();
-      onNfEmpenhoChange();
+      const prevNfEmp = nfEmpSel?.value || '';
+      if (nfEmpSel) {
+        nfEmpSel.innerHTML = '<option value="">Selecione a empresa...</option>' +
+          state.empresas.filter(e => empIdsComEmpenho.has(e.id)).map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.id_resumido)} | ${escapeHtml(e.nome_fantasia)}</option>`).join('');
+        if ([...empIdsComEmpenho].includes(prevNfEmp)) nfEmpSel.value = prevNfEmp;
+        populateNfEmpenhoDropdowns();
+        onNfEmpenhoChange();
+      }
 
+      const pedidoProc = document.getElementById('pedido-processo');
+      if (pedidoProc) {
+        const prev = pedidoProc.value;
+        pedidoProc.innerHTML = '<option value="">Selecione o processo...</option>' + pregoesUnicos.map(pr => `<option value="${escapeHtml(pr)}">${escapeHtml(pr)}</option>`).join('');
+        if (pregoesUnicos.includes(prev)) pedidoProc.value = prev;
+        onPedidoProcessoChange();
+      }
       populatePreSolempDropdowns();
       populateEmpPreSolempDropdown();
     }
@@ -1845,44 +2001,46 @@
     async function saveMultiProcessoItens(e) {
       e.preventDefault();
       const numero_pregao = document.getElementById('proc-numero').value.trim();
+      const validade = document.getElementById('proc-validade').value;
       const empresa_id = document.getElementById('proc-empresa').value;
       const rowElements = document.querySelectorAll('.proc-item-row');
-
+      if (!numero_pregao || !validade || !empresa_id) {
+        showToast('Informe processo, validade e empresa fornecedora.', true);
+        return;
+      }
       const records = [];
       const itemNumsSet = new Set();
-
       for (const row of rowElements) {
         const numero_item = parseInt(row.querySelector('.row-item-num').value, 10);
         const descricao_item = row.querySelector('.row-item-desc').value.trim();
         const unidade_fornecimento = row.querySelector('.row-item-unid').value.trim().toUpperCase();
         const valor_unitario = parseFloat(row.querySelector('.row-item-val').value);
         const quantidade_autorizada = parseFloat(row.querySelector('.row-item-qtd').value);
-
+        if (!Number.isInteger(numero_item) || !descricao_item || !unidade_fornecimento || !Number.isFinite(valor_unitario) || valor_unitario <= 0 || !Number.isFinite(quantidade_autorizada) || quantidade_autorizada <= 0) {
+          showToast('Revise os itens: número, descrição, unidade, preço e quantidade são obrigatórios.', true);
+          return;
+        }
         if (itemNumsSet.has(numero_item)) {
           showToast(`Número de item repetido na lista: Item ${numero_item}.`, true);
           return;
         }
         itemNumsSet.add(numero_item);
-
-        records.push({
-          numero_pregao,
-          empresa_id,
-          numero_item,
-          descricao_item,
-          unidade_fornecimento,
-          valor_unitario,
-          quantidade_autorizada
-        });
+        records.push({ numero_pregao, empresa_id, numero_item, descricao_item, unidade_fornecimento, valor_unitario, quantidade_autorizada });
       }
+      if (!records.length) { showToast('Adicione pelo menos um item ao processo licitatório.', true); return; }
 
+      const { error: metaError } = await sb.from('processos_licitatorios').upsert({ numero_pregao, validade }, { onConflict: 'numero_pregao' });
+      if (metaError) { showToast('Erro ao salvar validade do processo: ' + metaError.message, true); return; }
       const { error } = await sb.from('processos_itens').insert(records);
       if (error) {
-        showToast('Erro ao salvar itens (verifique se algum item já existe neste pregão para esta empresa): ' + error.message, true);
+        showToast('Validade do processo salva, mas houve erro ao cadastrar os itens: ' + error.message, true);
+        await loadAllData();
         return;
       }
-
+      document.getElementById('proc-numero').value = '';
+      document.getElementById('proc-validade').value = '';
       resetProcessoItemRows();
-      showToast(`${records.length} item(ns) cadastrado(s) no pregão ${numero_pregao}!`);
+      showToast(`${records.length} item(ns) cadastrado(s) em ${numero_pregao}; validade registrada até ${dateShortPtBR(validade)}.`);
       await loadAllData();
     }
 
@@ -1953,7 +2111,7 @@
       }
 
       const preSolempId = document.getElementById('emp-presolemp-sel').value;
-      if (preSolempId) markPreSolempAsGenerated(preSolempId, numero_empenho, data_empenho);
+      if (preSolempId) await markPreSolempAsGenerated(preSolempId, numero_empenho, data_empenho);
       document.getElementById('emp-presolemp-sel').value = '';
       resetEmpenhoItemRows();
       showToast(`${records.length} item(ns) registrado(s) no empenho ${numero_empenho}!`);
@@ -2105,6 +2263,11 @@
     const PRE_SOLEMP_SEQUENCE_KEY = 'controle_licitatorio_pre_solemp_sequence_v1';
     const PRE_SOLEMP_LOGO = 'data:image/jpeg;base64,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';
 
+    const PEDIDO_SIGNATURE_DEFAULTS_KEY = 'controle_licitatorio_pedido_signature_defaults_v1';
+    const PEDIDO_LOGO_LEFT = 'data:image/jpeg;base64,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';
+    const PEDIDO_LOGO_RIGHT = 'data:image/jpeg;base64,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gYP61JHp+jaafMvbtbiRf4ByPyH9ak1bR7y98yz0uNWeKTaqs33Vztz74zk11Gj+DtN0+1jW6jW8uerySLwT7L0ArGhG8bjeLtG0pP5f5nKveanrzG00q1dIOjP049z0A9q1LX4dQOFN/qEzccxwYQZ9MnJI/Ku2jjjiQJGioo6BRgCn10qGt2ctTFNx5Ka5UY2m+FdC0whrbTYfMHSSQb2z9Wzj8K2aKKs5AooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAo6c0VVu5oGt5Y3lxkbSEOW546Um7AZ2kR2K6pdNA2W/g56g8nH41t1zlrpbabdWtzNK23BD4GdrHoPpziuhR0cZRgw9jmsaF1G0lYuW+g6iiityAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAgu5CkDKhIlcEIB1JxWFfTjRkjfyZvIUjAIywbOcL25+vrW06m2ke4++h5Yn7yj29vasHxdMXhtmiieR433eXjDMPUDrkfSs2rjID4wiut0DWEseWABLKwz1w2OmcVr2EbQTR3MwkjMibZN3Cg9h7fXpXApskt2trSGV2fJdyhG0ZJJb6c16VHdCWJEijZmdeN/Qj1J/wA9aSblrJWYeSLlFRW8Pkx7NxbnPsPYDsKlrUQUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAMmjE0LxN911Kn8azUs54istxidlILOGycA54GOPz9a1aKlxvqNMq3ZWaFY0AkaQgqOxAIOT7f41DZ2MkN28zeXHGeVij5CkgZOePTpip7RFWWfAxh8D2GAcfmTVmklfVgFFFFWIKKKKACiiigAooooAKKKKACiiigD//2Q==';
+    const PEDIDO_SIGNATURE_DEFAULTS = { nome:'', posto:'', funcao:'Solicitante' };
+
     const PRE_SOLEMP_DEFAULTS = {
       organizacao: 'CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA',
       tipo: 'GLOBAL', modalidade: 'NÃO SE APLICA', classificacao: 'MCI',
@@ -2163,7 +2326,40 @@
       return Number.isInteger(year) && year >= 2000 ? year : new Date().getFullYear();
     }
 
-    function getPreSolempSequenceCounters() {
+function mapPreSolempFromDb(row) {
+      return {
+        ...row,
+        numero: String(row.numero ?? ''),
+        quantidadeTotal: Number(row.quantidade_total || 0),
+        quantidadeItens: Number(row.quantidade_itens || (row.itens || []).length),
+        data_empenho: row.data_empenho || '',
+        created_at: row.created_at || '',
+        updated_at: row.updated_at || ''
+      };
+    }
+
+    async function importLegacyPreSolempsIfNeeded() {
+      if (!sb || localStorage.getItem('controle_licitatorio_pre_solemps_supabase_imported_v1') === '1') return;
+      let legacy = [];
+      try { legacy = JSON.parse(localStorage.getItem(PRE_SOLEMP_STORAGE_KEY) || '[]'); }
+      catch (err) { console.warn('Falha ao ler histórico local de Pré-SOLEMPs.', err); }
+      if (!Array.isArray(legacy) || !legacy.length) {
+        localStorage.setItem('controle_licitatorio_pre_solemps_supabase_imported_v1', '1');
+        return;
+      }
+      const confirmed = confirm(`Foram encontradas ${legacy.length} Pré-SOLEMP(s) salvas anteriormente neste navegador. Deseja importar esse histórico para o Supabase agora? A cópia local será preservada.`);
+      if (!confirmed) return;
+      const { data, error } = await sb.rpc('importar_pre_solemps_json', { p_registros: legacy });
+      if (error) {
+        showToast('Não foi possível importar as Pré-SOLEMPs antigas: ' + error.message, true);
+        console.error(error);
+        return;
+      }
+      localStorage.setItem('controle_licitatorio_pre_solemps_supabase_imported_v1', '1');
+      showToast(`${Number(data ?? legacy.length)} Pré-SOLEMP(s) importada(s) para o Supabase. Registros já existentes foram preservados; a cópia local foi mantida.`);
+    }
+
+        function getPreSolempSequenceCounters() {
       try {
         const parsed = JSON.parse(localStorage.getItem(PRE_SOLEMP_SEQUENCE_KEY) || '{}');
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
@@ -2188,7 +2384,7 @@
       catch (err) { console.warn('Não foi possível persistir o contador anual da Pré-SOLEMP.', err); }
     }
 
-    function updateNewPreSolempNumber() {
+    async function updateNewPreSolempNumber() {
       const id = document.getElementById('ps-id')?.value || '';
       const numberInput = document.getElementById('ps-numero');
       const dateInput = document.getElementById('ps-data');
@@ -2199,8 +2395,22 @@
         return;
       }
       const year = Number(String(dateInput.value || localTodayISO()).slice(0, 4));
-      numberInput.value = String(getNextPreSolempNumber(year));
-      numberInput.title = `Número sequencial do exercício ${year}`;
+      let next = getNextPreSolempNumber(year);
+      if (sb) {
+        const { data, error } = await sb.rpc('proximo_numero_pre_solemp', { p_data: dateInput.value || localTodayISO() });
+        if (!error && data !== null && data !== undefined) next = Number(data);
+      }
+      if (!document.getElementById('ps-id')?.value && numberInput) {
+        // Só preenche se o campo estiver vazio ou se ainda refletir uma sugestão anterior.
+        const current = Number(numberInput.value || 0);
+        const currentYear = Number(numberInput.dataset.suggestedYear || 0);
+        if (!current || currentYear !== year || numberInput.dataset.isManual !== '1') {
+          numberInput.value = String(next);
+          numberInput.dataset.suggestedYear = String(year);
+          numberInput.dataset.isManual = '0';
+        }
+      }
+      numberInput.title = `Sugestão sequencial do exercício ${year}. Você pode ajustar este número manualmente.`;
     }
 
     function onPreSolempDateChange() {
@@ -2531,8 +2741,9 @@
       );
     }
 
-    function savePreSolemp(event) {
+    async function savePreSolemp(event) {
       event.preventDefault();
+      if (!sb) { showToast('Conecte-se ao Supabase antes de salvar a Pré-SOLEMP.', true); return; }
       const draft = getPreSolempDraft(true);
       if (!draft) return;
       const existing = state.preSolemps.find(p => p.id === draft.id);
@@ -2541,44 +2752,44 @@
         showToast('Não é permitido transferir uma Pré-SOLEMP já numerada para outro exercício. Crie uma nova solicitação.', true);
         return;
       }
-      const number = existing ? String(existing.numero) : String(getNextPreSolempNumber(year));
-      if (!validatePreSolempNumber(number, year, draft.id)) {
-        showToast(`Já existe uma Pré-SOLEMP nº ${number} no exercício ${year}. A sequência não foi alterada.`, true);
+      const number = Number(String(draft.numero).trim());
+      const numberWasManuallyEdited = !existing && document.getElementById('ps-numero').dataset.isManual === '1';
+      if (numberWasManuallyEdited && (!Number.isInteger(number) || number <= 0)) { showToast('Informe um número inteiro positivo para a Pré-SOLEMP.', true); return; }
+      if (numberWasManuallyEdited && !validatePreSolempNumber(String(number), year, draft.id)) {
+        showToast(`Já existe uma Pré-SOLEMP nº ${number} no exercício ${year}. Escolha outro número.`, true);
         return;
       }
-      draft.numero = number;
-      draft.ano_referencia = year;
-      const now = new Date().toISOString();
-      const record = {
-        ...draft,
-        id: draft.id || (crypto.randomUUID ? crypto.randomUUID() : `ps-${Date.now()}-${Math.random().toString(16).slice(2)}`),
-        status: existing?.status || 'Pendente',
-        numero_empenho: existing?.numero_empenho || '',
-        data_empenho: existing?.data_empenho || '',
-        created_at: existing?.created_at || now,
-        updated_at: now
+      const dbPayload = {
+        // Em novas solicitações, o trigger gera o sequencial em uma operação atômica.
+        // Se o usuário alterar o campo, o número digitado será preservado.
+        numero:existing || numberWasManuallyEdited ? number : null,
+        data:draft.data, ano_referencia:year, numero_pregao:draft.numero_pregao,
+        empresa_id:draft.empresa_id, empresa_nome:draft.empresa_nome, cnpj:draft.cnpj,
+        fields:draft.fields, assinaturas:draft.assinaturas, itens:draft.itens,
+        total:draft.total, quantidade_total:draft.quantidadeTotal, quantidade_itens:draft.quantidadeItens,
+        status:existing?.status || 'Pendente', numero_empenho:existing?.numero_empenho || null,
+        data_empenho:existing?.data_empenho || null
       };
-      const previousRecords = state.preSolemps;
-      if (existing) state.preSolemps = state.preSolemps.map(p => p.id === record.id ? record : p);
-      else state.preSolemps.unshift(record);
-      if (!persistPreSolemps()) {
-        state.preSolemps = previousRecords;
+      let result;
+      if (existing) result = await sb.from('pre_solemps').update(dbPayload).eq('id', draft.id).select('*').single();
+      else result = await sb.from('pre_solemps').insert(dbPayload).select('*').single();
+      if (result.error) {
+        showToast('Erro ao salvar Pré-SOLEMP no Supabase: ' + result.error.message, true);
         return;
       }
-      if (!existing) persistPreSolempSequence(year, Number(number));
+      const saved = mapPreSolempFromDb(result.data);
+      if (existing) state.preSolemps = state.preSolemps.map(p => p.id === saved.id ? saved : p);
+      else state.preSolemps.unshift(saved);
       renderPreSolemps();
       populateEmpPreSolempDropdown();
-      const nextNumber = getNextPreSolempNumber(year);
       if (existing) {
-        document.getElementById('ps-id').value = record.id;
-        document.getElementById('ps-numero').value = record.numero;
-        renderPreSolempPrintSheet(record);
-        showToast(`Pré-SOLEMP ${record.numero}/${year} atualizada com sucesso.`);
+        document.getElementById('ps-id').value = saved.id;
+        document.getElementById('ps-numero').value = saved.numero;
+        renderPreSolempPrintSheet(saved);
+        showToast(`Pré-SOLEMP ${saved.numero}/${year} atualizada no Supabase.`);
       } else {
-        // Após salvar uma nova solicitação, prepara imediatamente a próxima numeração.
-        // O registro recém-salvo continua disponível na lista para edição e impressão.
         newPreSolemp();
-        showToast(`Pré-SOLEMP ${record.numero}/${year} salva. Próxima numeração: ${nextNumber}/${year}.`);
+        showToast(`Pré-SOLEMP ${saved.numero}/${year} salva no Supabase. Próxima solicitação preparada.`);
       }
     }
 
@@ -2586,6 +2797,7 @@
       const form = document.getElementById('preSolempForm');
       form.reset();
       document.getElementById('ps-id').value = '';
+      document.getElementById('ps-numero').dataset.isManual = '0';
       document.getElementById('ps-data').value = localTodayISO();
       applyPreSolempDefaults();
       document.getElementById('ps-pregao').value = '';
@@ -2604,6 +2816,7 @@
       switchTab('presolemp');
       document.getElementById('ps-id').value = p.id;
       document.getElementById('ps-numero').value = p.numero || '';
+      document.getElementById('ps-numero').dataset.isManual = '0';
       document.getElementById('ps-numero').title = `Numeração do exercício ${getPreSolempYear(p)}`;
       document.getElementById('ps-data').value = p.data || '';
       document.getElementById('ps-pregao').value = p.numero_pregao || '';
@@ -2659,33 +2872,29 @@
       loadPreSolempIntoEmpenho(id);
     }
 
-    function markPreSolempAsGenerated(id, numeroEmpenho, dataEmpenho) {
-      state.preSolemps = state.preSolemps.map(p => p.id === id ? {
-        ...p, status:'Empenho gerado', numero_empenho:numeroEmpenho, data_empenho:dataEmpenho,
-        updated_at:new Date().toISOString()
-      } : p);
-      persistPreSolemps();
+    async function markPreSolempAsGenerated(id, numeroEmpenho, dataEmpenho) {
+      if (!sb) return;
+      const { data, error } = await sb.from('pre_solemps').update({ status:'Empenho gerado', numero_empenho:numeroEmpenho, data_empenho:dataEmpenho }).eq('id', id).select('*').single();
+      if (error) { showToast('Empenho registrado, mas não foi possível atualizar o vínculo da Pré-SOLEMP: ' + error.message, true); return; }
+      const saved = mapPreSolempFromDb(data);
+      state.preSolemps = state.preSolemps.map(p => p.id === id ? saved : p);
       renderPreSolemps();
       populateEmpPreSolempDropdown();
     }
 
-    function deletePreSolemp(id) {
+    async function deletePreSolemp(id) {
       const p = state.preSolemps.find(x => x.id === id);
       if (!p) return;
       const vinculada = p.status === 'Empenho gerado';
-      const detalheVinculo = vinculada
-        ? `
-
-Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(número não informado)'}. A exclusão removerá somente a Pré-SOLEMP do navegador; o empenho já gravado no Supabase permanecerá inalterado.`
-        : '';
-      if (!confirm(`Confirma excluir a Pré-SOLEMP nº ${p.numero}?${detalheVinculo}`)) return;
+      const detalheVinculo = vinculada ? `\n\nAtenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(número não informado)'}. A exclusão removerá somente a Pré-SOLEMP; o empenho e seus itens permanecerão no Supabase.` : '';
+      if (!confirm(`Confirma excluir a Pré-SOLEMP nº ${p.numero}/${getPreSolempYear(p)}?${detalheVinculo}`)) return;
+      const { error } = await sb.from('pre_solemps').delete().eq('id', id);
+      if (error) { showToast('Não foi possível excluir a Pré-SOLEMP: ' + error.message, true); return; }
       state.preSolemps = state.preSolemps.filter(x => x.id !== id);
-      if (persistPreSolemps()) {
-        if (document.getElementById('ps-id').value === id) newPreSolemp();
-        renderPreSolemps();
-        populateEmpPreSolempDropdown();
-        showToast(`Pré-SOLEMP ${p.numero} excluída.`);
-      }
+      if (document.getElementById('ps-id').value === id) newPreSolemp();
+      renderPreSolemps();
+      populateEmpPreSolempDropdown();
+      showToast(`Pré-SOLEMP ${p.numero} excluída do Supabase.`);
     }
 
     function renderPreSolemps() {
@@ -2708,7 +2917,7 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
             ${p.status === 'Empenho gerado' ? '<span class="text-slate-500" title="Empenho já registrado">Empenho gerado</span>' : `<button type="button" data-ps-action="generate" data-ps-id="${escapeHtml(p.id)}" class="text-emerald-300 hover:underline font-semibold">Gerar Empenho</button>`}
             <button type="button" data-ps-action="delete" data-ps-id="${escapeHtml(p.id)}" class="text-red-400 hover:underline">Excluir</button>
           </div></td>
-        </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhuma Pré-SOLEMP salva neste navegador.</td></tr>';
+        </tr>`).join('') || '<tr><td colspan="8" class="px-4 py-6 text-center text-slate-500">Nenhuma Pré-SOLEMP cadastrada no Supabase.</td></tr>';
 
       // Delegação de eventos: evita o atributo onclick com aspas quebradas no HTML.
       tbody.onclick = (event) => {
@@ -2732,6 +2941,7 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
       updateNewPreSolempNumber();
       const form = document.getElementById('preSolempForm');
       form.addEventListener('input', (ev) => {
+        if (ev.target?.id === 'ps-numero') ev.target.dataset.isManual = '1';
         if (ev.target?.closest?.('.ps-item-row')) updatePreSolempTotals();
         else renderPreSolempPrintSheet();
       });
@@ -2758,46 +2968,145 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
       `).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">Nenhuma empresa cadastrada.</td></tr>';
     }
 
+    function getProcessMeta(numeroPregao) {
+      return state.processosMeta.find(m => String(m.numero_pregao || '').trim() === String(numeroPregao || '').trim()) || null;
+    }
+
+    function calcularSaldoItemProcesso(item) {
+      const empenhosItem = state.empenhos.filter(e => e.processo_item_id === item.id);
+      const qtdEmpenhada = empenhosItem.reduce((sum, e) => sum + Number(e.quantidade_empenhada || 0), 0);
+      const idsEmpenhos = new Set(empenhosItem.map(e => e.id));
+      const notasItem = state.notas.filter(n => idsEmpenhos.has(n.empenho_id) && n.situacao !== 'Cancelada');
+      const qtdUsada = notasItem.filter(n => ['Atestada','Liquidada','Paga'].includes(n.situacao)).reduce((sum,n) => sum + Number(n.quantidade_nf || 0), 0);
+      const valorUnitario = Number(item.valor_unitario || 0);
+      const qtdAutorizada = Number(item.quantidade_autorizada || 0);
+      const totalAutorizado = qtdAutorizada * valorUnitario;
+      const totalEmpenhado = qtdEmpenhada * valorUnitario;
+      const totalUsado = notasItem.filter(n => ['Liquidada','Paga'].includes(n.situacao)).reduce((sum,n) => sum + Number(n.quantidade_nf || 0) * Number(n.valor_unitario_nf || 0), 0);
+      return {
+        qtdAutorizada, qtdEmpenhada, qtdUsada,
+        saldoQtd: qtdAutorizada - qtdEmpenhada,
+        valorUnitario, totalAutorizado, totalEmpenhado,
+        totalUsado, saldoFin: totalAutorizado - totalEmpenhado
+      };
+    }
+
+    function saveProcessValidityOnly() {
+      const numero_pregao = document.getElementById('proc-numero').value.trim();
+      const validade = document.getElementById('proc-validade').value;
+      if (!numero_pregao || !validade) { showToast('Informe o processo e sua data de validade.', true); return; }
+      upsertProcessValidity(numero_pregao, validade);
+    }
+
+    async function upsertProcessValidity(numero_pregao, validade) {
+      const { error } = await sb.from('processos_licitatorios').upsert({ numero_pregao, validade }, { onConflict: 'numero_pregao' });
+      if (error) { showToast('Não foi possível atualizar a validade: ' + error.message, true); return; }
+      showToast(`Validade do processo ${numero_pregao} atualizada para ${dateShortPtBR(validade)}.`);
+      await loadAllData();
+    }
+
+    function editarValidadeProcesso(numeroPregao) {
+      const meta = getProcessMeta(numeroPregao);
+      document.getElementById('proc-numero').value = numeroPregao;
+      document.getElementById('proc-validade').value = meta?.validade || '';
+      document.getElementById('proc-numero').scrollIntoView({ behavior:'smooth', block:'center' });
+      document.getElementById('proc-validade').focus();
+      showToast('Altere a validade e clique em "Salvar somente validade".');
+    }
+
     function renderProcessos() {
-      const filtro = (document.getElementById('filtroProc')?.value || '').toLowerCase();
+      const filtro = (document.getElementById('filtroProc')?.value || '').toLowerCase().trim();
       const tbody = document.getElementById('tbl-processos');
-
-      const filtered = state.processos.filter(p => {
-        const emp = state.empresas.find(e => e.id === p.empresa_id);
-        const empStr = emp ? `${emp.id_resumido} ${emp.nome_fantasia}`.toLowerCase() : '';
-        return (
-          p.numero_pregao.toLowerCase().includes(filtro) ||
-          p.descricao_item.toLowerCase().includes(filtro) ||
-          empStr.includes(filtro)
-        );
+      if (!tbody) return;
+      const map = new Map();
+      state.processos.forEach(item => {
+        const key = String(item.numero_pregao || '');
+        if (!map.has(key)) map.set(key, { numero:key, itens:[] });
+        map.get(key).itens.push(item);
       });
+      let processos = [...map.values()].map(proc => {
+        const empresasMap = new Map();
+        proc.itens.forEach(item => {
+          if (!empresasMap.has(item.empresa_id)) empresasMap.set(item.empresa_id, { empresa_id:item.empresa_id, itens:[] });
+          empresasMap.get(item.empresa_id).itens.push(item);
+        });
+        proc.empresas = [...empresasMap.values()].map(grupo => {
+          grupo.empresa = state.empresas.find(e => e.id === grupo.empresa_id) || null;
+          grupo.itens = grupo.itens.map(item => ({ ...item, saldo:calcularSaldoItemProcesso(item) }));
+          grupo.valorAutorizado = grupo.itens.reduce((a,x) => a + x.saldo.totalAutorizado, 0);
+          grupo.valorEmpenhado = grupo.itens.reduce((a,x) => a + x.saldo.totalEmpenhado, 0);
+          grupo.valorUsado = grupo.itens.reduce((a,x) => a + x.saldo.totalUsado, 0);
+          grupo.saldoFin = grupo.valorAutorizado - grupo.valorEmpenhado;
+          grupo.qtdAutorizada = grupo.itens.reduce((a,x) => a + x.saldo.qtdAutorizada, 0);
+          grupo.qtdEmpenhada = grupo.itens.reduce((a,x) => a + x.saldo.qtdEmpenhada, 0);
+          grupo.saldoQtd = grupo.qtdAutorizada - grupo.qtdEmpenhada;
+          return grupo;
+        }).sort((a,b) => String(a.empresa?.nome_fantasia || '').localeCompare(String(b.empresa?.nome_fantasia || ''), 'pt-BR'));
+        proc.meta = getProcessMeta(proc.numero);
+        proc.valorTotal = proc.itens.reduce((a,item) => a + Number(item.valor_unitario || 0) * Number(item.quantidade_autorizada || 0), 0);
+        proc.qtdEmpresas = proc.empresas.length;
+        return proc;
+      });
+      if (filtro) processos = processos.filter(p => {
+        const companyString = p.empresas.map(e => `${e.empresa?.id_resumido || ''} ${e.empresa?.nome_fantasia || ''}`).join(' ').toLowerCase();
+        const itemString = p.itens.map(i => `${i.numero_item} ${i.descricao_item}`).join(' ').toLowerCase();
+        return p.numero.toLowerCase().includes(filtro) || companyString.includes(filtro) || itemString.includes(filtro);
+      });
+      processos.sort((a,b) => String(a.numero).localeCompare(String(b.numero), 'pt-BR', {numeric:true}));
 
-      tbody.innerHTML = filtered.map(p => {
-        const emp = state.empresas.find(e => e.id === p.empresa_id);
-        const qtdEmp = state.empenhos
-          .filter(e => e.processo_item_id === p.id)
-          .reduce((acc, e) => acc + Number(e.quantidade_empenhada), 0);
-        const saldoQtd = Number(p.quantidade_autorizada) - qtdEmp;
-        const saldoFin = saldoQtd * Number(p.valor_unitario);
-
-        return `
-          <tr class="hover:bg-slate-800/50">
-            <td class="px-3 py-3 font-semibold text-slate-100">${p.numero_pregao}</td>
-            <td class="px-3 py-3 text-slate-300">${emp ? emp.id_resumido : '-'}</td>
-            <td class="px-3 py-3 text-slate-300">${p.numero_item}</td>
-            <td class="px-3 py-3 text-slate-200">${p.descricao_item}</td>
-            <td class="px-3 py-3 text-slate-400">${p.unidade_fornecimento}</td>
-            <td class="px-3 py-3 text-right text-slate-200">${fmtBRL(p.valor_unitario)}</td>
-            <td class="px-3 py-3 text-right text-slate-300">${fmtNum(p.quantidade_autorizada)}</td>
-            <td class="px-3 py-3 text-right font-medium text-indigo-300">${fmtNum(qtdEmp)}</td>
-            <td class="px-3 py-3 text-right font-semibold ${saldoQtd <= 0 ? 'text-red-400' : 'text-emerald-400'}">${fmtNum(saldoQtd)}</td>
-            <td class="px-3 py-3 text-right font-medium text-slate-200">${fmtBRL(saldoFin)}</td>
-            <td class="px-3 py-3 text-right">
-              <button onclick="deleteRecord('processos_itens', '${p.id}')" class="text-red-400 hover:underline">Excluir</button>
-            </td>
+      tbody.innerHTML = processos.map((proc, index) => {
+        const detailId = `process-details-${index}`;
+        const companiesHtml = proc.empresas.map((company, ci) => {
+          const companyDetailId = `process-company-${index}-${ci}`;
+          const companyItemsHtml = company.itens.sort((a,b) => Number(a.numero_item)-Number(b.numero_item)).map(item => {
+            const q = item.saldo;
+            return `<tr class="border-t border-slate-800/80">
+              <td class="px-3 py-2 text-slate-300">${escapeHtml(item.numero_item)}</td>
+              <td class="px-3 py-2 text-slate-100">${escapeHtml(item.descricao_item)}</td>
+              <td class="px-3 py-2 text-slate-300">${escapeHtml(item.unidade_fornecimento)}</td>
+              <td class="px-3 py-2 text-right text-slate-200">${fmtBRL(q.valorUnitario)}</td>
+              <td class="px-3 py-2 text-right text-slate-200">${fmtNum(q.qtdAutorizada)}</td>
+              <td class="px-3 py-2 text-right text-indigo-300">${fmtNum(q.qtdEmpenhada)}</td>
+              <td class="px-3 py-2 text-right ${q.saldoQtd < 0 ? 'text-red-400':'text-emerald-400'}">${fmtNum(q.saldoQtd)}</td>
+              <td class="px-3 py-2 text-right text-slate-200">${fmtBRL(q.totalAutorizado)}</td>
+              <td class="px-3 py-2 text-right text-indigo-300">${fmtBRL(q.totalEmpenhado)}</td>
+              <td class="px-3 py-2 text-right text-emerald-400">${fmtBRL(q.totalUsado)}</td>
+              <td class="px-3 py-2 text-right font-semibold ${q.saldoFin < 0 ? 'text-red-400':'text-emerald-300'}">${fmtBRL(q.saldoFin)}</td>
+              <td class="px-3 py-2 text-right"><button type="button" onclick="deleteRecord('processos_itens', '${escapeHtml(item.id)}')" class="text-red-400 hover:underline">Excluir</button></td>
+            </tr>`;
+          }).join('');
+          return `<tr class="border-t border-slate-800/80 hover:bg-slate-800/40">
+            <td class="px-3 py-3 font-semibold text-slate-100">${escapeHtml(company.empresa?.nome_fantasia || 'Empresa não localizada')}<div class="text-[10px] font-normal text-slate-400">${escapeHtml(company.empresa?.id_resumido || '')}</div></td>
+            <td class="px-3 py-3 text-right text-slate-200">${company.itens.length}</td>
+            <td class="px-3 py-3 text-right">${fmtBRL(company.valorAutorizado)}</td>
+            <td class="px-3 py-3 text-right text-indigo-300">${fmtBRL(company.valorEmpenhado)}</td>
+            <td class="px-3 py-3 text-right text-emerald-400">${fmtBRL(company.valorUsado)}</td>
+            <td class="px-3 py-3 text-right font-semibold text-emerald-300">${fmtBRL(company.saldoFin)}</td>
+            <td class="px-3 py-3 text-right">${fmtNum(company.qtdAutorizada)}</td>
+            <td class="px-3 py-3 text-right text-indigo-300">${fmtNum(company.qtdEmpenhada)}</td>
+            <td class="px-3 py-3 text-right font-semibold ${company.saldoQtd < 0 ? 'text-red-400':'text-emerald-300'}">${fmtNum(company.saldoQtd)}</td>
+            <td class="px-3 py-3 text-center"><button type="button" onclick="toggleDocumentDetails('${companyDetailId}', this)" aria-expanded="false" aria-controls="${companyDetailId}" class="text-blue-300 hover:underline"><span data-toggle-label data-open-label="Ocultar itens" data-closed-label="Ver itens">Ver itens</span></button></td>
           </tr>
-        `;
-      }).join('') || '<tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">Nenhum processo encontrado.</td></tr>';
+          <tr id="${companyDetailId}" class="hidden bg-slate-950/70"><td colspan="10" class="px-3 py-3"><div class="mb-2 text-[11px] text-slate-400">Itens, unidades, preços e saldos da empresa no processo ${escapeHtml(proc.numero)}.</div><div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-xs text-left min-w-[1100px]"><thead class="bg-slate-900 text-slate-400 uppercase"><tr><th class="px-3 py-2">Item</th><th class="px-3 py-2">Discriminação</th><th class="px-3 py-2">UF</th><th class="px-3 py-2 text-right">Preço unitário</th><th class="px-3 py-2 text-right">Qtd. autorizada</th><th class="px-3 py-2 text-right">Qtd. empenhada</th><th class="px-3 py-2 text-right">Saldo qtd.</th><th class="px-3 py-2 text-right">Total autorizado</th><th class="px-3 py-2 text-right">Total empenhado</th><th class="px-3 py-2 text-right">Usado (liq./pago)</th><th class="px-3 py-2 text-right">Saldo financeiro</th><th class="px-3 py-2 text-right">Ações</th></tr></thead><tbody>${companyItemsHtml || '<tr><td colspan="12" class="px-3 py-4 text-center text-slate-500">Nenhum item cadastrado.</td></tr>'}</tbody></table></div></td></tr>`;
+        }).join('');
+        const validade = proc.meta?.validade || '';
+        const days = validade ? Math.ceil((new Date(`${validade}T12:00:00`).getTime() - new Date(`${localTodayISO()}T12:00:00`).getTime()) / 86400000) : null;
+        const validityClass = days === null ? 'text-slate-400' : days < 0 ? 'text-red-400 font-semibold' : days <= 60 ? 'text-amber-300 font-semibold' : 'text-emerald-300';
+        return `<tr class="hover:bg-slate-800/50">
+          <td class="px-3 py-3 font-semibold text-slate-100">${escapeHtml(proc.numero)}</td>
+          <td class="px-3 py-3 ${validityClass}">${escapeHtml(validade ? dateShortPtBR(validade) : 'Não cadastrada')}${days !== null ? `<div class="text-[10px] font-normal">${days < 0 ? `Vencido há ${Math.abs(days)} dia(s)` : `${days} dia(s) restantes`}</div>` : ''}</td>
+          <td class="px-3 py-3 text-right">${proc.qtdEmpresas}</td>
+          <td class="px-3 py-3 text-right">${proc.itens.length}</td>
+          <td class="px-3 py-3 text-right font-semibold text-slate-100">${fmtBRL(proc.valorTotal)}</td>
+          <td class="px-3 py-3 text-center"><button type="button" onclick="toggleDocumentDetails('${detailId}', this)" aria-expanded="false" aria-controls="${detailId}" class="px-3 py-1.5 rounded-lg bg-blue-950/70 border border-blue-800/70 text-blue-200 text-xs font-semibold"><span data-toggle-label data-open-label="Ocultar empresas" data-closed-label="Detalhamento">Detalhamento</span></button></td>
+          <td class="px-3 py-3 text-center"><button type="button" data-process-action="edit-validity" data-process-number="${escapeHtml(proc.numero)}" class="text-amber-300 hover:underline">Editar validade</button></td>
+        </tr>
+        <tr id="${detailId}" class="hidden bg-slate-950/40"><td colspan="7" class="px-4 py-4"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><strong class="text-sm text-slate-100">Empresas vinculadas ao processo ${escapeHtml(proc.numero)}</strong><span class="text-xs text-slate-400">Valor total: ${fmtBRL(proc.valorTotal)} • ${proc.itens.length} item(ns)</span></div><div class="overflow-x-auto rounded-lg border border-slate-800"><table class="w-full text-xs text-left min-w-[1250px]"><thead class="bg-slate-900 text-slate-400 uppercase"><tr><th class="px-3 py-2">Empresa</th><th class="px-3 py-2 text-right">Itens</th><th class="px-3 py-2 text-right">Total autorizado</th><th class="px-3 py-2 text-right">Total empenhado</th><th class="px-3 py-2 text-right">Usado (liq./pago)</th><th class="px-3 py-2 text-right">Saldo financeiro</th><th class="px-3 py-2 text-right">Qtd. autorizada</th><th class="px-3 py-2 text-right">Qtd. empenhada</th><th class="px-3 py-2 text-right">Saldo qtd.</th><th class="px-3 py-2 text-center">Detalhamento</th></tr></thead><tbody>${companiesHtml || '<tr><td colspan="10" class="px-3 py-5 text-center text-slate-500">Nenhuma empresa vinculada.</td></tr>'}</tbody></table></div></td></tr>`;
+      }).join('') || '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">Nenhum processo licitatório encontrado.</td></tr>';
+      tbody.onclick = event => {
+        const button = event.target.closest('button[data-process-action="edit-validity"]');
+        if (button) editarValidadeProcesso(button.getAttribute('data-process-number'));
+      };
     }
 
     function toggleDocumentDetails(detailId, button) {
@@ -3174,58 +3483,339 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
       }).join('') || '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Nenhuma empresa possui empenhos cadastrados ou a busca não retornou resultados.</td></tr>';
     }
 
-    function renderDashboard() {
-      const empenhosUnicosCount = new Set(
-        state.empenhos.map(e => String(e.numero_empenho || '').trim()).filter(Boolean)
-      ).size;
+function getPedidoSignatureDefaults() {
+      try { return { ...PEDIDO_SIGNATURE_DEFAULTS, ...(JSON.parse(localStorage.getItem(PEDIDO_SIGNATURE_DEFAULTS_KEY) || '{}')) }; }
+      catch (_) { return { ...PEDIDO_SIGNATURE_DEFAULTS }; }
+    }
 
-      const itensEmpenhadosDistintosSet = new Set(
-        state.empenhos.map(emp => {
-          const p = state.processos.find(x => x.id === emp.processo_item_id);
-          if (p) {
-            return `${p.numero_pregao || ''}__${p.empresa_id || ''}__${p.numero_item || ''}__${String(p.descricao_item || '').trim().toLowerCase()}`;
-          }
-          return emp.processo_item_id;
-        }).filter(Boolean)
-      );
+    function savePedidoSignatureDefaults() {
+      const defaults = {
+        nome:document.getElementById('pedido-sig-nome').value.trim(),
+        posto:document.getElementById('pedido-sig-posto').value.trim(),
+        funcao:document.getElementById('pedido-sig-funcao').value.trim()
+      };
+      localStorage.setItem(PEDIDO_SIGNATURE_DEFAULTS_KEY, JSON.stringify(defaults));
+      showToast('Assinatura do solicitante salva como padrão neste navegador.');
+    }
 
+    function applyPedidoSignatureDefaults() {
+      const d = getPedidoSignatureDefaults();
+      document.getElementById('pedido-sig-nome').value = d.nome || '';
+      document.getElementById('pedido-sig-posto').value = d.posto || '';
+      document.getElementById('pedido-sig-funcao').value = d.funcao || 'Solicitante';
+    }
+
+    function onPedidoProcessoChange() {
+      const numero = document.getElementById('pedido-processo')?.value || '';
+      const meta = getProcessMeta(numero);
+      const validity = document.getElementById('pedido-validade-processo');
+      if (validity) validity.value = meta?.validade ? dateShortPtBR(meta.validade) : 'Não cadastrada';
+      const companySelect = document.getElementById('pedido-empresa');
+      if (!companySelect) return;
+      const previous = companySelect.value;
+      const ids = [...new Set(state.processos.filter(p => p.numero_pregao === numero).map(p => p.empresa_id))];
+      companySelect.innerHTML = '<option value="">Selecione a empresa...</option>' + ids.map(id => {
+        const company = state.empresas.find(e => e.id === id);
+        return company ? `<option value="${escapeHtml(company.id)}">${escapeHtml(company.id_resumido)} | ${escapeHtml(company.nome_fantasia)}</option>` : '';
+      }).join('');
+      if (ids.includes(previous)) companySelect.value = previous;
+      onPedidoEmpresaChange();
+      refreshPedidoItemRows();
+    }
+
+    function onPedidoEmpresaChange() {
+      const id = document.getElementById('pedido-empresa')?.value || '';
+      const company = state.empresas.find(e => e.id === id);
+      document.getElementById('pedido-empresa-nome').value = company?.nome_fantasia || '';
+      document.getElementById('pedido-cnpj').value = company?.cnpj || '';
+      const emailSource = company?.email || company?.contato || '';
+      const emailMatch = String(emailSource).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+      document.getElementById('pedido-email').value = emailMatch ? emailMatch[0] : '';
+      refreshPedidoItemRows();
+    }
+
+    function buildPedidoItemOptionsHtml(selectedId = '') {
+      const numero = document.getElementById('pedido-processo')?.value || '';
+      const empresaId = document.getElementById('pedido-empresa')?.value || '';
+      const items = state.processos.filter(p => p.numero_pregao === numero && p.empresa_id === empresaId);
+      return '<option value="">Selecione o item...</option>' + items.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === selectedId ? 'selected' : ''}>${escapeHtml(p.numero_item)} - ${escapeHtml(p.descricao_item)} (${escapeHtml(p.unidade_fornecimento)})</option>`).join('');
+    }
+
+    function addPedidoItemRow(selectedId = '', data = null) {
+      const container = document.getElementById('pedido-itens-container');
+      const row = document.createElement('div');
+      row.className = 'pedido-item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 items-end';
+      row.innerHTML = `
+        <div class="sm:col-span-4"><label class="block text-[11px] text-slate-400 mb-1">Discriminação *</label><select class="pedido-row-item w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" required onchange="updatePedidoItemHint(this); updatePedidoTotals();">${buildPedidoItemOptionsHtml(selectedId)}</select><p class="pedido-row-hint text-[10px] text-blue-300 mt-1">Selecione um item do processo.</p></div>
+        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Nº Empenho</label><input value="${escapeHtml(data?.numero_empenho || '')}" class="pedido-row-empenho w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="Opcional" /></div>
+        <div class="sm:col-span-2"><label class="block text-[11px] text-slate-400 mb-1">Marca</label><input value="${escapeHtml(data?.marca || '')}" class="pedido-row-marca w-full px-2.5 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="Marca" /></div>
+        <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">UF</label><input readonly class="pedido-row-unid w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+        <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">Qtd. *</label><input type="number" min="0.001" step="0.001" required value="${escapeHtml(data?.quantidade ?? '')}" oninput="updatePedidoTotals()" class="pedido-row-qtd w-full px-2 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-slate-100" placeholder="0" /></div>
+        <div class="sm:col-span-1"><label class="block text-[11px] text-slate-400 mb-1">P. Unit.</label><input readonly class="pedido-row-price w-full px-2 py-2 text-sm bg-slate-900/70 border border-slate-700 rounded-lg text-slate-300" /></div>
+        <div class="sm:col-span-1 flex items-end justify-end"><button type="button" onclick="removePedidoItemRow(this)" class="px-2.5 py-2 text-red-400 hover:bg-red-950/60 rounded-lg border border-transparent hover:border-red-800/60 text-xs font-bold">✕</button></div>`;
+      container.appendChild(row);
+      if (selectedId) updatePedidoItemHint(row.querySelector('.pedido-row-item'));
+      updatePedidoTotals();
+    }
+
+    function removePedidoItemRow(btn) { btn.closest('.pedido-item-row')?.remove(); updatePedidoTotals(); }
+
+    function refreshPedidoItemRows() {
+      document.querySelectorAll('.pedido-item-row').forEach(row => {
+        const select = row.querySelector('.pedido-row-item');
+        const oldValue = select.value;
+        select.innerHTML = buildPedidoItemOptionsHtml(oldValue);
+        if (!state.processos.some(p => p.id === oldValue && p.numero_pregao === document.getElementById('pedido-processo').value && p.empresa_id === document.getElementById('pedido-empresa').value)) select.value = '';
+        updatePedidoItemHint(select);
+      });
+      updatePedidoTotals();
+    }
+
+    function updatePedidoItemHint(selectEl) {
+      const row = selectEl.closest('.pedido-item-row');
+      const proc = state.processos.find(p => p.id === selectEl.value);
+      if (!proc) {
+        row.querySelector('.pedido-row-unid').value = '';
+        row.querySelector('.pedido-row-price').value = '';
+        row.querySelector('.pedido-row-hint').textContent = 'Selecione um item do processo.';
+        return;
+      }
+      row.querySelector('.pedido-row-unid').value = proc.unidade_fornecimento || '';
+      row.querySelector('.pedido-row-price').value = fmtBRL(proc.valor_unitario);
+      row.querySelector('.pedido-row-hint').textContent = `Item ${proc.numero_item} • Preço registrado: ${fmtBRL(proc.valor_unitario)}`;
+    }
+
+    function updatePedidoTotals() {
+      let count = 0, quantityTotal = 0, total = 0;
+      document.querySelectorAll('.pedido-item-row').forEach(row => {
+        const proc = state.processos.find(p => p.id === row.querySelector('.pedido-row-item').value);
+        const qty = Number(row.querySelector('.pedido-row-qtd').value || 0);
+        if (proc && qty > 0) { count++; quantityTotal += qty; total += qty * Number(proc.valor_unitario); }
+      });
+      document.getElementById('pedido-qtd-itens').textContent = count;
+      document.getElementById('pedido-qtd-total').textContent = fmtNum(quantityTotal);
+      document.getElementById('pedido-total-geral').textContent = fmtBRL(total);
+      renderPedidoPrintSheet();
+    }
+
+    function getPedidoDraft(validate = false) {
+      const id = document.getElementById('pedido-id').value;
+      const numero_pedido = document.getElementById('pedido-numero').value.trim();
+      const data_pedido = document.getElementById('pedido-data').value;
+      const numero_pregao = document.getElementById('pedido-processo').value;
+      const empresa_id = document.getElementById('pedido-empresa').value;
+      const empresa = state.empresas.find(e => e.id === empresa_id);
+      const meta = getProcessMeta(numero_pregao);
+      const itens = [];
+      const seen = new Set();
+      for (const row of document.querySelectorAll('.pedido-item-row')) {
+        const processo_item_id = row.querySelector('.pedido-row-item').value;
+        const quantidade = Number(row.querySelector('.pedido-row-qtd').value);
+        const marca = row.querySelector('.pedido-row-marca').value.trim();
+        const numero_empenho = row.querySelector('.pedido-row-empenho').value.trim();
+        if (!processo_item_id || !Number.isFinite(quantidade) || quantidade <= 0) {
+          if (validate) { showToast('Selecione o item e informe uma quantidade válida em todas as linhas do pedido.', true); return null; }
+          continue;
+        }
+        if (seen.has(processo_item_id)) { if (validate) { showToast('O mesmo item não pode aparecer duas vezes no Pedido de Gêneros.', true); return null; } continue; }
+        seen.add(processo_item_id);
+        const proc = state.processos.find(p => p.id === processo_item_id);
+        if (!proc || proc.numero_pregao !== numero_pregao || proc.empresa_id !== empresa_id) { if (validate) { showToast('Todos os itens devem pertencer ao processo e à empresa selecionados.', true); return null; } continue; }
+        const valor_unitario = Number(proc.valor_unitario);
+        itens.push({ processo_item_id, numero_item:proc.numero_item, descricao_item:proc.descricao_item, numero_empenho, marca, unidade:proc.unidade_fornecimento, quantidade, valor_unitario, subtotal:quantidade*valor_unitario });
+      }
+      if (validate) {
+        if (!numero_pedido || !data_pedido || !numero_pregao || !empresa_id || !empresa) { showToast('Preencha número, data, processo e empresa do pedido.', true); return null; }
+        if (!itens.length) { showToast('Adicione pelo menos um item ao Pedido de Gêneros.', true); return null; }
+      }
+      const signature = { nome:document.getElementById('pedido-sig-nome').value.trim(), posto:document.getElementById('pedido-sig-posto').value.trim(), funcao:document.getElementById('pedido-sig-funcao').value.trim() };
+      const total = itens.reduce((sum, item) => sum + item.subtotal, 0);
+      return {
+        id, numero_pedido, ano_referencia:Number(String(data_pedido).slice(0,4)), data_pedido, numero_pregao, empresa_id,
+        empresa_nome:empresa?.nome_fantasia || document.getElementById('pedido-empresa-nome').value,
+        cnpj:empresa?.cnpj || document.getElementById('pedido-cnpj').value,
+        email:document.getElementById('pedido-email').value.trim(), validade_processo:meta?.validade || null,
+        observacoes:document.getElementById('pedido-observacoes').value.trim(), data_entrega:document.getElementById('pedido-data-entrega').value || null,
+        horario_entrega:document.getElementById('pedido-horario').value.trim(), validade_pedido_dias:Number(document.getElementById('pedido-validade-dias').value || 60),
+        assinatura:signature, itens, total, quantidade_itens:itens.length,
+        quantidade_total:itens.reduce((sum,item) => sum + item.quantidade,0)
+      };
+    }
+
+    function renderPedidoPrintSheet(data = null) {
+      const d = data || getPedidoDraft(false);
+      const sheet = document.getElementById('pedidoPrintSheet');
+      if (!sheet || !d) return;
+      const items = d.itens || [];
+      const rows = items.map(it => `<tr><td>${escapeHtml(it.descricao_item || '')}</td><td class="center">${escapeHtml(it.numero_empenho || '')}</td><td class="center">${escapeHtml(it.marca || '')}</td><td class="center">${escapeHtml(it.unidade || '')}</td><td class="right">${fmtNum(it.quantidade)}</td><td class="right">${fmtBRL(it.valor_unitario)}</td><td class="right">${fmtBRL(it.subtotal)}</td></tr>`).join('');
+      const sig = d.assinatura || {};
+      const empresa = d.empresa_nome || document.getElementById('pedido-empresa-nome')?.value || '';
+      const cnpj = d.cnpj || document.getElementById('pedido-cnpj')?.value || '';
+      const email = d.email || document.getElementById('pedido-email')?.value || '';
+      const processValidity = d.validade_processo || '';
+      sheet.innerHTML = `
+        <div class="pedido-header"><img src="${PEDIDO_LOGO_LEFT}" alt="Símbolo institucional da Marinha"/><div class="pedido-brand-text">MARINHA DO BRASIL<br/>CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA<br/><span class="sub">DIVISÃO DE MUNICIAMENTO</span><br/>CNPJ&nbsp; 00.394.502/0594-67</div><img src="${PEDIDO_LOGO_RIGHT}" alt="Brasão institucional"/></div>
+        <div style="text-align:center;font-size:7.5pt;margin-top:2mm">Esplanada dos Ministérios - Bloco N - Subsolo - CEP 70.055-900 - Brasília - DF - TEL: 3429-1560 - wallace.ribeiro@marinha.mil.br</div>
+        <h1>PEDIDO DE GÊNEROS</h1>
+        <div class="pedido-meta">
+          <div><strong>Nº DO PEDIDO:</strong> <span style="color:#1d4ed8;font-weight:700">${escapeHtml(d.numero_pedido || '')}</span></div>
+          <div><strong>DATA DO PEDIDO:</strong> ${escapeHtml(dateLongPtBR(d.data_pedido || ''))}</div>
+          <div><strong>EMPRESA:</strong> ${escapeHtml(empresa)}</div>
+          <div><strong>CNPJ:</strong> ${escapeHtml(cnpj)}</div>
+          <div><strong>EMAIL:</strong> ${escapeHtml(email)}</div>
+        </div>
+        <table class="pedido-process-table"><thead><tr><th>PROCESSO LICITATÓRIO</th><th>VALIDADE</th></tr></thead><tbody><tr><td>${escapeHtml(d.numero_pregao || '')}</td><td>${escapeHtml(processValidity ? dateShortPtBR(processValidity) : 'Não informada')}</td></tr></tbody></table>
+        <table class="pedido-items-table"><colgroup><col style="width:39%"><col style="width:13%"><col style="width:12%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:10%"></colgroup><thead><tr><th>DISCRIMINAÇÃO</th><th>Nº EMPENHO</th><th>MARCA</th><th>UF</th><th>QTD</th><th>P. Unit.</th><th>TOTAL</th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="center">Nenhum item informado</td></tr>'}</tbody></table>
+        <div class="pedido-total"><div></div><div class="total-value">TOTAL: ${fmtBRL(d.total || 0)}</div></div>
+        <div class="pedido-observation"><strong>Obs.:</strong><span>${escapeHtml(d.observacoes || '')}</span></div>
+        <div class="pedido-delivery"><div>DATA DA ENTREGA: ${escapeHtml(d.data_entrega ? dateLongPtBR(d.data_entrega) : 'A DEFINIR')}</div><div>HORÁRIO DE EXPEDIENTE PARA ENTREGA: ${escapeHtml(d.horario_entrega || '')}</div><div class="warning">FAVOR REGISTRAR DÍVIDA PARA OS ITENS NÃO ENTREGUES.</div><div class="validity">VALIDADE DO PEDIDO: ${escapeHtml(d.validade_pedido_dias || 60)} DIAS</div></div>
+        <div class="pedido-spacer"></div>
+        <div class="pedido-signature"><div class="line"></div><div class="name">${escapeHtml(sig.nome || '')}</div><div class="rank">${escapeHtml(sig.posto || '')}</div><div class="role">${escapeHtml(sig.funcao || 'Solicitante')}</div></div>
+      `;
+    }
+
+    function printCurrentPedidoGenero() {
+      const draft = getPedidoDraft(true);
+      if (!draft) return;
+      renderPedidoPrintSheet(draft);
+      document.body.classList.add('printing-pedido');
+      const clean = () => document.body.classList.remove('printing-pedido');
+      window.addEventListener('afterprint', clean, { once:true });
+      window.print();
+      setTimeout(clean, 1500);
+    }
+
+    function printSavedPedidoGenero(id) {
+      const p = state.pedidosGeneros.find(x => x.id === id);
+      if (!p) return;
+      renderPedidoPrintSheet(p);
+      document.body.classList.add('printing-pedido');
+      const clean = () => document.body.classList.remove('printing-pedido');
+      window.addEventListener('afterprint', clean, { once:true });
+      window.print();
+      setTimeout(clean, 1500);
+    }
+
+    async function savePedidoGenero(event) {
+      event.preventDefault();
+      if (!sb) { showToast('Conecte-se ao Supabase para salvar o pedido.', true); return; }
+      const d = getPedidoDraft(true);
+      if (!d) return;
+      if (!Number.isInteger(d.validade_pedido_dias) || d.validade_pedido_dias < 1) { showToast('Informe uma validade do pedido em dias maior que zero.', true); return; }
+      const existing = state.pedidosGeneros.find(p => p.id === d.id);
+      const payload = {
+        numero_pedido:d.numero_pedido, ano_referencia:d.ano_referencia, data_pedido:d.data_pedido,
+        numero_pregao:d.numero_pregao, empresa_id:d.empresa_id, empresa_nome:d.empresa_nome, cnpj:d.cnpj,
+        email:d.email, validade_processo:d.validade_processo, observacoes:d.observacoes,
+        data_entrega:d.data_entrega, horario_entrega:d.horario_entrega, validade_pedido_dias:d.validade_pedido_dias,
+        assinatura:d.assinatura, itens:d.itens, total:d.total, quantidade_total:d.quantidade_total, quantidade_itens:d.quantidade_itens
+      };
+      const result = existing
+        ? await sb.from('pedidos_generos').update(payload).eq('id',d.id).select('*').single()
+        : await sb.from('pedidos_generos').insert(payload).select('*').single();
+      if (result.error) { showToast('Erro ao salvar Pedido de Gêneros: ' + result.error.message, true); return; }
+      if (existing) state.pedidosGeneros = state.pedidosGeneros.map(x => x.id === d.id ? result.data : x);
+      else state.pedidosGeneros.unshift(result.data);
+      renderPedidos();
+      if (existing) { document.getElementById('pedido-id').value = result.data.id; showToast(`Pedido ${d.numero_pedido} atualizado.`); }
+      else { newPedidoGenero(); showToast(`Pedido de Gêneros ${d.numero_pedido} salvo no Supabase.`); }
+    }
+
+    function editPedidoGenero(id) {
+      const p = state.pedidosGeneros.find(x => x.id === id);
+      if (!p) return;
+      switchTab('pedidos');
+      document.getElementById('pedido-id').value = p.id;
+      document.getElementById('pedido-numero').value = p.numero_pedido || '';
+      document.getElementById('pedido-data').value = p.data_pedido || '';
+      document.getElementById('pedido-processo').value = p.numero_pregao || '';
+      onPedidoProcessoChange();
+      document.getElementById('pedido-empresa').value = p.empresa_id || '';
+      onPedidoEmpresaChange();
+      document.getElementById('pedido-email').value = p.email || '';
+      document.getElementById('pedido-observacoes').value = p.observacoes || '';
+      document.getElementById('pedido-data-entrega').value = p.data_entrega || '';
+      document.getElementById('pedido-horario').value = p.horario_entrega || '';
+      document.getElementById('pedido-validade-dias').value = p.validade_pedido_dias || 60;
+      const sig = p.assinatura || {};
+      document.getElementById('pedido-sig-nome').value = sig.nome || '';
+      document.getElementById('pedido-sig-posto').value = sig.posto || '';
+      document.getElementById('pedido-sig-funcao').value = sig.funcao || 'Solicitante';
+      const container = document.getElementById('pedido-itens-container');
+      container.innerHTML = '';
+      (p.itens || []).forEach(it => addPedidoItemRow(it.processo_item_id, it));
+      if (!(p.itens || []).length) addPedidoItemRow();
+      updatePedidoTotals();
+      renderPedidoPrintSheet(p);
+      showToast(`Pedido ${p.numero_pedido} carregado para edição.`);
+    }
+
+    async function deletePedidoGenero(id) {
+      const p = state.pedidosGeneros.find(x => x.id === id);
+      if (!p || !confirm(`Confirma excluir o Pedido de Gêneros ${p.numero_pedido}?`)) return;
+      const { error } = await sb.from('pedidos_generos').delete().eq('id',id);
+      if (error) { showToast('Erro ao excluir pedido: ' + error.message, true); return; }
+      state.pedidosGeneros = state.pedidosGeneros.filter(x => x.id !== id);
+      renderPedidos();
+      if (document.getElementById('pedido-id').value === id) newPedidoGenero();
+      showToast(`Pedido ${p.numero_pedido} excluído.`);
+    }
+
+    function renderPedidos() {
+      const tbody = document.getElementById('tbl-pedidos');
+      if (!tbody) return;
+      const filter = (document.getElementById('filtroPedido')?.value || '').trim().toLowerCase();
+      const rows = state.pedidosGeneros.filter(p => !filter || [p.numero_pedido,p.numero_pregao,p.empresa_nome].some(v => String(v || '').toLowerCase().includes(filter)));
+      document.getElementById('pedido-count').textContent = `${rows.length} registro(s)`;
+      tbody.innerHTML = rows.map(p => `<tr class="hover:bg-slate-800/50"><td class="px-3 py-3 font-semibold text-blue-300">${escapeHtml(p.numero_pedido)}</td><td class="px-3 py-3">${escapeHtml(dateShortPtBR(p.data_pedido))}</td><td class="px-3 py-3">${escapeHtml(p.numero_pregao)}</td><td class="px-3 py-3">${escapeHtml(p.empresa_nome)}</td><td class="px-3 py-3 text-right">${escapeHtml(p.quantidade_itens ?? (p.itens || []).length)}</td><td class="px-3 py-3 text-right font-semibold">${fmtBRL(p.total)}</td><td class="px-3 py-3"><div class="flex justify-end gap-2"><button type="button" onclick="editPedidoGenero('${escapeHtml(p.id)}')" class="text-blue-300 hover:underline">Editar</button><button type="button" onclick="printSavedPedidoGenero('${escapeHtml(p.id)}')" class="text-slate-300 hover:underline">Imprimir</button><button type="button" onclick="deletePedidoGenero('${escapeHtml(p.id)}')" class="text-red-400 hover:underline">Excluir</button></div></td></tr>`).join('') || '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">Nenhum Pedido de Gêneros cadastrado.</td></tr>';
+    }
+
+    function newPedidoGenero() {
+      document.getElementById('pedidoGeneroForm').reset();
+      document.getElementById('pedido-id').value = '';
+      document.getElementById('pedido-data').value = localTodayISO();
+      document.getElementById('pedido-validade-dias').value = '60';
+      document.getElementById('pedido-horario').value = '09:00h ÀS 11:40h / 14:00h ÀS 16:30h';
+      document.getElementById('pedido-processo').value = '';
+      onPedidoProcessoChange();
+      document.getElementById('pedido-itens-container').innerHTML = '';
+      addPedidoItemRow();
+      applyPedidoSignatureDefaults();
+      updatePedidoTotals();
+      renderPedidoPrintSheet();
+    }
+
+    function initPedidoUI() {
+      document.getElementById('pedido-data').value = localTodayISO();
+      applyPedidoSignatureDefaults();
+      addPedidoItemRow();
+      const form = document.getElementById('pedidoGeneroForm');
+      form.addEventListener('input', ev => { if (ev.target?.closest?.('.pedido-item-row')) updatePedidoTotals(); else renderPedidoPrintSheet(); });
+      form.addEventListener('change', () => renderPedidoPrintSheet());
+      renderPedidoPrintSheet();
+    }
+
+        function renderDashboard() {
+      const empenhosUnicosCount = new Set(state.empenhos.map(e => String(e.numero_empenho || '').trim()).filter(Boolean)).size;
+      const itensEmpenhadosDistintosSet = new Set(state.empenhos.map(emp => {
+        const p = state.processos.find(x => x.id === emp.processo_item_id);
+        return p ? `${p.numero_pregao || ''}__${p.empresa_id || ''}__${p.numero_item || ''}__${String(p.descricao_item || '').trim().toLowerCase()}` : emp.processo_item_id;
+      }).filter(Boolean));
       document.getElementById('kpi-fornecedores').textContent = state.empresas.length;
       document.getElementById('kpi-itens').textContent = state.processos.length;
       document.getElementById('kpi-itens-empenhados-qtd').textContent = itensEmpenhadosDistintosSet.size;
       document.getElementById('kpi-empenhos-qtd').textContent = empenhosUnicosCount;
 
-      let totalAutorizado = 0;
-      let totalEmpenhado = 0;
-      let totalLiquidado = 0;
-      let qtdAutorizada = 0;
-      let qtdEmpenhada = 0;
-
-      state.processos.forEach(p => {
-        totalAutorizado += Number(p.valor_unitario) * Number(p.quantidade_autorizada);
-        qtdAutorizada += Number(p.quantidade_autorizada);
-      });
-
-      state.empenhos.forEach(emp => {
-        const p = state.processos.find(x => x.id === emp.processo_item_id);
-        const vlrUnit = p ? Number(p.valor_unitario) : 0;
-        totalEmpenhado += Number(emp.quantidade_empenhada) * vlrUnit;
-        qtdEmpenhada += Number(emp.quantidade_empenhada);
-      });
-
-      state.notas.forEach(n => {
-        if (['Liquidada', 'Paga'].includes(n.situacao)) {
-          totalLiquidado += Number(n.quantidade_nf) * Number(n.valor_unitario_nf);
-        }
-      });
-
+      let totalAutorizado = 0, totalEmpenhado = 0, totalLiquidado = 0, qtdAutorizada = 0, qtdEmpenhada = 0;
+      state.processos.forEach(p => { totalAutorizado += Number(p.valor_unitario) * Number(p.quantidade_autorizada); qtdAutorizada += Number(p.quantidade_autorizada); });
+      state.empenhos.forEach(emp => { const p = state.processos.find(x => x.id === emp.processo_item_id); const unit = p ? Number(p.valor_unitario) : 0; totalEmpenhado += Number(emp.quantidade_empenhada) * unit; qtdEmpenhada += Number(emp.quantidade_empenhada); });
+      state.notas.forEach(n => { if (['Liquidada','Paga'].includes(n.situacao)) totalLiquidado += Number(n.quantidade_nf) * Number(n.valor_unitario_nf); });
       const saldoDisponivel = totalAutorizado - totalEmpenhado;
       const pctExec = qtdAutorizada > 0 ? (qtdEmpenhada / qtdAutorizada) * 100 : 0;
-
       document.getElementById('kpi-val-autorizado').textContent = fmtBRL(totalAutorizado);
       document.getElementById('kpi-val-empenhado').textContent = fmtBRL(totalEmpenhado);
       document.getElementById('kpi-val-liquidado').textContent = fmtBRL(totalLiquidado);
       document.getElementById('kpi-val-saldo').textContent = fmtBRL(saldoDisponivel);
-
       document.getElementById('kpi-qtd-auth').textContent = fmtNum(qtdAutorizada);
       document.getElementById('kpi-qtd-emp').textContent = fmtNum(qtdEmpenhada);
       document.getElementById('kpi-exec-pct').textContent = fmtPct(pctExec);
@@ -3234,15 +3824,44 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
       const resumoEmpresas = getResumoPorEmpresa();
       const tbody = document.getElementById('tbl-resumo-empresas');
       tbody.innerHTML = resumoEmpresas.map(empresa => `
-        <tr class="hover:bg-slate-800/50">
-          <td class="px-4 py-3 font-semibold text-blue-300">${empresa.id_resumido}</td>
-          <td class="px-4 py-3 text-slate-200">${empresa.nome_fantasia}</td>
-          <td class="px-4 py-3 text-right font-semibold text-indigo-300">${fmtPct(empresa.pctParticipacaoEmp)}</td>
-          <td class="px-4 py-3 text-right font-medium text-slate-200">${fmtBRL(empresa.vlrEmp)}</td>
-          <td class="px-4 py-3 text-right text-emerald-400 font-medium">${fmtBRL(empresa.vlrLiq)}</td>
-          <td class="px-4 py-3 text-right font-bold text-slate-100">${fmtBRL(empresa.saldo)}</td>
-        </tr>
+        <tr class="hover:bg-slate-800/50"><td class="px-4 py-3 font-semibold text-blue-300">${escapeHtml(empresa.id_resumido)}</td><td class="px-4 py-3 text-slate-200">${escapeHtml(empresa.nome_fantasia)}</td><td class="px-4 py-3 text-right font-semibold text-indigo-300">${fmtPct(empresa.pctParticipacaoEmp)}</td><td class="px-4 py-3 text-right font-medium text-slate-200">${fmtBRL(empresa.vlrEmp)}</td><td class="px-4 py-3 text-right text-emerald-400 font-medium">${fmtBRL(empresa.vlrLiq)}</td><td class="px-4 py-3 text-right font-bold text-slate-100">${fmtBRL(empresa.saldo)}</td></tr>
       `).join('') || '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Cadastre uma empresa para visualizar o resumo.</td></tr>';
+
+      const alertCard = document.getElementById('process-expiry-card');
+      const alertSummary = document.getElementById('process-expiry-summary');
+      const alertList = document.getElementById('process-expiry-list');
+      if (alertCard && alertList) {
+        const thresholdInput = document.getElementById('process-expiry-days');
+        const threshold = Math.max(1, Math.min(365, Number(thresholdInput?.value || 60)));
+        const today = new Date(`${localTodayISO()}T12:00:00`);
+        const byProcess = new Map();
+        state.processosMeta.filter(m => m.validade).forEach(m => {
+          const date = new Date(`${m.validade}T12:00:00`);
+          const days = Math.ceil((date.getTime() - today.getTime()) / 86400000);
+          if (days <= threshold) byProcess.set(m.numero_pregao, { numero:m.numero_pregao, validade:m.validade, days });
+        });
+        const rows = [...byProcess.values()].sort((a,b) => a.days - b.days);
+        alertCard.classList.remove('hidden');
+        const semValidade = state.processosMeta.filter(m => !m.validade);
+        const alertRowsHtml = rows.map(r => `<div class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-950/70 border border-slate-800 px-3 py-2"><span class="text-sm font-semibold text-slate-100">${escapeHtml(r.numero)}</span><span class="text-xs text-slate-400">Validade: ${dateShortPtBR(r.validade)}</span><strong class="text-xs ${r.days < 0 ? 'text-red-400':'text-amber-300'}">${r.days < 0 ? `VENCIDO há ${Math.abs(r.days)} dia(s)` : r.days === 0 ? 'VENCE HOJE' : `Vence em ${r.days} dia(s)`}</strong></div>`).join('');
+        const missingRowsHtml = semValidade.map(m => `<div class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-950/70 border border-amber-900/70 px-3 py-2"><span class="text-sm font-semibold text-slate-100">${escapeHtml(m.numero_pregao)}</span><strong class="text-xs text-amber-300">VALIDADE NÃO CADASTRADA</strong></div>`).join('');
+        if (!state.processosMeta.length) {
+          alertSummary.textContent = 'Nenhum processo licitatório cadastrado.';
+          alertList.innerHTML = '';
+          alertCard.className = 'bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-700 space-y-3';
+        } else if (!rows.length && !semValidade.length) {
+          alertSummary.textContent = `Nenhum processo vencido ou com vencimento nos próximos ${threshold} dias.`;
+          alertList.innerHTML = '<p class="text-xs text-emerald-300">Todas as licitações cadastradas estão fora da janela de alerta.</p>';
+          alertCard.className = 'bg-slate-900 p-5 rounded-xl shadow-sm border border-emerald-800/70 space-y-3';
+        } else {
+          const expired = rows.filter(r => r.days < 0).length;
+          const soon = rows.length - expired;
+          const dueText = `${expired} vencido(s) • ${soon} com vencimento em até ${threshold} dia(s)`;
+          alertSummary.textContent = `${dueText}${semValidade.length ? ` • ${semValidade.length} sem validade cadastrada` : ''}.`;
+          alertCard.className = `bg-slate-900 p-5 rounded-xl shadow-sm border ${semValidade.length ? 'border-amber-800/70' : 'border-amber-800/70'} space-y-3`;
+          alertList.innerHTML = [alertRowsHtml, missingRowsHtml].filter(Boolean).join('');
+        }
+      }
     }
 
     // Inicializar
@@ -3250,6 +3869,7 @@ Atenção: esta Pré-SOLEMP está vinculada ao empenho ${p.numero_empenho || '(n
     resetEmpenhoItemRows();
     resetNfItemRows();
     initPreSolempUI();
+    initPedidoUI();
     initConfigUI();
   </script>
 </body>
